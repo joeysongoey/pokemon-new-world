@@ -78,7 +78,7 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **TYPE CHART** screen on the main menu and in the Pokedex.
 - **Pokedex entries** for all of the original 66 Pokemon.
 - **Export and import save codes.**
-- NYSTRIA is now as rare as the other legendaries (0.2% per battle, down from 5%).
+- NYSTRIA stays at a 5% chance per battle.
 
 ## What's new in v15.0
 

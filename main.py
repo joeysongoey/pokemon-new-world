@@ -1068,7 +1068,7 @@ def new_team():
 
 
 # Legendary NYSTRIA
-NYSTRIA_CHANCE = 0.002         # 0.2% per battle, the same as other legendaries
+NYSTRIA_CHANCE = 0.05          # 5% per battle (Dallas wants NYSTRIA easier to find)
 NYSTRIA_CATCH_PENALTY = 0.20   # harder to catch than normal Pokemon
 NYSTRIA_MOVES = [
     ("Void Pulse", 45), ("Null Beam", 50),
