@@ -1,4 +1,4 @@
-# Pokemon: The New World v14.0
+# Pokemon: The New World v15.0
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -54,6 +54,14 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v15.0
+
+- **Type effectiveness** in every battle, for your attacks and the enemy's.
+  - Super effective moves do 2x damage, and 4x when both of the defender's types are weak.
+  - Not very effective moves do 0.5x, and some matchups have no effect at all.
+  - Battle messages show SUPER EFFECTIVE!, Not very effective... or It had no effect!
+- Uses the standard 18-type chart, with Ice kept super effective against Fire.
 
 ## What's new in v14.0
 

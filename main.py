@@ -21,7 +21,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v14.0")
+pygame.display.set_caption("Pokemon: The New World v15.0")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -683,6 +683,69 @@ def primary_type(type_text):
 
 def get_move_type(move):
     return MOVE_TYPES.get(move, "Normal")
+
+
+# ==========================================
+# TYPE EFFECTIVENESS
+# Only non-neutral matchups are listed.
+# Anything missing counts as 1x (normal).
+# ==========================================
+
+TYPE_CHART = {
+    "Normal":   {"Rock": 0.5, "Steel": 0.5, "Ghost": 0},
+    "Fire":     {"Fire": 0.5, "Water": 0.5, "Grass": 2, "Ice": 2,
+                 "Bug": 2, "Rock": 0.5, "Dragon": 0.5, "Steel": 2},
+    "Water":    {"Fire": 2, "Water": 0.5, "Grass": 0.5, "Ground": 2,
+                 "Rock": 2, "Dragon": 0.5},
+    "Electric": {"Water": 2, "Electric": 0.5, "Grass": 0.5,
+                 "Ground": 0, "Flying": 2, "Dragon": 0.5},
+    "Grass":    {"Fire": 0.5, "Water": 2, "Grass": 0.5, "Poison": 0.5,
+                 "Ground": 2, "Flying": 0.5, "Bug": 0.5, "Rock": 2,
+                 "Dragon": 0.5, "Steel": 0.5},
+    "Ice":      {"Fire": 2, "Water": 0.5, "Grass": 2, "Ice": 0.5,
+                 "Ground": 2, "Flying": 2, "Dragon": 2, "Steel": 0.5},
+    "Fighting": {"Normal": 2, "Ice": 2, "Poison": 0.5, "Flying": 0.5,
+                 "Psychic": 0.5, "Bug": 0.5, "Rock": 2, "Ghost": 0,
+                 "Dark": 2, "Steel": 2, "Fairy": 0.5},
+    "Poison":   {"Grass": 2, "Poison": 0.5, "Ground": 0.5, "Rock": 0.5,
+                 "Ghost": 0.5, "Steel": 0, "Fairy": 2},
+    "Ground":   {"Fire": 2, "Electric": 2, "Grass": 0.5, "Poison": 2,
+                 "Flying": 0, "Bug": 0.5, "Rock": 2, "Steel": 2},
+    "Flying":   {"Electric": 0.5, "Grass": 2, "Fighting": 2, "Bug": 2,
+                 "Rock": 0.5, "Steel": 0.5},
+    "Psychic":  {"Fighting": 2, "Poison": 2, "Psychic": 0.5, "Dark": 0,
+                 "Steel": 0.5},
+    "Bug":      {"Fire": 0.5, "Grass": 2, "Fighting": 0.5, "Poison": 0.5,
+                 "Flying": 0.5, "Psychic": 2, "Ghost": 0.5, "Dark": 2,
+                 "Steel": 0.5, "Fairy": 0.5},
+    "Rock":     {"Fire": 2, "Ice": 2, "Fighting": 0.5, "Ground": 0.5,
+                 "Flying": 2, "Bug": 2, "Steel": 0.5},
+    "Ghost":    {"Normal": 0, "Psychic": 2, "Ghost": 2, "Dark": 0.5},
+    "Dragon":   {"Dragon": 2, "Steel": 0.5, "Fairy": 0},
+    "Dark":     {"Fighting": 0.5, "Psychic": 2, "Ghost": 2,
+                 "Dark": 0.5, "Fairy": 0.5},
+    "Steel":    {"Fire": 0.5, "Water": 0.5, "Electric": 0.5, "Ice": 2,
+                 "Rock": 2, "Steel": 0.5, "Fairy": 2},
+    "Fairy":    {"Fire": 0.5, "Fighting": 2, "Poison": 0.5, "Dragon": 2,
+                 "Dark": 2, "Steel": 0.5},
+}
+
+
+def type_multiplier(move_type, defender_types):
+    multiplier = 1.0
+    for defender_type in defender_types.split("/"):
+        multiplier *= TYPE_CHART.get(move_type, {}).get(defender_type, 1)
+    return multiplier
+
+
+def effectiveness_text(multiplier):
+    if multiplier == 0:
+        return "It had no effect! "
+    if multiplier > 1:
+        return "SUPER EFFECTIVE! "
+    if multiplier < 1:
+        return "Not very effective... "
+    return ""
 
 
 def wild_moves(type_text):
@@ -2001,7 +2064,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v14.0!"
+        self.message = "Welcome to Pokemon: The New World v15.0!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -2319,7 +2382,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 14.0 - 76 NEW POKEMON", 150)
+        self.centred("VERSION 15.0 - TYPE EFFECTIVENESS", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -2836,11 +2899,9 @@ class Game:
             damage += 40
 
         move_type = get_move_type(move)
-        super_effective = (move_type == "Ice"
-                           and "Fire" in e.types.split("/"))
-
-        if super_effective:
-            damage = int(damage * 2.5)
+        multiplier = type_multiplier(move_type, e.types)
+        damage = int(damage * multiplier)
+        effect = effectiveness_text(multiplier)
 
         self.start_animation(move, True)
         e.take_damage(damage)
@@ -2860,9 +2921,8 @@ class Game:
             self.avatar_turns = 0
             self.mode = "victory"
         else:
-            self.message = f"{p.name} used {move}! {damage} damage!"
-            if super_effective:
-                self.message = "SUPER EFFECTIVE! " + self.message
+            self.message = (f"{effect}{p.name} used {move}! "
+                            f"{damage} damage!")
             self.pending_enemy_turn = True
 
     # ======================================
@@ -2883,11 +2943,9 @@ class Game:
 
         damage = power + random.randint(3, 10) + e.bonus
         move_type = get_move_type(move)
-        super_effective = (move_type == "Ice"
-                           and "Fire" in p.types.split("/"))
-
-        if super_effective:
-            damage = int(damage * 2.5)
+        multiplier = type_multiplier(move_type, p.types)
+        damage = int(damage * multiplier)
+        effect = effectiveness_text(multiplier)
 
         if self.avatar_turns:
             damage = max(1, damage - 15)
@@ -2897,11 +2955,8 @@ class Game:
         p.take_damage(damage)
         self.show_hit(damage, RED)
 
-        if super_effective:
-            self.message = (f"SUPER EFFECTIVE! {e.name}'s {move} "
-                            f"hit {p.name} hard! -{damage} HP!")
-        else:
-            self.message = f"{e.name} used {move}! You lost {damage} HP!"
+        self.message = (f"{effect}{e.name} used {move}! "
+                        f"You lost {damage} HP!")
 
         if p.fainted:
             fainted_name = p.name
