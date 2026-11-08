@@ -1,4 +1,4 @@
-# Pokemon: The New World v16.0
+# Pokemon: The New World v16.1
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,17 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v16.1
+
+- **200 new Pokemon, #146 to #345**, bringing the Pokedex to 345. Every one has
+  a type, stats, four moves and a Pokedex entry. Their entries and moves are
+  short placeholders you can rewrite.
+- Stats for #246 to #345 come from the stats file. Stats for #146 to #245 are
+  placeholder values.
+- Duplicate names were renamed: Tidewyrm, Frostmaw, Cragwing, Gravewing,
+  Toxmite, Glacyowl, Bloomisk, Sporemantis, Stormrake, Mossox, Seismotusk,
+  Magmaut and Scorchclaw.
 
 ## What's new in v16.0
 
