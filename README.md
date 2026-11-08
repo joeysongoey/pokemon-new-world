@@ -25,6 +25,11 @@ python main.py
 - 1 to 4: choose an attack
 - Esc: go back
 
+## Healing
+
+Click HEAL on the main menu to restore every Pokemon on your team to full HP
+(fainted ones are revived). It is free and saves automatically.
+
 ## Saving
 
 Use SAVE and LOAD on the main menu. On your computer the save goes to

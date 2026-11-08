@@ -815,6 +815,29 @@ class Game:
         self.send_out_healthy()
         self.message = "Game loaded!"
 
+    # ======================================
+    # HEAL (free)
+    # ======================================
+
+    def heal_team(self):
+        if self.enemy:
+            self.message = "Finish or run from your battle before healing!"
+            return
+
+        # Restores full HP, which also revives fainted Pokemon
+        for pokemon in self.team:
+            pokemon.heal(pokemon.max_hp)
+
+        self.send_out_healthy()
+
+        # Keep the healed HP in the save file
+        self.save_game()
+
+        if self.message == "Game saved!":
+            self.message = "Your Pokémon have been fully healed!"
+        else:
+            self.message = "Your Pokémon have been fully healed! (Could not save.)"
+
     @property
     def pokemon(self):
         return self.team[self.active]
@@ -999,8 +1022,9 @@ class Game:
 
         label = "CONTINUE BATTLE" if self.enemy else "START BATTLE"
         self.button(label, (350, 420, 300, 55), "battle")
-        self.button("TEAM", (350, 490, 140, 45), "team")
-        self.button("POKE BALLS", (510, 490, 140, 45), "balls")
+        self.button("TEAM", (300, 490, 127, 45), "team")
+        self.button("POKE BALLS", (437, 490, 126, 45), "balls")
+        self.button("HEAL", (573, 490, 127, 45), "heal", (190, 70, 110))
         self.button("POKEMON PC", (350, 550, 300, 45), "pc")
         if WEB:
             self.button("SAVE", (350, 615, 140, 45), "save", (45, 115, 75))
@@ -1562,6 +1586,9 @@ class Game:
         elif action == "pc_next":
             max_page = max(0, (len(self.pc) - 1) // 12)
             self.pc_page = min(max_page, self.pc_page + 1)
+
+        elif action == "heal":
+            self.heal_team()
 
         elif action == "save":
             self.save_game()
