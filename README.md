@@ -1,4 +1,4 @@
-# Pokemon: The New World v12.0
+# Pokemon: The New World v13.0
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -41,3 +41,16 @@ so it stays on that browser and device.
 Every time you push to the `main` branch, the GitHub Action in
 `.github/workflows/deploy.yml` uses [pygbag](https://pypi.org/project/pygbag/)
 to turn `main.py` into a web version and publish it to the `gh-pages` branch.
+
+## What's new in v13.0
+
+- **XP and levels:** your active Pokemon earns XP for every win. Each level
+  gives +8 max HP and +2 attack power.
+- **Coins and the Poke Mart:** win battles to earn coins, then press SHOP on
+  the main menu to buy Poke Balls (20), Great Balls (50) and Ultra Balls (100).
+- **Battle Tournament:** beat 4 trainers and Champion Vex in a row to win a
+  trophy and coins. Your team recovers half its HP between rounds. No
+  catching, no healing, and RUN becomes FORFEIT.
+- **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
+  dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
+  forms are smaller than final forms.

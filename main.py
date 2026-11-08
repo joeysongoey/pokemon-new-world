@@ -21,7 +21,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v12.0")
+pygame.display.set_caption("Pokemon: The New World v13.0")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -312,6 +312,7 @@ class Creature:
         self.bonus = bonus
         self.types = "Unknown"
         self.pokedex_number = None
+        self.xp = 0
 
     @property
     def fainted(self):
@@ -322,6 +323,66 @@ class Creature:
 
     def heal(self, amount):
         self.hp = min(self.max_hp, self.hp + amount)
+
+
+# ==========================================
+# XP AND LEVELS
+# ==========================================
+
+MAX_LEVEL = 100
+
+
+def xp_needed(level):
+    return 10 + level * 10
+
+
+def xp_reward(enemy):
+    if enemy.types == "Boss":
+        return 150
+    if enemy.name == "NYSTRIA":
+        return 250
+    return 8 + enemy.level * 6
+
+
+def gain_xp(creature, amount):
+    """Adds XP and returns a list of level-up messages."""
+    messages = []
+    creature.xp += amount
+
+    while (creature.level < MAX_LEVEL
+           and creature.xp >= xp_needed(creature.level)):
+        creature.xp -= xp_needed(creature.level)
+        creature.level += 1
+        creature.max_hp += 8
+        creature.hp = min(creature.max_hp, creature.hp + 8)
+        creature.bonus += 2
+        messages.append(f"{creature.name} grew to Lv {creature.level}!")
+
+    if creature.level >= MAX_LEVEL:
+        creature.xp = 0
+
+    return messages
+
+
+# ==========================================
+# COINS AND SHOP
+# ==========================================
+
+START_COINS = 100
+
+SHOP_PRICES = {
+    "Poke Ball": 20,
+    "Great Ball": 50,
+    "Ultra Ball": 100
+}
+
+
+def coin_reward(enemy):
+    if enemy.types == "Boss":
+        return 100
+    if enemy.name == "NYSTRIA":
+        return 150
+    return 10 + enemy.level * 3
 
 
 def new_team():
@@ -357,7 +418,8 @@ def random_enemy():
 
     if random.random() < 0.12:
         name, hp, bonus, moves = random.choice(BOSS_DATA)
-        enemy = Creature(name, hp, [(m, 40) for m in moves], bonus=bonus)
+        enemy = Creature(name, hp, [(m, 40) for m in moves],
+                         level=40, bonus=bonus)
         enemy.types = "Boss"
         return enemy
 
@@ -376,6 +438,51 @@ def random_enemy():
     enemy.types = types
     enemy.pokedex_number = number
     return enemy
+
+
+# ==========================================
+# BATTLE TOURNAMENT
+# ==========================================
+
+# (trainer name, level, Pokemon, coin prize)
+TOURNAMENT = [
+    ("Bug Catcher Mia", 14, ["Bugbyte", "Glitchor"], 50),
+    ("Hiker Bram", 18, ["Rockruffle", "Cragoyle"], 80),
+    ("Ace Trainer Zoe", 22, ["Shocklynx", "Aquarion", "Pyrovolt"], 120),
+    ("Dragon Tamer Kai", 26, ["Floragon", "Toxidrake", "Voltraze"], 160),
+    ("Champion Vex", 32,
+     ["Galaxion", "Dreadgeist", "Glacifang", "NYSTRIA"], 400),
+]
+
+POKEDEX_BY_NAME = {name: (number, types)
+                   for number, name, types in WILD_POKEMON}
+
+
+def trainer_pokemon(name, level):
+    if name == "NYSTRIA":
+        # The Champion's ace is extra tough
+        mon = make_nystria()
+        mon.level = level + 4
+        mon.bonus = level // 2 + 4
+        mon.max_hp += 60
+        mon.hp = mon.max_hp
+        return mon
+
+    number, types = POKEDEX_BY_NAME[name]
+    hp = 130 + level * 8 + random.randint(0, 20)
+    if "/" in types:
+        hp += 20
+
+    moves = [(m, p + random.randint(8, 14)) for m, p in wild_moves(types)]
+    mon = Creature(name, hp, moves, level=level, bonus=level // 2)
+    mon.types = types
+    mon.pokedex_number = number
+    return mon
+
+
+def trainer_team(round_index):
+    trainer, level, names, prize = TOURNAMENT[round_index]
+    return [trainer_pokemon(n, level) for n in names]
 
 
 # ==========================================
@@ -410,7 +517,7 @@ def creature_to_dict(c):
     return {
         "name": c.name, "max_hp": c.max_hp, "hp": c.hp,
         "moves": [list(m) for m in c.moves],
-        "level": c.level, "bonus": c.bonus,
+        "level": c.level, "bonus": c.bonus, "xp": c.xp,
         "types": c.types, "pokedex_number": c.pokedex_number
     }
 
@@ -422,6 +529,7 @@ def creature_from_dict(d):
     c.hp = max(0, min(c.max_hp, d.get("hp", c.max_hp)))
     c.types = d.get("types", "Unknown")
     c.pokedex_number = d.get("pokedex_number")
+    c.xp = int(d.get("xp", 0))
     return c
 
 
@@ -625,12 +733,535 @@ def make_nystria_sprite(size):
     return pygame.transform.smoothscale(s, (size, size))
 
 
+# ==========================================
+# WILD POKEMON SPRITES (unique body shapes)
+# ==========================================
+
+SHAPES = {
+    "Embercub": "quad", "Blazepaw": "quad", "Pyroclaw": "quad",
+    "Aquaffin": "fish", "Tidalisk": "fish", "Abyssurge": "fish",
+    "Leaflet": "plant", "Thornox": "plant", "Floragon": "dragon",
+    "Voltkit": "quad", "Shocklynx": "quad", "Thundermaw": "quad",
+    "Frostbit": "quad", "Glacieron": "golem", "Cryowraith": "ghost",
+    "Rockruffle": "quad", "Cragoyle": "bird", "Terradon": "dragon",
+    "Shadelet": "ghost", "Hauntalon": "bird", "Dreadgeist": "ghost",
+    "Mechling": "golem", "Ironclast": "golem", "Titanforge": "golem",
+    "Mindimp": "imp", "Psyphantom": "ghost", "Dreamora": "imp",
+    "Venomite": "bug", "Toxidrake": "dragon",
+    "Skyray": "bird", "Stormeagle": "bird",
+    "Brawlpup": "imp", "Warfang": "quad",
+    "Fableaf": "plant", "Lumifawn": "quad",
+    "Gloomora": "ghost", "Nightreign": "dragon",
+    "Bugbyte": "bug", "Glitchor": "bug",
+    "Fossilisk": "dragon", "Magmole": "quad", "Spectrill": "ghost",
+    "Starlingo": "orb", "Galaxion": "dragon", "Nullvex": "orb",
+    "Frolren": "dragon", "Pyrovolt": "orb", "Aquarion": "fish",
+    "Thornblade": "plant", "Voltraze": "dragon", "Glacifang": "quad",
+    "Magmanta": "fish", "Phantomox": "ghost", "Terraboom": "golem",
+    "Mindflare": "imp", "Venomantis": "bug", "Skyrazor": "bird",
+    "Lumidrake": "dragon", "Abyssalon": "fish", "Dreadhorn": "quad",
+    "Starflare": "orb", "Nullshade": "ghost", "Ironquake": "golem",
+    "Florawing": "bird", "Chronox": "golem",
+}
+
+FLOPPY_EARS = ("Rockruffle", "Warfang", "Magmole", "Embercub")
+HORNED = ("Dreadhorn", "Lumifawn", "Glacifang", "Thundermaw")
+EYE_DARK = (20, 15, 35)
+
+
+def shade(colour, amount):
+    return tuple(max(0, min(255, c + amount)) for c in colour[:3])
+
+
+def draw_eye(s, x, y, r=4, angry=False, colour=EYE_DARK):
+    pygame.draw.circle(s, colour, (x, y), r)
+    pygame.draw.circle(s, WHITE, (x - r // 3, y - r // 3), max(1, r // 3))
+    if angry:
+        pygame.draw.line(s, EYE_DARK, (x - r - 1, y - r - 2),
+                         (x + r, y - r + 1), 2)
+
+
+def shape_poly(s, fill, points, edge):
+    pygame.draw.polygon(s, fill, points)
+    pygame.draw.polygon(s, edge, points, 2)
+
+
+def shape_oval(s, fill, rect, edge):
+    pygame.draw.ellipse(s, fill, rect)
+    pygame.draw.ellipse(s, edge, rect, 2)
+
+
+def type_accent(s, kind, x, y):
+    """Small type symbol (flame, bolt, leaf...) at a point."""
+    if kind == "Fire":
+        pygame.draw.polygon(s, (255, 90, 20), [
+            (x - 7, y + 6), (x - 8, y - 4), (x - 3, y), (x, y - 12),
+            (x + 3, y - 2), (x + 7, y - 6), (x + 7, y + 6)])
+        pygame.draw.polygon(s, (255, 220, 60), [
+            (x - 4, y + 5), (x - 3, y - 1), (x, y - 6), (x + 3, y), (x + 4, y + 5)])
+    elif kind == "Electric":
+        pygame.draw.polygon(s, GOLD, [
+            (x - 2, y - 12), (x + 7, y - 12), (x + 1, y - 3), (x + 8, y - 3),
+            (x - 6, y + 12), (x - 1, y + 1), (x - 7, y + 1)])
+        pygame.draw.polygon(s, EYE_DARK, [
+            (x - 2, y - 12), (x + 7, y - 12), (x + 1, y - 3), (x + 8, y - 3),
+            (x - 6, y + 12), (x - 1, y + 1), (x - 7, y + 1)], 1)
+    elif kind == "Water":
+        pygame.draw.polygon(s, (60, 170, 255), [
+            (x, y - 10), (x + 6, y + 1), (x - 6, y + 1)])
+        pygame.draw.circle(s, (60, 170, 255), (x, y + 2), 6)
+        pygame.draw.circle(s, WHITE, (x - 2, y), 2)
+    elif kind == "Ice":
+        for dx, h in ((-5, 8), (0, 13), (5, 8)):
+            pygame.draw.polygon(s, (215, 245, 255), [
+                (x + dx - 3, y + 3), (x + dx, y - h), (x + dx + 3, y + 3)])
+            pygame.draw.polygon(s, (90, 180, 230), [
+                (x + dx - 3, y + 3), (x + dx, y - h), (x + dx + 3, y + 3)], 1)
+    elif kind == "Grass":
+        pygame.draw.ellipse(s, (60, 190, 75), (x - 4, y - 12, 9, 16))
+        pygame.draw.line(s, (25, 110, 40), (x, y + 4), (x, y - 10), 1)
+    elif kind in ("Ghost", "Void"):
+        col = (190, 120, 255) if kind == "Ghost" else (255, 40, 140)
+        pygame.draw.circle(s, col, (x, y), 5)
+        pygame.draw.circle(s, col, (x + 6, y - 7), 3)
+        pygame.draw.circle(s, col, (x - 5, y - 10), 2)
+    elif kind == "Dark":
+        pygame.draw.circle(s, (230, 230, 120), (x, y), 6)
+        pygame.draw.circle(s, (60, 35, 70), (x + 3, y - 2), 5)
+    elif kind == "Psychic":
+        pygame.draw.polygon(s, (255, 110, 200), [
+            (x, y - 7), (x + 6, y), (x, y + 7), (x - 6, y)])
+        pygame.draw.circle(s, WHITE, (x - 1, y - 2), 1)
+    elif kind == "Poison":
+        for dx, dy, r in ((0, 0, 5), (6, -6, 3), (-5, -8, 2)):
+            pygame.draw.circle(s, (190, 80, 220), (x + dx, y + dy), r)
+    elif kind == "Fairy" or kind == "Light":
+        col = (255, 190, 230) if kind == "Fairy" else (255, 245, 150)
+        pygame.draw.polygon(s, col, [
+            (x, y - 8), (x + 2, y - 2), (x + 8, y), (x + 2, y + 2),
+            (x, y + 8), (x - 2, y + 2), (x - 8, y), (x - 2, y - 2)])
+    elif kind == "Cosmic":
+        pygame.draw.circle(s, (230, 235, 255), (x, y), 3)
+        pygame.draw.circle(s, (160, 170, 255), (x, y), 7, 1)
+    elif kind == "Dragon":
+        pygame.draw.polygon(s, (255, 190, 100), [
+            (x - 6, y + 4), (x - 2, y - 10), (x + 1, y + 1), (x + 5, y - 8), (x + 6, y + 4)])
+    elif kind in ("Steel", "Rock", "Ground"):
+        col = {"Steel": (200, 215, 235), "Rock": (175, 150, 110),
+               "Ground": (195, 140, 75)}[kind]
+        pygame.draw.polygon(s, col, [
+            (x - 6, y + 4), (x - 4, y - 5), (x + 3, y - 7), (x + 7, y + 1), (x + 3, y + 6)])
+        pygame.draw.polygon(s, shade(col, -70), [
+            (x - 6, y + 4), (x - 4, y - 5), (x + 3, y - 7), (x + 7, y + 1), (x + 3, y + 6)], 1)
+    elif kind == "Flying":
+        pygame.draw.polygon(s, (220, 240, 255), [
+            (x - 8, y + 3), (x + 8, y - 8), (x + 2, y + 4)])
+    elif kind == "Fighting":
+        pygame.draw.circle(s, (240, 140, 80), (x, y), 6)
+        pygame.draw.circle(s, EYE_DARK, (x, y), 6, 1)
+    elif kind == "Bug":
+        pygame.draw.ellipse(s, (170, 220, 70), (x - 5, y - 4, 10, 8))
+        pygame.draw.line(s, EYE_DARK, (x, y - 4), (x, y + 4), 1)
+
+
+def draw_quad(s, name, c1, c2, stage, rng):
+    edge, light = shade(c1, -80), shade(c1, 85)
+    # two-tone bushy tail
+    shape_poly(s, c2, [(24, 62), (10, 50), (2, 36), (12, 34), (20, 44), (30, 56)],
+               shade(c2, -80))
+    # back legs
+    shape_oval(s, shade(c1, -35), (22, 70, 15, 16), edge)
+    shape_oval(s, shade(c1, -35), (58, 70, 15, 16), edge)
+    # body
+    shape_oval(s, c1, (18, 46, 60, 34), edge)
+    pygame.draw.ellipse(s, light, (34, 60, 32, 17))
+    # stripes on the back
+    for x in (28, 38, 48):
+        x += rng.randint(-2, 2)
+        pygame.draw.polygon(s, c2, [(x, 48), (x + 6, 48), (x + 1, 62)])
+    # front legs
+    shape_oval(s, c1, (32, 72, 13, 15), edge)
+    shape_oval(s, c1, (52, 72, 13, 15), edge)
+    # mane on evolved forms
+    if stage >= 3:
+        shape_poly(s, c2, [(44, 30), (36, 42), (44, 46), (40, 56),
+                           (52, 52), (56, 60), (60, 48)], shade(c2, -80))
+    # ears
+    if name in FLOPPY_EARS:
+        shape_oval(s, shade(c1, -30), (44, 20, 12, 22), edge)
+        shape_oval(s, shade(c1, -30), (80, 20, 12, 22), edge)
+    else:
+        shape_poly(s, c1, [(50, 26), (48, 4), (64, 20)], edge)
+        shape_poly(s, c1, [(74, 20), (88, 4), (86, 28)], edge)
+        pygame.draw.polygon(s, c2, [(52, 22), (51, 10), (60, 20)])
+        pygame.draw.polygon(s, c2, [(77, 20), (85, 10), (84, 24)])
+    if name in HORNED:
+        shape_poly(s, (235, 225, 200), [(58, 20), (54, 0), (64, 16)], edge)
+        shape_poly(s, (235, 225, 200), [(76, 16), (84, -2), (82, 20)], edge)
+    # head
+    shape_oval(s, c1, (44, 16, 46, 40), edge)
+    pygame.draw.ellipse(s, light, (60, 34, 26, 17))
+    pygame.draw.circle(s, EYE_DARK, (82, 39), 3)
+    pygame.draw.line(s, EYE_DARK, (76, 46), (82, 44), 2)
+    draw_eye(s, 61, 31, 4, stage >= 3)
+    draw_eye(s, 77, 29, 4, stage >= 3)
+    # cheek mark
+    pygame.draw.circle(s, c2, (55, 42), 3)
+    return (8, 36), (67, 12)
+
+
+def draw_fish(s, name, c1, c2, stage, rng):
+    edge, light = shade(c1, -80), shade(c1, 90)
+    fin = shade(c2, 10)
+    # tail fin
+    shape_poly(s, fin, [(30, 52), (4, 30), (12, 52), (4, 74)], shade(fin, -80))
+    # dorsal fin
+    shape_poly(s, fin, [(40, 34), (52, 8 if stage >= 3 else 16), (70, 34)],
+               shade(fin, -80))
+    # body
+    shape_oval(s, c1, (20, 30, 66, 44), edge)
+    pygame.draw.ellipse(s, light, (34, 54, 46, 17))
+    # scales
+    for _ in range(5):
+        x, y = rng.randint(30, 60), rng.randint(36, 52)
+        pygame.draw.circle(s, shade(c1, 35), (x, y), 4, 1)
+    # stripe
+    pygame.draw.line(s, c2, (36, 34), (40, 70), 4)
+    # side fin
+    shape_poly(s, fin, [(52, 58), (42, 78), (64, 64)], shade(fin, -80))
+    # face
+    draw_eye(s, 72, 44, 6, stage >= 3)
+    pygame.draw.line(s, EYE_DARK, (78, 58), (86, 55), 2)
+    if stage >= 3:
+        pygame.draw.polygon(s, WHITE, [(80, 57), (82, 62), (84, 56)])
+    # bubbles
+    pygame.draw.circle(s, (220, 245, 255), (92, 34), 4, 1)
+    pygame.draw.circle(s, (220, 245, 255), (95, 22), 3, 1)
+    return (8, 40), (56, 18)
+
+
+def draw_dragon(s, name, c1, c2, stage, rng):
+    edge, light = shade(c1, -80), shade(c1, 80)
+    wing = shade(c2, -10)
+    # wings
+    shape_poly(s, wing, [(38, 46), (6, 12), (12, 34), (2, 46), (30, 58)],
+               shade(wing, -90))
+    shape_poly(s, wing, [(62, 46), (94, 12), (88, 34), (98, 46), (70, 58)],
+               shade(wing, -90))
+    pygame.draw.line(s, shade(wing, -60), (36, 48), (8, 16), 1)
+    pygame.draw.line(s, shade(wing, -60), (64, 48), (92, 16), 1)
+    # tail
+    shape_poly(s, c1, [(62, 76), (86, 88), (98, 72), (86, 78), (66, 70)], edge)
+    # legs
+    shape_oval(s, shade(c1, -30), (30, 74, 16, 14), edge)
+    shape_oval(s, shade(c1, -30), (54, 74, 16, 14), edge)
+    # body
+    shape_oval(s, c1, (30, 42, 40, 40), edge)
+    pygame.draw.ellipse(s, light, (40, 50, 20, 28))
+    for y in (56, 63, 70):
+        pygame.draw.line(s, shade(light, -50), (42, y), (58, y), 1)
+    # neck + head
+    pygame.draw.polygon(s, c1, [(42, 48), (58, 48), (58, 30), (44, 30)])
+    shape_oval(s, c1, (34, 10, 34, 28), edge)
+    shape_poly(s, c1, [(52, 22), (76, 26), (74, 36), (54, 36)], edge)
+    pygame.draw.circle(s, EYE_DARK, (72, 30), 1)
+    # horns
+    horn = (240, 230, 200)
+    shape_poly(s, horn, [(40, 16), (28, 0), (46, 12)], shade(horn, -90))
+    shape_poly(s, horn, [(56, 12), (62, -2), (62, 16)], shade(horn, -90))
+    draw_eye(s, 50, 22, 4, True)
+    # back spikes
+    for x, y in ((32, 50), (30, 60), (32, 70)):
+        pygame.draw.polygon(s, c2, [(x, y - 4), (x - 7, y), (x, y + 4)])
+    return (94, 72), (50, 4)
+
+
+def draw_bird(s, name, c1, c2, stage, rng):
+    edge, light = shade(c1, -80), shade(c1, 90)
+    feather = shade(c2, 0)
+    # tail feathers
+    shape_poly(s, feather, [(30, 64), (6, 74), (10, 82), (34, 74)], shade(feather, -80))
+    shape_poly(s, c1, [(32, 70), (10, 88), (36, 78)], edge)
+    # raised back wing on evolved forms
+    if stage >= 2:
+        shape_poly(s, feather, [(46, 46), (18, 8), (26, 28), (14, 30), (40, 56)],
+                   shade(feather, -80))
+    # legs
+    for x in (44, 58):
+        pygame.draw.line(s, (240, 170, 40), (x, 76), (x, 90), 3)
+        pygame.draw.line(s, (240, 170, 40), (x, 90), (x - 5, 94), 2)
+        pygame.draw.line(s, (240, 170, 40), (x, 90), (x + 5, 94), 2)
+    # body
+    shape_oval(s, c1, (26, 38, 48, 44), edge)
+    pygame.draw.ellipse(s, light, (42, 52, 26, 26))
+    # front wing
+    shape_poly(s, feather, [(36, 48), (14, 66), (30, 76), (56, 66)], shade(feather, -80))
+    for i in range(3):
+        pygame.draw.line(s, shade(feather, -60), (36, 52), (18 + i * 8, 68 + i * 3), 1)
+    # head
+    pygame.draw.circle(s, c1, (60, 30), 17)
+    pygame.draw.circle(s, edge, (60, 30), 17, 2)
+    # crest
+    shape_poly(s, feather, [(52, 16), (46, 0), (58, 12), (62, 0), (66, 14)],
+               shade(feather, -80))
+    # beak
+    shape_poly(s, (250, 190, 50), [(72, 28), (92, 34), (72, 40)], (150, 100, 20))
+    draw_eye(s, 64, 26, 4, stage >= 3)
+    return (12, 76), (56, 6)
+
+
+def draw_golem(s, name, c1, c2, stage, rng):
+    edge = shade(c1, -90)
+    # legs
+    shape_poly(s, shade(c1, -30), [(28, 70), (44, 70), (44, 90), (26, 90)], edge)
+    shape_poly(s, shade(c1, -30), [(56, 70), (72, 70), (74, 90), (56, 90)], edge)
+    # arms
+    shape_oval(s, shade(c1, -15), (4, 40, 22, 34), edge)
+    shape_oval(s, shade(c1, -15), (74, 40, 22, 34), edge)
+    shape_oval(s, c2, (6, 64, 18, 16), shade(c2, -90))
+    shape_oval(s, c2, (76, 64, 18, 16), shade(c2, -90))
+    # body
+    body = [(20, 40), (32, 26), (68, 26), (80, 40), (76, 76), (24, 76)]
+    shape_poly(s, c1, body, edge)
+    # plates and rivets
+    pygame.draw.line(s, shade(c1, 50), (26, 44), (74, 44), 2)
+    for x in (28, 72):
+        for y in (32, 70):
+            pygame.draw.circle(s, shade(c1, 60), (x, y), 2)
+    # cracks
+    for _ in range(2):
+        x = rng.randint(28, 66)
+        pygame.draw.lines(s, edge, False, [(x, 50), (x + 4, 56), (x, 62)], 1)
+    # glowing core
+    pygame.draw.circle(s, shade(c2, -60), (50, 58), 10)
+    pygame.draw.circle(s, c2, (50, 58), 7)
+    pygame.draw.circle(s, WHITE, (48, 56), 2)
+    # head with visor
+    shape_poly(s, c1, [(36, 8), (64, 8), (66, 28), (34, 28)], edge)
+    pygame.draw.rect(s, EYE_DARK, (39, 14, 22, 8))
+    pygame.draw.rect(s, c2, (42, 16, 16, 4))
+    if stage >= 3:
+        for x in (38, 50, 62):
+            pygame.draw.polygon(s, c2, [(x - 4, 8), (x, -2), (x + 4, 8)])
+    return (85, 46), (50, 2)
+
+
+def draw_ghost(s, name, c1, c2, stage, rng):
+    edge, light = shade(c1, -70), shade(c1, 70)
+    # floating orbs
+    for _ in range(3):
+        x, y = rng.randint(6, 94), rng.randint(10, 70)
+        pygame.draw.circle(s, c2, (x, y), rng.randint(2, 4))
+    # wispy body
+    body = [(22, 44), (24, 80), (32, 72), (40, 90), (50, 76),
+            (60, 92), (68, 74), (78, 84), (78, 44)]
+    shape_poly(s, c1, body, edge)
+    shape_oval(s, c1, (20, 12, 60, 58), edge)
+    pygame.draw.ellipse(s, c1, (23, 40, 54, 30))
+    pygame.draw.ellipse(s, light, (32, 18, 22, 12))
+    # little arms
+    shape_poly(s, c1, [(22, 48), (6, 56), (22, 58)], edge)
+    shape_poly(s, c1, [(78, 48), (94, 40), (80, 58)], edge)
+    # hollow eyes
+    for x in (38, 62):
+        pygame.draw.ellipse(s, EYE_DARK, (x - 7, 30, 14, 18))
+        pygame.draw.circle(s, c2, (x + 1, 38), 3)
+    # jagged mouth
+    pygame.draw.lines(s, EYE_DARK, False, [
+        (38, 56), (43, 60), (48, 55), (53, 60), (58, 55), (62, 58)], 2)
+    if stage >= 3:
+        shape_poly(s, c2, [(34, 16), (30, 0), (42, 12), (50, -2),
+                           (58, 12), (70, 0), (66, 16)], shade(c2, -80))
+    return (86, 84), (50, 6)
+
+
+def draw_bug(s, name, c1, c2, stage, rng):
+    edge, light = shade(c1, -80), shade(c1, 80)
+    # wings (opaque, pale)
+    if stage >= 2:
+        wing = shade(c2, 110)
+        shape_oval(s, wing, (26, 18, 26, 36), shade(c2, -40))
+        shape_oval(s, wing, (40, 14, 22, 34), shade(c2, -40))
+    # legs
+    for x in (32, 46, 60):
+        pygame.draw.line(s, EYE_DARK, (x, 66), (x - 6, 86), 2)
+        pygame.draw.line(s, EYE_DARK, (x + 2, 66), (x + 8, 86), 2)
+    # abdomen with stripes
+    shape_oval(s, c1, (8, 46, 42, 32), edge)
+    for x in (18, 28, 38):
+        pygame.draw.line(s, c2, (x, 48), (x, 76), 4)
+    # thorax
+    shape_oval(s, shade(c1, -20), (42, 46, 24, 26), edge)
+    # head
+    pygame.draw.circle(s, c1, (76, 50), 15)
+    pygame.draw.circle(s, edge, (76, 50), 15, 2)
+    # compound eyes
+    shape_oval(s, c2, (72, 38, 12, 14), shade(c2, -90))
+    pygame.draw.circle(s, WHITE, (77, 42), 2)
+    # antennae
+    pygame.draw.lines(s, EYE_DARK, False, [(72, 38), (70, 22), (62, 14)], 2)
+    pygame.draw.lines(s, EYE_DARK, False, [(80, 38), (86, 22), (94, 18)], 2)
+    pygame.draw.circle(s, c2, (62, 14), 3)
+    pygame.draw.circle(s, c2, (94, 18), 3)
+    # mandibles / stinger
+    pygame.draw.polygon(s, light, [(86, 56), (94, 60), (86, 62)])
+    if stage >= 3:
+        pygame.draw.polygon(s, c2, [(8, 62), (-2, 66), (10, 70)])
+    return (10, 64), (62, 10)
+
+
+def draw_plant(s, name, c1, c2, stage, rng):
+    edge, light = shade(c1, -80), shade(c1, 80)
+    leaf = (70, 190, 80) if c1 != (80, 210, 90) else (40, 150, 60)
+    bladed = "Steel" in name or name == "Thornblade"
+    # roots
+    for x in (30, 50, 68):
+        shape_oval(s, shade(c1, -40), (x - 4, 80, 14, 10), edge)
+    # big leaves
+    for pts in ([(50, 30), (14, 8), (22, 34)], [(50, 30), (86, 8), (78, 34)],
+                [(46, 28), (40, 0), (56, 22)]):
+        col = (190, 205, 220) if bladed else leaf
+        shape_poly(s, col, pts, shade(col, -90))
+        pygame.draw.line(s, shade(col, -60), pts[0], pts[1], 1)
+    # thorns
+    if stage >= 2:
+        for x, y in ((22, 52), (78, 52), (30, 72), (70, 72)):
+            pygame.draw.polygon(s, c2, [(x - 3, y), (x, y - 8 if y < 60 else y + 8), (x + 3, y)])
+    # bulb body
+    shape_oval(s, c1, (22, 30, 56, 54), edge)
+    pygame.draw.ellipse(s, light, (34, 54, 32, 24))
+    # flower on evolved forms
+    if stage >= 3:
+        for ang in range(0, 360, 60):
+            px = 50 + int(9 * math.cos(math.radians(ang)))
+            py = 26 + int(9 * math.sin(math.radians(ang)))
+            pygame.draw.circle(s, c2, (px, py), 6)
+        pygame.draw.circle(s, GOLD, (50, 26), 5)
+    # face
+    draw_eye(s, 41, 50, 4, stage >= 3)
+    draw_eye(s, 59, 50, 4, stage >= 3)
+    pygame.draw.lines(s, EYE_DARK, False, [(44, 62), (50, 66), (56, 62)], 2)
+    pygame.draw.circle(s, (255, 150, 170), (34, 58), 3)
+    pygame.draw.circle(s, (255, 150, 170), (66, 58), 3)
+    return (82, 70), (50, 12)
+
+
+def draw_imp(s, name, c1, c2, stage, rng):
+    edge, light = shade(c1, -80), shade(c1, 85)
+    # tail
+    shape_poly(s, c1, [(36, 70), (14, 76), (8, 66), (16, 70)], edge)
+    # legs
+    shape_oval(s, shade(c1, -30), (34, 74, 14, 16), edge)
+    shape_oval(s, shade(c1, -30), (52, 74, 14, 16), edge)
+    # body
+    shape_oval(s, c1, (32, 44, 36, 36), edge)
+    pygame.draw.ellipse(s, light, (40, 52, 20, 22))
+    # arms with fists
+    shape_poly(s, c1, [(34, 50), (18, 58), (22, 64), (36, 58)], edge)
+    shape_poly(s, c1, [(66, 50), (82, 44), (84, 50), (66, 58)], edge)
+    shape_oval(s, c2, (12, 56, 12, 12), shade(c2, -90))
+    shape_oval(s, c2, (80, 40, 12, 12), shade(c2, -90))
+    # head
+    pygame.draw.circle(s, c1, (50, 28), 21)
+    pygame.draw.circle(s, edge, (50, 28), 21, 2)
+    # hair tufts
+    shape_poly(s, c2, [(32, 18), (34, 2), (42, 10), (50, 0), (58, 10),
+                       (66, 2), (68, 18), (50, 12)], shade(c2, -80))
+    # headband for fighters, gem for psychics
+    if "Fighting" in POKEDEX_BY_NAME.get(name, (0, ""))[1]:
+        pygame.draw.rect(s, RED, (30, 16, 40, 5))
+        pygame.draw.polygon(s, RED, [(30, 18), (20, 14), (22, 24)])
+    else:
+        pygame.draw.polygon(s, (255, 110, 200), [(50, 12), (54, 17), (50, 22), (46, 17)])
+    draw_eye(s, 42, 30, 4, stage >= 2)
+    draw_eye(s, 58, 30, 4, stage >= 2)
+    pygame.draw.lines(s, EYE_DARK, False, [(44, 40), (50, 43), (56, 40)], 2)
+    return (10, 64), (50, 0)
+
+
+def draw_orb(s, name, c1, c2, stage, rng):
+    edge, light = shade(c1, -80), shade(c1, 90)
+    # star points
+    pts = []
+    for i in range(16):
+        r = 46 if i % 2 == 0 else 30
+        a = math.radians(i * 22.5 - 90)
+        pts.append((50 + int(r * math.cos(a)), 50 + int(r * math.sin(a))))
+    shape_poly(s, c2, pts, shade(c2, -90))
+    # orbit ring
+    pygame.draw.ellipse(s, light, (4, 40, 92, 22), 2)
+    # core
+    pygame.draw.circle(s, edge, (50, 50), 28)
+    pygame.draw.circle(s, c1, (50, 50), 26)
+    pygame.draw.circle(s, light, (50, 50), 17)
+    pygame.draw.circle(s, WHITE, (42, 40), 5)
+    # face
+    draw_eye(s, 42, 50, 4, stage >= 3)
+    draw_eye(s, 58, 50, 4, stage >= 3)
+    pygame.draw.lines(s, EYE_DARK, False, [(45, 60), (50, 63), (55, 60)], 2)
+    # little moons
+    pygame.draw.circle(s, WHITE, (90, 46), 4)
+    pygame.draw.circle(s, shade(c2, 60), (10, 56), 3)
+    return (88, 18), (50, 8)
+
+
+SHAPE_DRAWERS = {
+    "quad": draw_quad, "fish": draw_fish, "dragon": draw_dragon,
+    "bird": draw_bird, "golem": draw_golem, "ghost": draw_ghost,
+    "bug": draw_bug, "plant": draw_plant, "imp": draw_imp, "orb": draw_orb,
+}
+
+
+def wild_stage(name):
+    number = POKEDEX_BY_NAME.get(name, (46, ""))[0]
+    if number <= 45:
+        return (number - 1) % 3 + 1
+    return 2
+
+
+def make_wild_sprite(name, types, size):
+    parts = types.split("/")
+    c1 = TYPE_COLOURS.get(parts[0], (150, 150, 170))
+    c2 = TYPE_COLOURS.get(parts[1], shade(c1, 70)) if len(parts) > 1 \
+        else shade(c1, 70)
+    if c2 == c1:
+        c2 = shade(c1, 70)
+    if types == "Electric":
+        c2 = (45, 65, 150)  # navy stripes so they look like their own species
+
+    stage = wild_stage(name)
+    rng = random.Random(name)  # same "random" details every time
+
+    art = pygame.Surface((100, 100), pygame.SRCALPHA)
+    pygame.draw.ellipse(art, (15, 20, 35, 110), (14, 86, 72, 11))
+    tail_point, head_point = SHAPE_DRAWERS[SHAPES[name]](
+        art, name, c1, c2, stage, rng)
+
+    if types == "Electric" and SHAPES[name] == "quad":
+        type_accent(art, "Electric", *head_point)  # bolt crest on the head
+    else:
+        type_accent(art, parts[0], *tail_point)
+        if len(parts) > 1:
+            type_accent(art, parts[1], *head_point)
+
+    # First forms are smaller, final forms are full size
+    scale = {1: 0.78, 2: 0.9, 3: 1.0}[stage]
+    inner = int(size * scale)
+    final = pygame.Surface((size, size), pygame.SRCALPHA)
+    final.blit(pygame.transform.smoothscale(art, (inner, inner)),
+               ((size - inner) // 2, size - inner))
+    return final
+
+
 def make_sprite(name, types="Unknown", size=160):
     if name == "Flame":
         return make_flame(size)
 
     if name == "NYSTRIA":
         return make_nystria_sprite(size)
+
+    if name in SHAPES:
+        return make_wild_sprite(name, types, size)
 
     base = primary_type(types) if types != "Unknown" else "Normal"
     colour = TYPE_COLOURS.get(base, (120, 150, 200))
@@ -856,7 +1487,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v12.0!"
+        self.message = "Welcome to Pokemon: The New World v13.0!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -866,6 +1497,10 @@ class Game:
 
         self.avatar_turns = 0
         self.avatar_used = False
+
+        self.coins = START_COINS
+        self.trophies = 0
+        self.tournament = None
 
         self.buttons = []
         self.popup = ""
@@ -886,6 +1521,10 @@ class Game:
     # ======================================
 
     def save_game(self):
+        if self.tournament:
+            self.message = "Finish the tournament before saving!"
+            return
+
         if self.enemy:
             self.message = "Finish or run from your battle before saving!"
             return
@@ -895,7 +1534,9 @@ class Game:
             "team": [creature_to_dict(c) for c in self.team],
             "pc": [creature_to_dict(c) for c in self.pc],
             "active": self.active,
-            "balls": self.balls
+            "balls": self.balls,
+            "coins": self.coins,
+            "trophies": self.trophies
         }
 
         try:
@@ -926,6 +1567,9 @@ class Game:
         self.active = min(max(0, data.get("active", 0)), len(team) - 1)
         for name in self.balls:
             self.balls[name] = int(data.get("balls", {}).get(name, 0))
+        self.coins = int(data.get("coins", START_COINS))
+        self.trophies = int(data.get("trophies", 0))
+        self.tournament = None
 
         self.enemy = None
         self.defeated_enemy = None
@@ -943,6 +1587,10 @@ class Game:
     # ======================================
 
     def heal_team(self):
+        if self.tournament:
+            self.message = "No healing during the tournament!"
+            return
+
         if self.enemy:
             self.message = "Finish or run from your battle before healing!"
             return
@@ -1148,25 +1796,33 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 12.0 - SPRITE UPDATE", 150)
+        self.centred("VERSION 13.0 - SHOP & TOURNAMENT UPDATE", 150)
         self.centred(self.message, 205, SMALL)
 
+        # Coins and trophies
+        self.panel((20, 20, 210, 70))
+        self.text(f"Coins: {self.coins}", 38, 30, SMALL, GOLD)
+        self.text(f"Trophies: {self.trophies}", 38, 55, SMALL, GOLD)
+
         # Show Flame on the main menu
-        screen.blit(get_sprite("Flame", "Fire", 180), (410, 220))
+        screen.blit(get_sprite("Flame", "Fire", 170), (415, 225))
 
         label = "CONTINUE BATTLE" if self.enemy else "START BATTLE"
-        self.button(label, (350, 420, 300, 55), "battle")
-        self.button("TEAM", (300, 490, 127, 45), "team")
-        self.button("POKE BALLS", (437, 490, 126, 45), "balls")
-        self.button("HEAL", (573, 490, 127, 45), "heal", (190, 70, 110))
-        self.button("POKEMON PC", (350, 550, 300, 45), "pc")
+        self.button(label, (300, 405, 195, 52), "battle")
+        self.button("TOURNAMENT", (505, 405, 195, 52),
+                    "tournament", (120, 75, 160))
+        self.button("TEAM", (300, 467, 127, 45), "team")
+        self.button("POKE BALLS", (437, 467, 126, 45), "balls")
+        self.button("HEAL", (573, 467, 127, 45), "heal", (190, 70, 110))
+        self.button("POKEMON PC", (300, 522, 195, 45), "pc")
+        self.button("SHOP", (505, 522, 195, 45), "shop", (170, 120, 30))
         if WEB:
-            self.button("SAVE", (350, 615, 140, 45), "save", (45, 115, 75))
-            self.button("LOAD", (510, 615, 140, 45), "load", (45, 115, 75))
+            self.button("SAVE", (300, 577, 195, 45), "save", (45, 115, 75))
+            self.button("LOAD", (505, 577, 195, 45), "load", (45, 115, 75))
         else:
-            self.button("SAVE", (350, 615, 93, 45), "save", (45, 115, 75))
-            self.button("LOAD", (453, 615, 93, 45), "load", (45, 115, 75))
-            self.button("QUIT", (556, 615, 94, 45), "quit", (145, 50, 60))
+            self.button("SAVE", (300, 577, 127, 45), "save", (45, 115, 75))
+            self.button("LOAD", (437, 577, 126, 45), "load", (45, 115, 75))
+            self.button("QUIT", (573, 577, 127, 45), "quit", (145, 50, 60))
 
     def draw_battle(self):
         self.background()
@@ -1180,6 +1836,7 @@ class Game:
         self.panel((555, 35, 405, 115))
         self.text(e.name, 580, 48, BIG)
         self.text("Type: " + e.types, 580, 85, SMALL, GOLD)
+        self.text(f"Lv {e.level}", 880, 55, SMALL, GOLD)
         self.text(f"HP: {e.hp}/{e.max_hp}", 580, 108, SMALL)
         self.health_bar(580, 130, 340, e)
 
@@ -1187,10 +1844,20 @@ class Game:
         self.text(p.name, 60, 365, BIG)
         self.text("Type: " + p.types, 60, 400, SMALL, GOLD)
         self.text(f"HP: {p.hp}/{p.max_hp}", 60, 425, SMALL)
+        self.text(f"Lv {p.level}", 360, 372, SMALL, GOLD)
+        self.text(f"XP {p.xp}/{xp_needed(p.level)}", 260, 425, SMALL)
         self.health_bar(60, 455, 350, p)
 
         screen.blit(get_sprite(e.name, e.types), (680, 155))
         screen.blit(get_sprite(p.name, p.types), (160, 190))
+
+        if self.tournament:
+            trainer = TOURNAMENT[self.tournament["round"]][0]
+            left = len(self.tournament["team"]) - self.tournament["index"]
+            self.panel((20, 20, 330, 60))
+            self.text(f"ROUND {self.tournament['round'] + 1} - {trainer}",
+                      35, 28, SMALL, GOLD)
+            self.text(f"Pokemon left: {left}", 35, 52, SMALL)
 
         if self.avatar_turns:
             self.text("TRUE SUN AVATAR!", 370, 25, FONT, GOLD)
@@ -1213,8 +1880,8 @@ class Game:
         self.button("SUN AVATAR", (390, 550, 160, 45),
                     "avatar", (145, 90, 35))
         self.button("POKE BALLS", (565, 550, 150, 45), "balls")
-        self.button("RUN", (730, 550, 100, 45),
-                    "run", (130, 55, 60))
+        self.button("FORFEIT" if self.tournament else "RUN",
+                    (730, 550, 100, 45), "run", (130, 55, 60))
         self.button("MENU", (845, 550, 110, 45), "menu")
 
     def draw_moves(self):
@@ -1246,6 +1913,7 @@ class Game:
                         (x + 5, y + 10))
 
             self.text(p.name, x + 110, y + 10, SMALL)
+            self.text(f"Lv {p.level}", x + 245, y + 10, SMALL, GOLD)
             self.text("Type: " + p.types, x + 110, y + 32, SMALL)
             self.text(f"HP {p.hp}/{p.max_hp}", x + 110, y + 52, SMALL)
             self.health_bar(x + 110, y + 75, 160, p)
@@ -1312,6 +1980,61 @@ class Game:
         self.button("NEXT", (815, 570, 130, 35), "pc_next")
         self.button("BACK", (420, 635, 160, 45), "back")
 
+    def draw_shop(self):
+        self.background()
+        self.centred("POKE MART", 70, BIG, GOLD)
+        self.panel((200, 120, 600, 430))
+        self.text(f"Your coins: {self.coins}", 240, 140, FONT, GOLD)
+
+        for i, (name, price) in enumerate(SHOP_PRICES.items()):
+            y = 210 + i * 95
+            self.text(name, 240, y, FONT)
+            self.text(f"{price} coins  -  you have {self.balls[name]}",
+                      240, y + 32, SMALL)
+            self.button("BUY 1", (560, y, 100, 40), ("buy", (name, 1)),
+                        (45, 115, 75))
+            self.button("BUY 5", (670, y, 100, 40), ("buy", (name, 5)),
+                        (45, 115, 75))
+
+        self.text("Win battles and tournaments to earn coins!",
+                  240, 500, SMALL)
+        self.centred(self.message, 585, SMALL, GOLD)
+        self.button("BACK", (420, 620, 160, 45), "back")
+
+    def draw_tournament(self):
+        self.background()
+        self.centred("BATTLE TOURNAMENT", 45, BIG, GOLD)
+
+        t = self.tournament
+        self.panel((150, 90, 700, 400))
+
+        for i, (trainer, level, names, prize) in enumerate(TOURNAMENT):
+            y = 115 + i * 72
+            if t and i < t["round"]:
+                status, colour = "BEATEN", GREEN
+            elif t and i == t["round"] and not t.get("won"):
+                status, colour = "NEXT", GOLD
+            else:
+                status, colour = "", WHITE
+
+            self.text(f"Round {i + 1}: {trainer}", 180, y, FONT, colour)
+            self.text(f"Lv {level}  -  {len(names)} Pokemon  -  "
+                      f"Prize {prize} coins", 180, y + 30, SMALL)
+            if status:
+                self.text(status, 720, y + 8, FONT, colour)
+
+        self.centred(self.message, 515, SMALL, GOLD)
+
+        if t and t.get("won"):
+            self.button("CLAIM TROPHY", (350, 550, 300, 55),
+                        "claim_trophy", (170, 120, 30))
+        else:
+            self.button(f"START ROUND {t['round'] + 1}", (300, 550, 250, 55),
+                        "next_round", (120, 75, 160))
+            self.button("TEAM", (560, 550, 140, 55), "team")
+            self.button("FORFEIT", (400, 620, 200, 45),
+                        "forfeit", (130, 55, 60))
+
     def draw_victory(self):
         self.background()
         self.centred("VICTORY!", 150, BIG, GOLD)
@@ -1322,6 +2045,9 @@ class Game:
             screen.blit(get_sprite(beaten.name, beaten.types),
                         (420, 260))
 
+        self.panel((150, 425, 700, 70))
+        self.centred(self.message, 460, SMALL, GOLD)
+
         self.button("NEXT BATTLE", (350, 510, 300, 55), "battle")
         self.button("MAIN MENU", (350, 580, 300, 50), "menu")
 
@@ -1329,6 +2055,7 @@ class Game:
         self.background()
         self.centred("TEAM DEFEATED", 190, BIG, RED)
         self.centred("Your Pokemon have been healed!", 250)
+        self.centred(self.message, 300, SMALL, GOLD)
         self.button("MAIN MENU", (350, 400, 300, 55), "menu")
 
     # ======================================
@@ -1355,11 +2082,129 @@ class Game:
         for pokemon in self.team:
             pokemon.heal(pokemon.max_hp)
 
+        if self.tournament:
+            round_number = self.tournament["round"] + 1
+            self.tournament = None
+            self.message = f"You were knocked out of the tournament in Round {round_number}."
+        else:
+            self.message = ""
+
         self.active = 0
         self.enemy = None
         self.avatar_turns = 0
         self.pending_enemy_turn = False
         self.mode = "defeat"
+
+    # ======================================
+    # REWARDS
+    # ======================================
+
+    def reward_win(self, enemy):
+        """Give XP to the active Pokemon and coins. Returns a message."""
+        xp = xp_reward(enemy)
+        coins = 0 if self.tournament else coin_reward(enemy)
+        self.coins += coins
+
+        level_ups = gain_xp(self.pokemon, xp)
+        text = f"+{xp} XP"
+        if coins:
+            text += f", +{coins} coins"
+        if level_ups:
+            text += ". " + " ".join(level_ups)
+        return text
+
+    # ======================================
+    # SHOP
+    # ======================================
+
+    def buy(self, name, amount):
+        cost = SHOP_PRICES[name] * amount
+        if self.coins < cost:
+            self.message = f"Not enough coins! You need {cost}."
+            return
+
+        self.coins -= cost
+        self.balls[name] += amount
+        self.message = f"You bought {amount} {name}{'s' if amount > 1 else ''}!"
+
+    # ======================================
+    # TOURNAMENT
+    # ======================================
+
+    def start_tournament(self):
+        if self.enemy:
+            self.message = "Finish your current battle first!"
+            return
+
+        # Everyone starts the tournament fully healed
+        for pokemon in self.team:
+            pokemon.heal(pokemon.max_hp)
+
+        self.tournament = {"round": 0, "team": [], "index": 0}
+        self.mode = "tournament"
+        self.message = "Beat all 5 trainers to win a trophy!"
+
+    def next_round(self):
+        t = self.tournament
+        if not t or t.get("won"):
+            return
+
+        if not self.send_out_healthy():
+            self.message = "Your team needs to recover!"
+            return
+
+        t["team"] = trainer_team(t["round"])
+        t["index"] = 0
+        self.enemy = t["team"][0]
+
+        self.avatar_turns = 0
+        self.avatar_used = False
+        self.animation = None
+        self.pending_enemy_turn = False
+        self.mode = "battle"
+
+        trainer = TOURNAMENT[t["round"]][0]
+        self.message = f"{trainer} sent out {self.enemy.name}!"
+
+    def tournament_pokemon_beaten(self, enemy, reward_text):
+        t = self.tournament
+        trainer, level, names, prize = TOURNAMENT[t["round"]]
+        t["index"] += 1
+
+        if t["index"] < len(t["team"]):
+            self.enemy = t["team"][t["index"]]
+            self.message = (f"{enemy.name} fainted! {reward_text}. "
+                            f"{trainer} sent out {self.enemy.name}!")
+            return
+
+        # Round won
+        self.enemy = None
+        self.avatar_turns = 0
+        self.coins += prize
+        t["round"] += 1
+
+        if t["round"] >= len(TOURNAMENT):
+            t["won"] = True
+            self.trophies += 1
+            self.message = (f"YOU BEAT {trainer.upper()}! You are the CHAMPION! "
+                            f"+{prize} coins")
+        else:
+            # Team recovers half their HP between rounds
+            for pokemon in self.team:
+                pokemon.heal(pokemon.max_hp // 2)
+            self.message = (f"You beat {trainer}! +{prize} coins. "
+                            f"Your team recovered some HP.")
+
+        self.mode = "tournament"
+
+    def end_tournament(self, message):
+        self.tournament = None
+        self.enemy = None
+        self.avatar_turns = 0
+        self.animation = None
+        self.pending_enemy_turn = False
+        self.mode = "menu"
+        self.message = message
 
     def start_battle(self):
         # Resume a battle that was left via the MENU button
@@ -1410,7 +2255,7 @@ class Game:
             return
 
         move, power = p.moves[index]
-        damage = power + random.randint(5, 15)
+        damage = power + random.randint(5, 15) + p.bonus
 
         if self.avatar_turns and p.name in SUN_TEAM:
             damage += 40
@@ -1427,12 +2272,18 @@ class Game:
         self.show_hit(damage, GOLD)
 
         if e.fainted:
-            self.message = f"{e.name} was defeated! YOU WIN!"
+            self.pending_enemy_turn = False
+            reward_text = self.reward_win(e)
+
+            if self.tournament:
+                self.tournament_pokemon_beaten(e, reward_text)
+                return
+
+            self.message = f"{e.name} was defeated! {reward_text}"
             self.defeated_enemy = e
             self.enemy = None
             self.avatar_turns = 0
             self.mode = "victory"
-            self.pending_enemy_turn = False
         else:
             self.message = f"{p.name} used {move}! {damage} damage!"
             if super_effective:
@@ -1551,6 +2402,11 @@ class Game:
             self.message = "That Pokemon has already been defeated!"
             return
 
+        if self.tournament:
+            self.message = "You can't catch another trainer's Pokemon!"
+            self.mode = "battle"
+            return
+
         if self.enemy.types == "Boss":
             self.message = "You cannot catch this boss!"
             return
@@ -1665,6 +2521,8 @@ class Game:
                 self.deposit(index)
             elif kind == "withdraw":
                 self.withdraw(index)
+            elif kind == "buy":
+                self.buy(*index)
 
             return
 
@@ -1676,7 +2534,7 @@ class Game:
             self.mode = "moves"
 
         elif action == "team":
-            if self.mode in ("menu", "battle"):
+            if self.mode in ("menu", "battle", "tournament"):
                 if self.animation:
                     self.message = "Wait until the attack finishes!"
                     return
@@ -1694,8 +2552,28 @@ class Game:
             self.mode = "pc"
 
         elif action == "back":
-            if self.mode in ("moves", "team", "balls", "pc"):
+            if self.mode in ("moves", "team", "balls", "pc", "shop"):
                 self.mode = self.return_mode
+
+        elif action == "shop":
+            if self.mode == "menu":
+                self.return_mode = "menu"
+                self.mode = "shop"
+
+        elif action == "tournament":
+            if self.mode == "menu":
+                self.start_tournament()
+
+        elif action == "next_round":
+            self.next_round()
+
+        elif action == "forfeit":
+            self.end_tournament("You left the tournament.")
+
+        elif action == "claim_trophy":
+            self.end_tournament(
+                f"Trophy won! You now have {self.trophies} "
+                f"troph{'y' if self.trophies == 1 else 'ies'}!")
 
         elif action == "avatar":
             self.activate_avatar()
@@ -1703,6 +2581,10 @@ class Game:
         elif action == "run":
             if self.animation:
                 self.message = "Wait until the attack finishes!"
+                return
+
+            if self.tournament:
+                self.end_tournament("You forfeited the tournament.")
                 return
 
             self.enemy = None
@@ -1715,6 +2597,10 @@ class Game:
         elif action == "menu":
             if self.animation:
                 self.message = "Wait until the attack finishes!"
+                return
+
+            if self.tournament:
+                self.message = "You can't leave mid-tournament! Use FORFEIT."
                 return
 
             self.mode = "menu"
@@ -1769,6 +2655,8 @@ class Game:
             "balls": self.draw_balls,
             "pc": self.draw_pc,
             "victory": self.draw_victory,
+            "shop": self.draw_shop,
+            "tournament": self.draw_tournament,
             "defeat": self.draw_defeat
         }
 
