@@ -21,7 +21,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v13.0")
+pygame.display.set_caption("Pokemon: The New World v14.0")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -282,6 +282,392 @@ MOVE_TYPES.update({
 })
 
 
+# ==========================================
+# 76 NEW POKEMON (v14.0)
+# ==========================================
+# Each row: (number, name, types, sprite body, HP, attack bonus, rarity,
+#            Pokedex entry, four moves as (name, power, type))
+NEW_SPECIES_DATA = [
+    (67, "Mossaur", "Grass", "quad", 160, 2, "common",
+     "Moss grows across its back, which keeps it cool in the hottest sun.",
+     [("Moss Slam", 40, "Grass"), ("Leaf Crush", 45, "Grass"),
+      ("Spore Bite", 36, "Poison"), ("Bark Armor", 34, "Steel")]),
+    (68, "Vinefang", "Grass/Dark", "quad", 170, 2, "common",
+     "It hides in tangled vines and strikes from the shadows with sharp fangs.",
+     [("Vine Snare", 40, "Grass"), ("Shade Fang", 45, "Dark"),
+      ("Thorn Lash", 42, "Grass"), ("Night Coil", 36, "Dark")]),
+    (69, "Bloomantis", "Grass/Bug", "bug", 150, 2, "common",
+     "Its wings unfold like flower petals, dusting the air with sweet pollen.",
+     [("Pollen Slash", 42, "Bug"), ("Petal Blade", 44, "Grass"),
+      ("Sting Dance", 38, "Bug"), ("Bloom Shield", 32, "Grass")]),
+    (70, "Fernox", "Grass/Steel", "plant", 165, 2, "common",
+     "Its armour-like fronds are as tough as steel and grow back quickly.",
+     [("Fern Blade", 44, "Grass"), ("Iron Frond", 46, "Steel"),
+      ("Razor Fern", 40, "Grass"), ("Steel Roots", 36, "Steel")]),
+    (71, "Petalisk", "Grass/Dragon", "dragon", 175, 2, "common",
+     "A serpent-like Pokemon whose coils bloom with petals as it moves.",
+     [("Petal Storm", 42, "Grass"), ("Dragon Thorn", 46, "Dragon"),
+      ("Lotus Fang", 40, "Grass"), ("Coil Rush", 36, "Dragon")]),
+    (72, "Rootusk", "Grass/Ground", "quad", 170, 2, "common",
+     "It digs up roots with its tusks and makes the ground tremble.",
+     [("Root Quake", 44, "Ground"), ("Mossy Tusk", 42, "Grass"),
+      ("Earth Vine", 40, "Ground"), ("Bramble Hide", 34, "Grass")]),
+    (73, "Blossomoth", "Grass/Fairy", "bug", 150, 2, "common",
+     "A gentle moth with glowing petal wings that calm anyone who sees them.",
+     [("Blossom Dust", 40, "Fairy"), ("Moon Petal", 44, "Fairy"),
+      ("Leaf Flutter", 42, "Grass"), ("Sweet Scale", 34, "Bug")]),
+    (74, "Brambleon", "Grass/Fighting", "plant", 160, 2, "common",
+     "Thorny vines wrap around its arms, ready for a fight.",
+     [("Bramble Jab", 44, "Fighting"), ("Thorn Kick", 46, "Grass"),
+      ("Knuckle Vine", 42, "Fighting"), ("Spiky Guard", 34, "Grass")]),
+    (75, "Cindrake", "Fire/Dragon", "dragon", 175, 3, "common",
+     "A dragon born in a volcano, its tail glows like burning coal.",
+     [("Ember Coil", 42, "Fire"), ("Wyrm Flare", 46, "Dragon"),
+      ("Scorch Tail", 40, "Fire"), ("Ash Talon", 36, "Dragon")]),
+    (76, "Ashpup", "Fire", "quad", 140, 2, "common",
+     "A playful puppy whose fur leaves a trail of ash wherever it runs.",
+     [("Ash Nip", 36, "Fire"), ("Cinder Pounce", 42, "Fire"),
+      ("Ember Yap", 38, "Fire"), ("Soot Bark", 34, "Fire")]),
+    (77, "Volcaruff", "Fire/Rock", "quad", 165, 2, "common",
+     "A rocky pup with lava in its veins. It is warm to the touch.",
+     [("Lava Fang", 44, "Fire"), ("Rock Lava", 42, "Rock"),
+      ("Molten Bite", 40, "Fire"), ("Stone Howl", 36, "Rock")]),
+    (78, "Flarephant", "Fire/Ground", "golem", 180, 2, "common",
+     "Its trunk spits sparks and its heavy feet shake the ground.",
+     [("Flare Stomp", 46, "Fire"), ("Quake Trunk", 42, "Ground"),
+      ("Magma Spray", 40, "Fire"), ("Mud Trumpet", 36, "Ground")]),
+    (79, "Emberowl", "Fire/Flying", "bird", 155, 2, "common",
+     "This owl's wings are wrapped in fire, and it can see in the dark.",
+     [("Ember Talon", 44, "Fire"), ("Sky Ember", 42, "Flying"),
+      ("Wing Blaze", 40, "Fire"), ("Feather Flare", 36, "Flying")]),
+    (80, "Scorchilla", "Fire/Fighting", "imp", 165, 2, "common",
+     "A fast fighter whose kicks leave scorch marks on the ground.",
+     [("Scorch Kick", 46, "Fighting"), ("Flame Jab", 42, "Fire"),
+      ("Blaze Chop", 40, "Fighting"), ("Ember Rage", 34, "Fire")]),
+    (81, "Magmabite", "Fire/Dark", "quad", 170, 2, "common",
+     "It lurks in lava caves, waiting for careless trainers.",
+     [("Magma Jaw", 44, "Dark"), ("Lava Shade", 42, "Dark"),
+      ("Fire Snap", 40, "Fire"), ("Ash Glare", 36, "Fire")]),
+    (82, "Pyronox", "Fire/Steel", "golem", 175, 2, "common",
+     "Its plated shell glows red hot and can melt metal.",
+     [("Pyro Plate", 42, "Steel"), ("Heat Horn", 44, "Fire"),
+      ("Iron Blaze", 40, "Steel"), ("Ember Shell", 36, "Fire")]),
+    (83, "Reefin", "Water", "fish", 130, 1, "common",
+     "A small fish that lives near coral reefs and glows in the dark.",
+     [("Reef Splash", 38, "Water"), ("Coral Bite", 40, "Water"),
+      ("Bubble Dive", 36, "Water"), ("Tide Flick", 42, "Water")]),
+    (84, "Whirlpoolt", "Water/Flying", "orb", 150, 2, "common",
+     "It spins through the water to make whirlpools, then glides above them.",
+     [("Whirl Gust", 42, "Flying"), ("Aqua Spin", 40, "Water"),
+      ("Swirl Dive", 44, "Water"), ("Sky Mist", 34, "Flying")]),
+    (85, "Coralisk", "Water/Rock", "fish", 165, 2, "common",
+     "Its spiky coral shell protects it from almost every attack.",
+     [("Coral Spike", 44, "Rock"), ("Sea Crag", 40, "Rock"),
+      ("Bubble Crash", 38, "Water"), ("Tide Shell", 36, "Water")]),
+    (86, "Deepjaw", "Water/Dark", "fish", 170, 2, "common",
+     "A deep-sea hunter with huge jaws that can crush rock.",
+     [("Abyss Jaw", 46, "Dark"), ("Deep Splash", 40, "Water"),
+      ("Shadow Tide", 42, "Dark"), ("Brine Gulp", 36, "Water")]),
+    (87, "Frostfin", "Water/Ice", "fish", 160, 2, "common",
+     "Its fins freeze the water as it swims through cold seas.",
+     [("Frost Fin", 42, "Ice"), ("Icy Current", 44, "Ice"),
+      ("Sea Frost", 40, "Water"), ("Snow Ripple", 36, "Ice")]),
+    (88, "Bubbleon", "Water/Fairy", "orb", 150, 2, "common",
+     "It blows enchanting bubbles that make enemies drowsy.",
+     [("Bubble Charm", 40, "Fairy"), ("Sweet Foam", 42, "Water"),
+      ("Pearl Dazzle", 44, "Fairy"), ("Foam Bounce", 34, "Water")]),
+    (89, "Krakling", "Water/Ghost", "ghost", 145, 2, "common",
+     "A baby kraken whose ink glows with an eerie light.",
+     [("Ink Shadow", 42, "Ghost"), ("Tentacle Wail", 40, "Ghost"),
+      ("Drift Jet", 44, "Water"), ("Murk Ink", 36, "Ghost")]),
+    (90, "Seadrake", "Water/Dragon", "dragon", 180, 3, "common",
+     "A sea dragon that rides the waves and stirs up storms.",
+     [("Sea Wyrm", 44, "Dragon"), ("Tidal Coil", 42, "Water"),
+      ("Dragon Surf", 46, "Dragon"), ("Brine Fang", 36, "Water")]),
+    (91, "Sparkit", "Electric", "quad", 130, 1, "common",
+     "A tiny spark-cat that loves to play with static electricity.",
+     [("Spark Dash", 36, "Electric"), ("Static Nip", 40, "Electric"),
+      ("Zap Hop", 38, "Electric"), ("Jolt Flick", 34, "Electric")]),
+    (92, "Voltiger", "Electric", "quad", 140, 2, "common",
+     "Its stripes crackle with electricity as it pounces.",
+     [("Volt Pounce", 44, "Electric"), ("Thunder Dash", 42, "Electric"),
+      ("Charge Claw", 40, "Electric"), ("Surge Bite", 36, "Electric")]),
+    (93, "Stormpup", "Electric/Fighting", "quad", 150, 2, "common",
+     "A fighting pup that runs through storms and throws electric punches.",
+     [("Storm Jab", 44, "Fighting"), ("Volt Paw", 42, "Electric"),
+      ("Gale Kick", 40, "Fighting"), ("Static Bark", 36, "Electric")]),
+    (94, "Coilisk", "Electric/Poison", "dragon", 160, 2, "common",
+     "Coiled tight, it stores electricity in its body and poison in its tail.",
+     [("Toxic Coil", 42, "Poison"), ("Shock Venom", 44, "Electric"),
+      ("Sludge Zap", 40, "Poison"), ("Coil Snap", 36, "Electric")]),
+    (95, "Thunderox", "Electric/Ground", "golem", 170, 2, "common",
+     "Each stomp of its hooves makes thunder and shakes the ground.",
+     [("Quake Spark", 44, "Ground"), ("Thunder Hoof", 42, "Electric"),
+      ("Dust Bolt", 40, "Electric"), ("Earth Surge", 36, "Ground")]),
+    (96, "Neonwing", "Electric/Flying", "bird", 150, 2, "common",
+     "Its wings glow neon bright, and it can dive faster than lightning.",
+     [("Neon Gust", 42, "Flying"), ("Plasma Wing", 44, "Electric"),
+      ("Glow Dive", 40, "Flying"), ("Arc Feather", 36, "Electric")]),
+    (97, "Shockmoth", "Electric/Bug", "bug", 145, 2, "common",
+     "Its dusty wings give off sparks whenever it flutters.",
+     [("Shock Scale", 40, "Bug"), ("Volt Dust", 42, "Electric"),
+      ("Stun Wing", 36, "Bug"), ("Arc Pollen", 44, "Electric")]),
+    (98, "Voltgeist", "Electric/Ghost", "ghost", 150, 2, "common",
+     "A ghost powered by lightning that haunts power lines.",
+     [("Spirit Arc", 44, "Electric"), ("Haunt Volt", 42, "Ghost"),
+      ("Ghost Zap", 40, "Ghost"), ("Wail Spark", 36, "Electric")]),
+    (99, "Snowlisk", "Ice", "quad", 150, 1, "common",
+     "A snow-covered lizard that hides in drifts and waits for prey.",
+     [("Snow Slash", 40, "Ice"), ("Frozen Tail", 42, "Ice"),
+      ("Hail Shard", 38, "Ice"), ("Chill Pounce", 34, "Ice")]),
+    (100, "Glacibear", "Ice", "quad", 170, 2, "common",
+     "A big, friendly bear with an icy coat. It hugs very hard.",
+     [("Glacier Maul", 46, "Ice"), ("Frost Hug", 40, "Ice"),
+      ("Ice Claw", 38, "Ice"), ("Frozen Roar", 36, "Ice")]),
+    (101, "Icetalon", "Ice/Flying", "bird", 155, 2, "common",
+     "It swoops down from frozen cliffs with icy claws.",
+     [("Ice Talon", 44, "Ice"), ("Frost Gale", 42, "Flying"),
+      ("Icy Dive", 40, "Ice"), ("Cold Feather", 36, "Flying")]),
+    (102, "Shiverfang", "Ice/Dark", "quad", 165, 2, "common",
+     "Its bite is so cold that it makes you shiver.",
+     [("Shiver Bite", 42, "Ice"), ("Night Frost", 44, "Dark"),
+      ("Chill Fang", 40, "Ice"), ("Dark Icicle", 36, "Dark")]),
+    (103, "Crystowl", "Ice/Psychic", "bird", 150, 2, "common",
+     "This owl's feathers are made of ice crystals that reflect the light.",
+     [("Crystal Gaze", 42, "Psychic"), ("Prism Frost", 44, "Ice"),
+      ("Mind Shard", 40, "Psychic"), ("Glint Wing", 36, "Ice")]),
+    (104, "Permafrost", "Ice/Rock", "golem", 175, 2, "common",
+     "A rock-hard creature that stays frozen even in summer.",
+     [("Frozen Quake", 44, "Rock"), ("Ice Boulder", 42, "Ice"),
+      ("Glacial Crush", 40, "Rock"), ("Hard Frost", 36, "Ice")]),
+    (105, "Duskrawler", "Dark", "quad", 140, 2, "common",
+     "It crawls out at dusk and hunts all through the night.",
+     [("Dusk Crawl", 38, "Dark"), ("Shade Bite", 42, "Dark"),
+      ("Gloom Swipe", 40, "Dark"), ("Night Stalk", 36, "Dark")]),
+    (106, "Grimveil", "Ghost/Dark", "ghost", 150, 2, "common",
+     "A dark spirit wrapped in a misty cloak.",
+     [("Grim Shroud", 42, "Ghost"), ("Veil Strike", 44, "Dark"),
+      ("Dread Mist", 40, "Ghost"), ("Black Whisper", 36, "Dark")]),
+    (107, "Shadowlisk", "Dark/Dragon", "dragon", 170, 2, "common",
+     "A dark serpent that slides through shadows unseen.",
+     [("Shadow Coil", 42, "Dark"), ("Umbra Wyrm", 46, "Dragon"),
+      ("Night Scale", 40, "Dark"), ("Dusk Tail", 36, "Dragon")]),
+    (108, "Wraithowl", "Ghost/Flying", "bird", 150, 2, "common",
+     "Its hoot echoes across empty graveyards on windy nights.",
+     [("Wraith Swoop", 44, "Ghost"), ("Spectral Wing", 42, "Flying"),
+      ("Hollow Hoot", 38, "Ghost"), ("Grave Gust", 36, "Flying")]),
+    (109, "Cryptalon", "Ghost/Rock", "golem", 160, 2, "common",
+     "A stony ghost that guards ancient tombs.",
+     [("Crypt Smash", 44, "Rock"), ("Tomb Wail", 42, "Ghost"),
+      ("Ghost Boulder", 40, "Ghost"), ("Stone Haunt", 36, "Rock")]),
+    (110, "Nightmoth", "Bug/Dark", "bug", 145, 2, "common",
+     "Drawn to dark places, it hides in the shadows during the day.",
+     [("Night Dust", 40, "Dark"), ("Moth Lure", 38, "Bug"),
+      ("Dark Scales", 42, "Dark"), ("Sting Shadow", 44, "Bug")]),
+    (111, "Voidfang", "Dark/Steel", "quad", 165, 2, "common",
+     "Its steel-plated fangs are said to bite through anything.",
+     [("Void Bite", 42, "Dark"), ("Steel Fang", 44, "Steel"),
+      ("Dark Plate", 40, "Steel"), ("Gloom Jaw", 36, "Dark")]),
+    (112, "Phantasmite", "Ghost/Fairy", "ghost", 150, 2, "common",
+     "A fairy-like ghost whose glow lures travellers into the mist.",
+     [("Phantom Glow", 42, "Fairy"), ("Ghost Kiss", 40, "Ghost"),
+      ("Fairy Haunt", 44, "Fairy"), ("Mist Wisp", 36, "Ghost")]),
+    (113, "Mindrake", "Psychic/Dragon", "dragon", 165, 2, "common",
+     "A dragon with a powerful mind that can read thoughts.",
+     [("Mind Wyrm", 44, "Dragon"), ("Psy Claw", 40, "Psychic"),
+      ("Dream Coil", 42, "Psychic"), ("Dragon Thought", 46, "Dragon")]),
+    (114, "Starwhisp", "Psychic/Fairy", "orb", 155, 2, "common",
+     "It drifts through the night sky, whispering to the stars.",
+     [("Star Whisper", 42, "Fairy"), ("Psy Glow", 40, "Psychic"),
+      ("Moon Mind", 44, "Psychic"), ("Twinkle Wish", 36, "Fairy")]),
+    (115, "Dreamlynx", "Psychic", "quad", 150, 2, "common",
+     "A psychic cat that can slip into your dreams.",
+     [("Dream Pounce", 40, "Psychic"), ("Lynx Gaze", 42, "Psychic"),
+      ("Sleep Swipe", 38, "Psychic"), ("Mind Pulse", 44, "Psychic")]),
+    (116, "Mystibloom", "Fairy/Grass", "plant", 160, 2, "common",
+     "A flower with mysterious powers that blooms only under the moon.",
+     [("Mystic Petal", 42, "Fairy"), ("Bloom Charm", 40, "Grass"),
+      ("Mist Spores", 44, "Fairy"), ("Vine Whisper", 36, "Grass")]),
+    (117, "Celestuff", "Fairy", "orb", 150, 2, "common",
+     "A fluffy fairy that scatters stardust wherever it goes.",
+     [("Celestial Dust", 40, "Fairy"), ("Fairy Ring", 42, "Fairy"),
+      ("Starlight Puff", 44, "Fairy"), ("Gentle Glow", 36, "Fairy")]),
+    (118, "Astralisk", "Psychic/Rock", "orb", 170, 2, "common",
+     "A rocky creature that orbits the planet with a psychic glow.",
+     [("Astral Stone", 44, "Rock"), ("Mind Quarry", 42, "Psychic"),
+      ("Psy Boulder", 40, "Psychic"), ("Orbit Crush", 36, "Rock")]),
+    (119, "Boulderox", "Rock/Ground", "golem", 180, 2, "common",
+     "A huge rock beast that charges head-first through mountains.",
+     [("Boulder Charge", 46, "Rock"), ("Quake Hoof", 42, "Ground"),
+      ("Rock Hide", 38, "Rock"), ("Ground Shove", 36, "Ground")]),
+    (120, "Ironhorn", "Steel", "quad", 170, 2, "common",
+     "Its horn is made of steel and can break through walls.",
+     [("Iron Horn", 44, "Steel"), ("Metal Charge", 42, "Steel"),
+      ("Hard Stomp", 38, "Steel"), ("Anvil Butt", 36, "Steel")]),
+    (121, "Quakodon", "Ground", "quad", 165, 2, "common",
+     "Each footstep it takes causes a small earthquake.",
+     [("Quake Jaw", 44, "Ground"), ("Mud Tremor", 40, "Ground"),
+      ("Tusk Stomp", 42, "Ground"), ("Sand Roar", 36, "Ground")]),
+    (122, "Metashard", "Rock/Steel", "golem", 175, 2, "common",
+     "Its body is covered in metal shards that shine in the sunlight.",
+     [("Metal Shard", 44, "Steel"), ("Rock Sheen", 42, "Rock"),
+      ("Shard Burst", 40, "Rock"), ("Alloy Guard", 36, "Steel")]),
+    (123, "Drillisk", "Ground/Steel", "dragon", 165, 2, "common",
+     "A steel drill-dragon that tunnels through solid rock.",
+     [("Drill Spiral", 44, "Steel"), ("Dig Rush", 42, "Ground"),
+      ("Metal Drill", 40, "Steel"), ("Tunnel Burst", 36, "Ground")]),
+    (124, "Ferraptor", "Steel/Flying", "bird", 160, 2, "common",
+     "A steel bird that dives from the sky at tremendous speed.",
+     [("Steel Talon", 44, "Steel"), ("Ferro Dive", 42, "Flying"),
+      ("Gale Blade", 40, "Flying"), ("Iron Feather", 36, "Steel")]),
+    (125, "Gemstoneer", "Rock/Fairy", "golem", 170, 2, "common",
+     "Its body is covered in gems that sparkle in the light.",
+     [("Gem Toss", 40, "Rock"), ("Crystal Charm", 42, "Fairy"),
+      ("Gem Storm", 44, "Rock"), ("Glitter Stone", 36, "Fairy")]),
+    (126, "Seismodon", "Ground/Dragon", "dragon", 180, 2, "common",
+     "A dragon that causes earthquakes whenever it roars.",
+     [("Seismic Fang", 44, "Ground"), ("Dragon Quake", 46, "Dragon"),
+      ("Tremor Tail", 40, "Dragon"), ("Ground Roar", 36, "Ground")]),
+    (127, "Dracoflare", "Dragon/Fire", "dragon", 175, 3, "common",
+     "Its breath burns hotter than a volcano.",
+     [("Draco Flare", 46, "Fire"), ("Dragon Ember", 42, "Dragon"),
+      ("Fire Wing", 40, "Fire"), ("Dragon Scale", 36, "Dragon")]),
+    (128, "Skyragon", "Dragon/Flying", "dragon", 170, 3, "common",
+     "A dragon that soars through the clouds on the wind.",
+     [("Sky Wyrm", 44, "Dragon"), ("Cloud Dive", 42, "Flying"),
+      ("Dragon Gale", 46, "Dragon"), ("Wing Scale", 36, "Flying")]),
+    (129, "Windrake", "Dragon/Flying", "bird", 160, 2, "common",
+     "It rakes the sky with its wings and makes strong gusts.",
+     [("Wind Claw", 42, "Flying"), ("Gust Dragon", 44, "Dragon"),
+      ("Air Rake", 40, "Flying"), ("Dragon Breeze", 36, "Dragon")]),
+    (130, "Talonwyrm", "Dragon/Dark", "dragon", 170, 2, "common",
+     "Sharp talons and a dark heart make it a feared hunter.",
+     [("Talon Wyrm", 44, "Dragon"), ("Dark Talon", 42, "Dark"),
+      ("Night Dragon", 46, "Dragon"), ("Shade Claw", 36, "Dark")]),
+    (131, "Cloudrake", "Dragon/Water", "dragon", 165, 2, "common",
+     "It rests on clouds and rains down when it roars.",
+     [("Cloud Wyrm", 44, "Dragon"), ("Rain Coil", 42, "Water"),
+      ("Mist Dragon", 40, "Dragon"), ("Hydro Wing", 36, "Water")]),
+    (132, "Stormwyrm", "Dragon/Electric", "dragon", 160, 2, "common",
+     "A dragon that rides lightning in the middle of a storm.",
+     [("Storm Wyrm", 46, "Dragon"), ("Thunder Coil", 42, "Electric"),
+      ("Dragon Volt", 44, "Dragon"), ("Gale Spark", 36, "Electric")]),
+    # ---- Rare and legendary ----
+    (133, "Solaryx", "Fire/Psychic", "bird", 320, 7, "legendary",
+     "Legend says it was born from the first sunrise.",
+     [("Solar Flare", 70, "Fire"), ("Psy Sunburst", 68, "Psychic"),
+      ("Sun Wing", 64, "Fire"), ("Mind Eclipse", 72, "Psychic")]),
+    (134, "Lunavex", "Dark/Fairy", "ghost", 320, 7, "legendary",
+     "It appears only on nights when the moon is full.",
+     [("Lunar Veil", 68, "Fairy"), ("Dark Eclipse", 70, "Dark"),
+      ("Moon Fang", 64, "Dark"), ("Starless Hymn", 72, "Fairy")]),
+    (135, "Tempestron", "Electric/Dragon", "dragon", 330, 7, "legendary",
+     "It commands the winds and storms of the world.",
+     [("Tempest Dragon", 72, "Dragon"), ("Thunder Storm", 68, "Electric"),
+      ("Raging Coil", 64, "Dragon"), ("Volt Cataclysm", 70, "Electric")]),
+    (136, "Aquaryth", "Water/Psychic", "fish", 320, 7, "legendary",
+     "A water spirit that is said to control the tides.",
+     [("Aqua Mind", 70, "Water"), ("Tidal Mind", 68, "Psychic"),
+      ("Deep Current", 64, "Water"), ("Oracle Wave", 72, "Psychic")]),
+    (137, "Terravion", "Ground/Steel", "golem", 330, 7, "legendary",
+     "A titan of the earth that can move mountains.",
+     [("Terra Quake", 72, "Ground"), ("Titan Plate", 68, "Steel"),
+      ("Mountain Fall", 64, "Ground"), ("Iron Terra", 70, "Steel")]),
+    (138, "Chronolux", "Psychic/Steel", "orb", 320, 7, "legendary",
+     "It is said to control time itself.",
+     [("Chrono Beam", 70, "Psychic"), ("Gear Crush", 68, "Steel"),
+      ("Lux Pulse", 64, "Psychic"), ("Time Shift", 72, "Steel")]),
+    (139, "Voidragon", "Dark/Dragon", "dragon", 340, 7, "legendary",
+     "A dragon from the empty space between worlds.",
+     [("Void Wyrm", 72, "Dark"), ("Abyss Dragon", 68, "Dragon"),
+      ("Null Coil", 64, "Void"), ("Eclipse Claw", 70, "Dark")]),
+    (140, "Eternova", "Psychic/Dragon", "orb", 350, 8, "mythical",
+     "It is said to exist outside of time itself.",
+     [("Eternal Nova", 74, "Psychic"), ("Ageless Wyrm", 70, "Dragon"),
+      ("Nova Mind", 68, "Psychic"), ("Forever Coil", 72, "Dragon")]),
+    (141, "Nebulord", "Psychic/Fairy", "orb", 340, 8, "mythical",
+     "Born from a cloud of stars, it is seen once in a lifetime.",
+     [("Nebula Gaze", 72, "Psychic"), ("Galaxy Veil", 70, "Fairy"),
+      ("Cosmic Hymn", 66, "Fairy"), ("Star Mind", 74, "Psychic")]),
+    (142, "Omnidrake", "Dragon/Steel", "dragon", 350, 8, "mythical",
+     "The ultimate dragon, said to hold the power of all others.",
+     [("Omni Wyrm", 74, "Dragon"), ("Titan Scale", 70, "Steel"),
+      ("Steel Omen", 68, "Steel"), ("Dragon Omega", 72, "Dragon")]),
+]
+
+NEW_INFO = {}
+RARE_KIND = {}     # name -> "Legendary" or "Mythical"
+RARE_CHANCE = {}   # name -> chance per battle (very low)
+NEW_COMMON = []
+NEW_RARE = []
+
+for _row in NEW_SPECIES_DATA:
+    _num, _name, _types, _shape, _hp, _bonus, _rarity, _entry, _moves = _row
+    _is_rare = _rarity != "common"
+    NEW_INFO[_name] = {
+        "number": _num, "types": _types, "shape": _shape,
+        "hp": _hp, "bonus": _bonus, "rarity": _rarity,
+        "entry": _entry, "moves": _moves,
+        "stage": 3 if _is_rare else (_num - 67) % 3 + 1,
+        "level": (30, 35) if _is_rare else (3, 12),
+    }
+    for _move_name, _power, _move_type in _moves:
+        MOVE_TYPES[_move_name] = _move_type
+    if _is_rare:
+        NEW_RARE.append((_num, _name, _types))
+        RARE_KIND[_name] = _rarity.capitalize()
+        RARE_CHANCE[_name] = 0.002 if _rarity == "legendary" else 0.001
+    else:
+        NEW_COMMON.append((_num, _name, _types))
+
+WILD_POKEMON += NEW_COMMON
+DEX_ALL = sorted(WILD_POKEMON + NEW_RARE)
+DEX_TOTAL = len(DEX_ALL)
+
+
+def make_species(name, level=None):
+    info = NEW_INFO[name]
+    if level is None:
+        level = random.randint(*info["level"])
+    mon = Creature(name, info["hp"] + random.randint(0, 15),
+                   [(m, p) for m, p, _t in info["moves"]],
+                   level=level, bonus=info["bonus"])
+    mon.types = info["types"]
+    mon.pokedex_number = info["number"]
+    return mon
+
+
+def dex_entry(name, types):
+    if name in NEW_INFO:
+        return NEW_INFO[name]["entry"]
+    return f"A {types.replace('/', ' and ')} type Pokemon of the New World."
+
+
+def wrap_text(text, font, width):
+    lines, line = [], ""
+    for word in text.split():
+        test = (line + " " + word).strip()
+        if font.size(test)[0] <= width:
+            line = test
+        else:
+            lines.append(line)
+            line = word
+    if line:
+        lines.append(line)
+    return lines
+
+
+def _int_set(values):
+    result = set()
+    for v in values:
+        try:
+            result.add(int(v))
+        except (TypeError, ValueError):
+            pass
+    return result
+
+
+
 def primary_type(type_text):
     return type_text.split("/")[0]
 
@@ -339,7 +725,7 @@ def xp_needed(level):
 def xp_reward(enemy):
     if enemy.types == "Boss":
         return 150
-    if enemy.name == "NYSTRIA":
+    if enemy.name == "NYSTRIA" or enemy.name in RARE_KIND:
         return 250
     return 8 + enemy.level * 6
 
@@ -380,7 +766,7 @@ SHOP_PRICES = {
 def coin_reward(enemy):
     if enemy.types == "Boss":
         return 100
-    if enemy.name == "NYSTRIA":
+    if enemy.name == "NYSTRIA" or enemy.name in RARE_KIND:
         return 150
     return 10 + enemy.level * 3
 
@@ -416,6 +802,11 @@ def random_enemy():
     if random.random() < NYSTRIA_CHANCE:
         return make_nystria()
 
+    # Legendary and Mythical Pokemon: very rare
+    for rare_name, chance in RARE_CHANCE.items():
+        if random.random() < chance:
+            return make_species(rare_name)
+
     if random.random() < 0.12:
         name, hp, bonus, moves = random.choice(BOSS_DATA)
         enemy = Creature(name, hp, [(m, 40) for m in moves],
@@ -427,6 +818,9 @@ def random_enemy():
 
     if name == "NYSTRIA":
         return make_nystria()
+
+    if name in NEW_INFO:
+        return make_species(name)
 
     hp = random.randint(100, 190)
 
@@ -459,6 +853,8 @@ POKEDEX_BY_NAME = {name: (number, types)
 
 
 def trainer_pokemon(name, level):
+    if name in NEW_INFO:
+        return make_species(name, level)
     if name == "NYSTRIA":
         # The Champion's ace is extra tough
         mon = make_nystria()
@@ -763,6 +1159,8 @@ SHAPES = {
     "Starflare": "orb", "Nullshade": "ghost", "Ironquake": "golem",
     "Florawing": "bird", "Chronox": "golem",
 }
+
+SHAPES.update({n: i["shape"] for n, i in NEW_INFO.items()})
 
 FLOPPY_EARS = ("Rockruffle", "Warfang", "Magmole", "Embercub")
 HORNED = ("Dreadhorn", "Lumifawn", "Glacifang", "Thundermaw")
@@ -1213,6 +1611,8 @@ SHAPE_DRAWERS = {
 
 
 def wild_stage(name):
+    if name in NEW_INFO:
+        return NEW_INFO[name]["stage"]
     number = POKEDEX_BY_NAME.get(name, (46, ""))[0]
     if number <= 45:
         return (number - 1) % 3 + 1
@@ -1229,6 +1629,10 @@ def make_wild_sprite(name, types, size):
     if types == "Electric":
         c2 = (45, 65, 150)  # navy stripes so they look like their own species
 
+    if name in NEW_INFO:
+        offset = sum(map(ord, name)) % 41 - 20  # each species looks a bit different
+        c1 = shade(c1, offset)
+        c2 = shade(c2, -offset)
     stage = wild_stage(name)
     rng = random.Random(name)  # same "random" details every time
 
@@ -1487,7 +1891,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v13.0!"
+        self.message = "Welcome to Pokemon: The New World v14.0!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -1499,6 +1903,10 @@ class Game:
         self.avatar_used = False
 
         self.coins = START_COINS
+        self.seen = set()
+        self.caught = set()
+        self.dex_page = 0
+        self.dex_selected = None
         self.trophies = 0
         self.tournament = None
 
@@ -1536,7 +1944,9 @@ class Game:
             "active": self.active,
             "balls": self.balls,
             "coins": self.coins,
-            "trophies": self.trophies
+            "trophies": self.trophies,
+            "pokedex": {"seen": sorted(self.seen),
+                        "caught": sorted(self.caught)}
         }
 
         try:
@@ -1569,6 +1979,9 @@ class Game:
             self.balls[name] = int(data.get("balls", {}).get(name, 0))
         self.coins = int(data.get("coins", START_COINS))
         self.trophies = int(data.get("trophies", 0))
+        dex = data.get("pokedex", {})
+        self.seen = _int_set(dex.get("seen", []))
+        self.caught = _int_set(dex.get("caught", []))
         self.tournament = None
 
         self.enemy = None
@@ -1796,7 +2209,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 13.0 - SHOP & TOURNAMENT UPDATE", 150)
+        self.centred("VERSION 14.0 - 76 NEW POKEMON", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -1814,8 +2227,9 @@ class Game:
         self.button("TEAM", (300, 467, 127, 45), "team")
         self.button("POKE BALLS", (437, 467, 126, 45), "balls")
         self.button("HEAL", (573, 467, 127, 45), "heal", (190, 70, 110))
-        self.button("POKEMON PC", (300, 522, 195, 45), "pc")
-        self.button("SHOP", (505, 522, 195, 45), "shop", (170, 120, 30))
+        self.button("POKEMON PC", (300, 522, 127, 45), "pc")
+        self.button("SHOP", (437, 522, 126, 45), "shop", (170, 120, 30))
+        self.button("POKEDEX", (573, 522, 127, 45), "pokedex", (60, 90, 150))
         if WEB:
             self.button("SAVE", (300, 577, 195, 45), "save", (45, 115, 75))
             self.button("LOAD", (505, 577, 195, 45), "load", (45, 115, 75))
@@ -2035,6 +2449,53 @@ class Game:
             self.button("FORFEIT", (400, 620, 200, 45),
                         "forfeit", (130, 55, 60))
 
+    def draw_pokedex(self):
+        self.background()
+        self.centred("POKEDEX", 40, BIG, GOLD)
+        self.centred(f"Caught {len(self.caught)}/{DEX_TOTAL}     "
+                     f"Seen {len(self.seen)}/{DEX_TOTAL}", 80, SMALL, GOLD)
+
+        per_page = 16
+        pages = (DEX_TOTAL + per_page - 1) // per_page
+        self.dex_page = min(self.dex_page, pages - 1)
+        start = self.dex_page * per_page
+
+        for i, (number, name, types) in enumerate(
+                DEX_ALL[start:start + per_page]):
+            col, row = divmod(i, 8)
+            x, y = 60 + col * 470, 110 + row * 46
+            if number in self.caught:
+                label, colour = f"#{number:03} {name}  -  {types}", (45, 115, 75)
+            elif number in self.seen:
+                label, colour = f"#{number:03} {name}  -  {types}", BLUE
+            else:
+                label, colour = f"#{number:03} ???", (60, 60, 75)
+            self.button(label, (x, y, 440, 38), ("dex", number), colour)
+
+        self.panel((60, 500, 880, 130))
+        chosen = next((d for d in DEX_ALL if d[0] == self.dex_selected), None)
+        if chosen is None:
+            self.text("Click a Pokemon to read its Pokedex entry.", 90, 550, SMALL)
+        else:
+            number, name, types = chosen
+            if number in self.seen:
+                screen.blit(get_sprite(name, types, 100), (72, 512))
+                self.text(f"#{number:03} {name}  ({types})", 185, 512, FONT, GOLD)
+                y = 545
+                for line in wrap_text(dex_entry(name, types), SMALL, 690):
+                    self.text(line, 185, y, SMALL)
+                    y += 22
+                if name in NEW_INFO:
+                    moves = ", ".join(m for m, _p, _t in NEW_INFO[name]["moves"])
+                    self.text("Moves: " + moves, 185, y, SMALL, GOLD)
+            else:
+                self.text(f"#{number:03} ???  -  not seen yet", 185, 512, FONT)
+
+        self.centred(f"Page {self.dex_page + 1} of {pages}", 485, SMALL)
+        self.button("PREVIOUS", (120, 645, 160, 40), "dex_prev")
+        self.button("BACK", (400, 645, 200, 40), "back")
+        self.button("NEXT", (720, 645, 160, 40), "dex_next")
+
     def draw_victory(self):
         self.background()
         self.centred("VICTORY!", 150, BIG, GOLD)
@@ -2219,6 +2680,8 @@ class Game:
 
         self.send_out_healthy()
         self.enemy = random_enemy()
+        if self.enemy.pokedex_number:
+            self.seen.add(self.enemy.pokedex_number)
 
         self.avatar_turns = 0
         self.avatar_used = False
@@ -2230,6 +2693,8 @@ class Game:
             self.message = f"BOSS BATTLE! {self.enemy.name} appeared!"
         elif self.enemy.name == "NYSTRIA":
             self.message = "The air tears open... the legendary NYSTRIA appeared!"
+        elif self.enemy.name in RARE_KIND:
+            self.message = f"A {RARE_KIND[self.enemy.name].upper()} Pokemon appeared: {self.enemy.name}!"
         else:
             self.message = f"A wild {self.enemy.name} appeared!"
 
@@ -2435,11 +2900,13 @@ class Game:
         if self.enemy.hp < self.enemy.max_hp * 0.25:
             chance += 0.15
 
-        if self.enemy.name == "NYSTRIA":
+        if self.enemy.name == "NYSTRIA" or self.enemy.name in RARE_KIND:
             chance -= NYSTRIA_CATCH_PENALTY
 
         if random.random() < chance:
             caught = self.enemy
+            if caught.pokedex_number:
+                self.caught.add(caught.pokedex_number)
             self.enemy = None
 
             if len(self.team) < PARTY_LIMIT:
@@ -2523,6 +2990,8 @@ class Game:
                 self.withdraw(index)
             elif kind == "buy":
                 self.buy(*index)
+            elif kind == "dex":
+                self.dex_selected = index
 
             return
 
@@ -2552,8 +3021,20 @@ class Game:
             self.mode = "pc"
 
         elif action == "back":
-            if self.mode in ("moves", "team", "balls", "pc", "shop"):
+            if self.mode in ("moves", "team", "balls", "pc", "shop", "pokedex"):
                 self.mode = self.return_mode
+
+        elif action == "pokedex":
+            if self.mode == "menu":
+                self.return_mode = "menu"
+                self.mode = "pokedex"
+
+        elif action == "dex_prev":
+            self.dex_page = max(0, self.dex_page - 1)
+
+        elif action == "dex_next":
+            last = (DEX_TOTAL + 15) // 16 - 1
+            self.dex_page = min(last, self.dex_page + 1)
 
         elif action == "shop":
             if self.mode == "menu":
@@ -2656,6 +3137,7 @@ class Game:
             "pc": self.draw_pc,
             "victory": self.draw_victory,
             "shop": self.draw_shop,
+            "pokedex": self.draw_pokedex,
             "tournament": self.draw_tournament,
             "defeat": self.draw_defeat
         }
