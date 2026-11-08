@@ -1,4 +1,4 @@
-# Pokemon: The New World v15.0
+# Pokemon: The New World v16.0
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -6,7 +6,7 @@ A Pokemon-style battle game made with Python and pygame.
 
 Once GitHub Pages is switched on (see below), the game is at:
 
-`https://YOUR-USERNAME.github.io/REPO-NAME/`
+https://joeysongoey.github.io/pokemon-new-world/
 
 Click the page once to start it.
 
@@ -36,6 +36,10 @@ Use SAVE and LOAD on the main menu. On your computer the save goes to
 `pokemon_save.json` next to the game. Online it is stored in your browser,
 so it stays on that browser and device.
 
+To move a save between your computer and the browser, press EXPORT CODE and
+then IMPORT CODE on the other one. Online, the code is shown in a box to copy
+and paste. On a computer, it goes in `pokemon_save_code.txt` next to the game.
+
 ## How the online version works
 
 Every time you push to the `main` branch, the GitHub Action in
@@ -54,6 +58,27 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v16.0
+
+- **Evolution:** Pokemon #1 to #45 come in families of three. Stage 1 evolves
+  at Lv 16 and stage 2 at Lv 32, getting more HP, power and new moves.
+- **Regions and FLY:** fly between 10 regions. Each one has its own colours
+  and its own common Pokemon types.
+- **Battle items:** buy Potions, Super Potions and Revives in the shop, then
+  press ITEMS in battle. Using one takes your turn. You start with 3 Potions.
+- **Shiny Pokemon:** a 1 in 200 chance of a different colour, marked with a
+  gold star. Caught shinies get a star in the Pokedex.
+- **Elite Cup:** a harder second tournament with five Lv 40 to 62 trainers.
+  It unlocks after you win the Battle Tournament.
+- **Nyxtera returns** from v10.1 as Mythical Pokemon #145 (0.3% per battle).
+- **Types shown in battle** as coloured labels, and attack buttons are
+  coloured by type with a x2 or x0.5 hint.
+- **Smarter enemies** that usually pick their most effective move.
+- **TYPE CHART** screen on the main menu and in the Pokedex.
+- **Pokedex entries** for all of the original 66 Pokemon.
+- **Export and import save codes.**
+- NYSTRIA is now as rare as the other legendaries (0.2% per battle, down from 5%).
 
 ## What's new in v15.0
 

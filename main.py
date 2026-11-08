@@ -21,7 +21,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v15.0")
+pygame.display.set_caption("Pokemon: The New World v16.0")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -629,9 +629,95 @@ for _row in NEW_SPECIES_DATA:
     else:
         NEW_COMMON.append((_num, _name, _types))
 
+# Nyxtera returns from v10.1 as a very rare Mythical Pokemon (#145)
+NEW_INFO["Nyxtera"] = {
+    "number": 145, "types": "Void/Dragon", "shape": "dragon",
+    "hp": 380, "bonus": 10, "rarity": "mythical",
+    "entry": ("A void dragon that swallows starlight. The star markings "
+              "on its wings glow brighter just before it uses Black Hole."),
+    "moves": [("Eclipse Fang", 50, "Dark"), ("Void Wing", 50, "Void"),
+              ("Starfall", 55, "Cosmic"), ("Black Hole", 60, "Void")],
+    "stage": 3, "level": (35, 40),
+}
+for _move_name, _power, _move_type in NEW_INFO["Nyxtera"]["moves"]:
+    MOVE_TYPES[_move_name] = _move_type
+NEW_RARE.append((145, "Nyxtera", "Void/Dragon"))
+RARE_KIND["Nyxtera"] = "Mythical"
+RARE_CHANCE["Nyxtera"] = 0.003
+
 WILD_POKEMON += NEW_COMMON
 DEX_ALL = sorted(WILD_POKEMON + NEW_RARE)
 DEX_TOTAL = len(DEX_ALL)
+
+# Pokedex entries for the original 66 Pokemon
+ORIGINAL_ENTRIES = {
+    "Embercub": "A playful cub whose tail flickers like a candle. It sneezes sparks when it gets excited.",
+    "Blazepaw": "Its paws leave scorch marks wherever it runs. It guards its den by circling it in fire.",
+    "Pyroclaw": "Its claws glow white-hot in battle. It can melt through a steel door in seconds.",
+    "Aquaffin": "It skips across ponds on its fins. It is often seen racing boats for fun.",
+    "Tidalisk": "It controls small waves with a flick of its tail and rides them along the coast.",
+    "Abyssurge": "It lives in the darkest ocean trenches and rises during storms to hunt.",
+    "Leaflet": "It naps in the sun to charge the leaf on its head. It wilts when it is sad.",
+    "Thornox": "Its back is covered in sharp thorns. It charges anyone who steps on its flowers.",
+    "Floragon": "A dragon wrapped in vines and blossoms. Forests grow wherever it sleeps.",
+    "Voltkit": "Static builds up in its fur as it plays, so it zaps anyone who pats it.",
+    "Shocklynx": "It moves so fast that it leaves a trail of sparks. It hunts during thunderstorms.",
+    "Thundermaw": "Its roar sounds like a thunderclap. It stores lightning in its horned jaw.",
+    "Frostbit": "It nibbles icicles as snacks. Its breath frosts windows on cold mornings.",
+    "Glacieron": "Its body is as hard as a glacier. It can stand still in a blizzard for days.",
+    "Cryowraith": "A chilly spirit that drifts through snowy mountains, freezing everything it touches.",
+    "Rockruffle": "It rolls down hills for fun and has a thick ruff of pebbles around its neck.",
+    "Cragoyle": "It perches on cliffs, looking like a statue, until it swoops on its prey.",
+    "Terradon": "An ancient dragon of stone. Earthquakes are said to start when it stomps.",
+    "Shadelet": "A shy ghost that hides in shadows and giggles when people jump.",
+    "Hauntalon": "It glides silently on misty nights. Its cry sounds like a distant whisper.",
+    "Dreadgeist": "Its glowing eyes cause nightmares. Even other ghosts keep their distance.",
+    "Mechling": "A small robot-like Pokemon that collects lost screws and bolts.",
+    "Ironclast": "Its armour is thick enough to stop a speeding train.",
+    "Titanforge": "It hammers its own steel fists into shape. Each punch rings like a bell.",
+    "Mindimp": "A cheeky Pokemon that moves objects with its mind to play pranks.",
+    "Psyphantom": "It can read minds and appears in dreams to deliver strange messages.",
+    "Dreamora": "It spreads sweet dreams with its glittering wings. Children love it.",
+    "Venomite": "A tiny bug whose sting makes your arm go numb for hours.",
+    "Toxidrake": "A poisonous dragon that leaves bubbling green puddles as it walks.",
+    "Skyray": "It rides air currents for hours without flapping once.",
+    "Stormeagle": "It flies into storm clouds to recharge its wings with electricity.",
+    "Brawlpup": "It practises punching tree trunks every morning and never gives up.",
+    "Warfang": "A fierce fighter that only respects trainers who never run from battle.",
+    "Fableaf": "It tells stories by rustling its leaves. Some say it can grant small wishes.",
+    "Lumifawn": "Its horns shine with soft light that guides lost travellers home.",
+    "Gloomora": "It feeds on bad moods. When it is near, people suddenly feel calmer.",
+    "Nightreign": "The ruler of the night sky. It only appears when there is no moon.",
+    "Bugbyte": "A bug that chews through cables. Computers glitch when it is nearby.",
+    "Glitchor": "It lives inside old machines and travels through electrical wires.",
+    "Fossilisk": "A dragon brought back from an ancient fossil. Its roar is millions of years old.",
+    "Magmole": "It digs tunnels through volcanoes and pops up covered in hot ash.",
+    "Spectrill": "A ghost that possessed a suit of armour. It rattles when it laughs.",
+    "Starlingo": "It fell from the sky as a shooting star and still sparkles at night.",
+    "Galaxion": "Its body holds a tiny swirling galaxy. Looking into it makes you dizzy.",
+    "Nullvex": "Nothing is known about it. Cameras show only a blank space where it stands.",
+    "NYSTRIA": "A legendary dragon of the void. Tears in the sky appear wherever it flies.",
+    "Frolren": "An icy dragon with frosted horns. Snow starts falling whenever it is happy.",
+    "Pyrovolt": "A ball of fire and lightning. It bounces around crackling with energy.",
+    "Aquarion": "A calm water Pokemon that can sense danger before it happens.",
+    "Thornblade": "Its leaves are as sharp as swords. It trims hedges in a single swipe.",
+    "Voltraze": "A lightning dragon that strikes the same place twice on purpose.",
+    "Glacifang": "Its fangs are made of ice that never melts. Its bite freezes instantly.",
+    "Magmanta": "It swims through rivers of lava, leaving glowing ripples behind.",
+    "Phantomox": "A ghostly ox with iron horns. Its footsteps echo through empty halls.",
+    "Terraboom": "It is known for smashing boulders with its head to find buried gems.",
+    "Mindflare": "Its thoughts burn so brightly that its head bursts into psychic flames.",
+    "Venomantis": "A mantis with poisoned blades. It waits motionless for hours before striking.",
+    "Skyrazor": "Its steel feathers cut through the wind with a whistling sound.",
+    "Lumidrake": "A dragon made of light. It is so bright that it lights up whole valleys.",
+    "Abyssalon": "A ghost of the deep sea that is said to guide sunken ships.",
+    "Dreadhorn": "It charges with its huge horn and never backs down from a fight.",
+    "Starflare": "A burning star in Pokemon form. It is hot enough to boil the sea.",
+    "Nullshade": "A shadow with no owner. It copies the movements of whoever it follows.",
+    "Ironquake": "It stamps its steel feet to make the ground shake for miles.",
+    "Florawing": "It scatters seeds as it flies, so flowers bloom along its path.",
+    "Chronox": "A cosmic clockwork Pokemon. Time seems to slow down around it.",
+}
 
 
 def make_species(name, level=None):
@@ -649,6 +735,8 @@ def make_species(name, level=None):
 def dex_entry(name, types):
     if name in NEW_INFO:
         return NEW_INFO[name]["entry"]
+    if name in ORIGINAL_ENTRIES:
+        return ORIGINAL_ENTRIES[name]
     return f"A {types.replace('/', ' and ')} type Pokemon of the New World."
 
 
@@ -771,6 +859,7 @@ class Creature:
         self.types = "Unknown"
         self.pokedex_number = None
         self.xp = 0
+        self.shiny = False
 
     @property
     def fainted(self):
@@ -816,10 +905,133 @@ def gain_xp(creature, amount):
         creature.bonus += 2
         messages.append(f"{creature.name} grew to Lv {creature.level}!")
 
+        evolved = evolve_if_ready(creature)
+        if evolved:
+            messages.append(evolved)
+
     if creature.level >= MAX_LEVEL:
         creature.xp = 0
 
     return messages
+
+
+# ==========================================
+# EVOLUTION (new in v16.0)
+# The original Pokemon #1-#45 come in families of three.
+# Stage 1 evolves at Lv 16, stage 2 evolves at Lv 32.
+# ==========================================
+
+EVOLVE_LEVELS = {1: 16, 2: 32}
+EVOLUTIONS = {}   # pokedex number -> (level needed, next number, name, types)
+
+for _number, _name, _types in WILD_POKEMON:
+    if _number <= 45:
+        _stage = (_number - 1) % 3 + 1
+        if _stage < 3:
+            _next = next(row for row in WILD_POKEMON if row[0] == _number + 1)
+            EVOLUTIONS[_number] = (EVOLVE_LEVELS[_stage],) + _next
+
+
+def evolve_if_ready(creature):
+    """Evolves the Pokemon if it is high enough level. Returns a message."""
+    info = EVOLUTIONS.get(creature.pokedex_number)
+    if not info or creature.level < info[0]:
+        return None
+
+    _level, number, name, types = info
+    old_name = creature.name
+    creature.name = name
+    creature.types = types
+    creature.pokedex_number = number
+    creature.max_hp += 30
+    creature.hp = min(creature.max_hp, creature.hp + 30)
+    creature.bonus += 4
+
+    # Learns stronger moves that match its new types
+    best = max((p for _m, p in creature.moves), default=35)
+    creature.moves = [(m, max(p, best) + 8) for m, p in wild_moves(types)]
+
+    # A Pokemon can jump two stages if it levels up a lot at once
+    again = evolve_if_ready(creature)
+    text = f"{old_name} evolved into {name}!"
+    return text + " " + again if again else text
+
+
+# ==========================================
+# REGIONS (back from v4.2)
+# Each region has its own common types and colours.
+# ==========================================
+
+# name -> (common types, sky colour, ground colour)
+REGIONS = {
+    "The New World": ((), (35, 70, 115), (35, 105, 80)),
+    "Kanto": (("Fire", "Grass", "Water", "Poison"), (60, 110, 170), (55, 130, 70)),
+    "Johto": (("Ghost", "Dark", "Psychic", "Fairy"), (55, 45, 100), (50, 85, 75)),
+    "Hoenn": (("Water", "Ground", "Dragon", "Fire"), (40, 120, 180), (175, 150, 90)),
+    "Sinnoh": (("Steel", "Ice", "Rock", "Dragon"), (100, 130, 170), (210, 225, 240)),
+    "Unova": (("Electric", "Dark", "Steel", "Bug"), (45, 50, 85), (70, 80, 95)),
+    "Kalos": (("Fairy", "Flying", "Psychic", "Light"), (150, 110, 180), (80, 140, 90)),
+    "Alola": (("Water", "Flying", "Fairy", "Grass"), (70, 170, 220), (220, 195, 130)),
+    "Galar": (("Fighting", "Steel", "Rock", "Dark"), (85, 95, 120), (70, 110, 70)),
+    "Paldea": (("Ground", "Electric", "Fire", "Cosmic"), (215, 130, 80), (165, 120, 75)),
+}
+REGION_NAMES = list(REGIONS)
+REGION_CHANCE = 0.7   # chance that a wild Pokemon is one of the region's types
+
+
+def region_pool(region):
+    """Wild Pokemon that live in this region."""
+    common = [row for row in WILD_POKEMON if row[1] != "NYSTRIA"]
+    favourite = REGIONS.get(region, ((),))[0]
+    if not favourite or random.random() > REGION_CHANCE:
+        return common
+    local = [row for row in common
+             if any(t in favourite for t in row[2].split("/"))]
+    return local or common
+
+
+# ==========================================
+# SHINY POKEMON (new in v16.0)
+# ==========================================
+
+SHINY_CHANCE = 1 / 200
+
+
+def shiny_colours(surface):
+    """Returns a copy of a sprite with its colours swapped around."""
+    result = surface.copy()
+    width, height = result.get_size()
+    for x in range(width):
+        for y in range(height):
+            r, g, b, a = result.get_at((x, y))
+            if a:
+                result.set_at((x, y), (b, r, g, a))
+    return result
+
+
+# ==========================================
+# BATTLE ITEMS (new in v16.0)
+# ==========================================
+
+ITEMS = {
+    # name: (what it does, amount)
+    "Potion": ("heal", 60),
+    "Super Potion": ("heal", 150),
+    "Revive": ("revive", 50),   # revives with 50% HP
+}
+
+
+# ==========================================
+# SMARTER ENEMIES (new in v16.0)
+# ==========================================
+
+def choose_enemy_move(enemy, target, smart_chance):
+    """Usually picks the move that does the most damage to the target."""
+    if random.random() > smart_chance:
+        return random.choice(enemy.moves)
+    return max(enemy.moves,
+               key=lambda m: m[1] * type_multiplier(get_move_type(m[0]),
+                                                    target.types))
 
 
 # ==========================================
@@ -831,7 +1043,10 @@ START_COINS = 100
 SHOP_PRICES = {
     "Poke Ball": 20,
     "Great Ball": 50,
-    "Ultra Ball": 100
+    "Ultra Ball": 100,
+    "Potion": 30,
+    "Super Potion": 70,
+    "Revive": 120,
 }
 
 
@@ -853,7 +1068,7 @@ def new_team():
 
 
 # Legendary NYSTRIA
-NYSTRIA_CHANCE = 0.05          # extra 5% chance per battle
+NYSTRIA_CHANCE = 0.002         # 0.2% per battle, the same as other legendaries
 NYSTRIA_CATCH_PENALTY = 0.20   # harder to catch than normal Pokemon
 NYSTRIA_MOVES = [
     ("Void Pulse", 45), ("Null Beam", 50),
@@ -870,7 +1085,14 @@ def make_nystria():
     return nystria
 
 
-def random_enemy():
+def random_enemy(region="The New World"):
+    enemy = pick_enemy(region)
+    if enemy.types != "Boss" and random.random() < SHINY_CHANCE:
+        enemy.shiny = True
+    return enemy
+
+
+def pick_enemy(region):
     if random.random() < NYSTRIA_CHANCE:
         return make_nystria()
 
@@ -886,10 +1108,7 @@ def random_enemy():
         enemy.types = "Boss"
         return enemy
 
-    number, name, types = random.choice(WILD_POKEMON)
-
-    if name == "NYSTRIA":
-        return make_nystria()
+    number, name, types = random.choice(region_pool(region))
 
     if name in NEW_INFO:
         return make_species(name)
@@ -920,13 +1139,37 @@ TOURNAMENT = [
      ["Galaxion", "Dreadgeist", "Glacifang", "NYSTRIA"], 400),
 ]
 
+# The Elite Cup unlocks after winning the first tournament (v16.0)
+ELITE_CUP = [
+    ("Elite Frost Nova", 40,
+     ["Glacibear", "Icetalon", "Permafrost", "Frostfin"], 300),
+    ("Elite Brutus", 45,
+     ["Boulderox", "Metashard", "Ironhorn", "Seismodon"], 400),
+    ("Elite Seraphine", 50,
+     ["Starwhisp", "Mystibloom", "Dreamlynx", "Celestuff"], 500),
+    ("Elite Drake", 55,
+     ["Dracoflare", "Skyragon", "Stormwyrm", "Cloudrake"], 650),
+    ("Grand Champion Nyx", 62,
+     ["Talonwyrm", "Voidfang", "Shadowlisk", "Nyxtera"], 1000),
+]
+
+TOURNAMENTS = [TOURNAMENT, ELITE_CUP]
+TOURNAMENT_NAMES = ["BATTLE TOURNAMENT", "ELITE CUP"]
+
 POKEDEX_BY_NAME = {name: (number, types)
                    for number, name, types in WILD_POKEMON}
 
 
-def trainer_pokemon(name, level):
+def trainer_pokemon(name, level, elite=False):
     if name in NEW_INFO:
-        return make_species(name, level)
+        mon = make_species(name, level)
+        if elite:
+            # Elite Cup Pokemon are trained much harder
+            mon.max_hp += level * 7
+            mon.hp = mon.max_hp
+            mon.bonus = level // 2 + 5
+            mon.moves = [(m, p + 12) for m, p in mon.moves]
+        return mon
     if name == "NYSTRIA":
         # The Champion's ace is extra tough
         mon = make_nystria()
@@ -948,9 +1191,9 @@ def trainer_pokemon(name, level):
     return mon
 
 
-def trainer_team(round_index):
-    trainer, level, names, prize = TOURNAMENT[round_index]
-    return [trainer_pokemon(n, level) for n in names]
+def trainer_team(tier, round_index):
+    trainer, level, names, prize = TOURNAMENTS[tier][round_index]
+    return [trainer_pokemon(n, level, elite=tier > 0) for n in names]
 
 
 # ==========================================
@@ -981,12 +1224,57 @@ def storage_read():
         return None
 
 
+# ==========================================
+# EXPORT / IMPORT SAVE CODES (new in v16.0)
+# A save code lets you move a save between the computer and the browser.
+# ==========================================
+
+CODE_FILE = "pokemon_save_code.txt"
+CODE_PREFIX = "PNW1:"
+
+
+def make_save_code(text):
+    import base64
+    return CODE_PREFIX + base64.b64encode(text.encode()).decode()
+
+
+def read_save_code(code):
+    import base64
+    code = "".join(code.split())   # ignore spaces and line breaks
+    if not code.startswith(CODE_PREFIX):
+        raise ValueError("not a save code")
+    text = base64.b64decode(code[len(CODE_PREFIX):]).decode()
+    json.loads(text)   # check it is a real save
+    return text
+
+
+def export_code(code):
+    """Shows the code in the browser, or writes it to a file on a computer."""
+    if WEB:
+        import platform
+        platform.window.prompt("Copy this save code and keep it safe:", code)
+        return "Save code shown. Copy it to keep it safe!"
+    with open(CODE_FILE, "w") as f:
+        f.write(code)
+    return f"Save code written to {CODE_FILE}."
+
+
+def import_code():
+    """Asks for a code in the browser, or reads it from the file on a computer."""
+    if WEB:
+        import platform
+        return platform.window.prompt("Paste your save code:", "") or ""
+    with open(CODE_FILE) as f:
+        return f.read()
+
+
 def creature_to_dict(c):
     return {
         "name": c.name, "max_hp": c.max_hp, "hp": c.hp,
         "moves": [list(m) for m in c.moves],
         "level": c.level, "bonus": c.bonus, "xp": c.xp,
-        "types": c.types, "pokedex_number": c.pokedex_number
+        "types": c.types, "pokedex_number": c.pokedex_number,
+        "shiny": c.shiny
     }
 
 
@@ -998,6 +1286,7 @@ def creature_from_dict(d):
     c.types = d.get("types", "Unknown")
     c.pokedex_number = d.get("pokedex_number")
     c.xp = int(d.get("xp", 0))
+    c.shiny = bool(d.get("shiny", False))
     return c
 
 
@@ -1824,9 +2113,54 @@ def make_varkrion_sprite(size):
     return pygame.transform.smoothscale(s, (size, size))
 
 
+def make_nyxtera_sprite(size):
+    """Nyxtera: a void dragon with horns, wide wings and star markings."""
+    s = pygame.Surface((100, 100), pygame.SRCALPHA)
+    night = (20, 20, 45)
+    body = (55, 60, 110)
+    star = (140, 230, 255)
+    white = (235, 250, 255)
+
+    pygame.draw.ellipse(s, (10, 10, 25, 130), (14, 88, 72, 10))
+
+    # Wide wings with star specks
+    pygame.draw.polygon(s, night, [(38, 44), (2, 8), (6, 34), (0, 56), (32, 64)])
+    pygame.draw.polygon(s, night, [(62, 44), (98, 8), (94, 34), (100, 56), (68, 64)])
+    pygame.draw.polygon(s, body, [(36, 46), (8, 16), (11, 36), (6, 52), (30, 60)])
+    pygame.draw.polygon(s, body, [(64, 46), (92, 16), (89, 36), (94, 52), (70, 60)])
+    for x, y in ((14, 30), (22, 44), (12, 48), (86, 30), (78, 44), (88, 48)):
+        pygame.draw.circle(s, star, (x, y), 2)
+
+    # Tail curling to a star
+    pygame.draw.polygon(s, night, [(58, 76), (80, 88), (96, 80), (90, 72), (80, 80), (62, 70)])
+    pygame.draw.polygon(s, star, [(94, 70), (98, 76), (94, 82), (90, 76)])
+
+    # Body and legs
+    pygame.draw.ellipse(s, night, (27, 40, 46, 42))
+    pygame.draw.ellipse(s, body, (30, 42, 40, 38))
+    for x, y in ((42, 54), (54, 58), (47, 66)):
+        pygame.draw.rect(s, star, (x, y, 4, 4))
+    pygame.draw.ellipse(s, night, (28, 74, 18, 14))
+    pygame.draw.ellipse(s, night, (54, 74, 18, 14))
+
+    # Head with two swept-back horns
+    pygame.draw.polygon(s, night, [(36, 18), (26, 0), (44, 12)])
+    pygame.draw.polygon(s, night, [(64, 18), (74, 0), (56, 12)])
+    pygame.draw.ellipse(s, night, (32, 10, 36, 32))
+    pygame.draw.ellipse(s, body, (35, 12, 30, 27))
+    pygame.draw.rect(s, star, (40, 22, 6, 5))
+    pygame.draw.rect(s, star, (54, 22, 6, 5))
+    pygame.draw.circle(s, white, (42, 23), 1)
+    pygame.draw.circle(s, white, (56, 23), 1)
+    return pygame.transform.smoothscale(s, (size, size))
+
+
 def make_sprite(name, types="Unknown", size=160):
     if name == "Flame":
         return make_flame(size)
+
+    if name == "Nyxtera":
+        return make_nyxtera_sprite(size)
 
     if name == "Aetherion":
         return make_aetherion_sprite(size)
@@ -2044,9 +2378,21 @@ def make_sprite(name, types="Unknown", size=160):
 
 
 @functools.lru_cache(maxsize=256)
-def get_sprite(name, types="Unknown", size=160):
+def get_sprite(name, types="Unknown", size=160, shiny=False):
     # Each sprite is drawn once, then reused every frame
+    if shiny:
+        return shiny_colours(get_sprite(name, types, size))
     return make_sprite(name, types, size)
+
+
+def draw_star(surface, x, y, r=9, colour=(255, 215, 60)):
+    """A small five-pointed star, used to mark shiny Pokemon."""
+    points = []
+    for i in range(10):
+        radius = r if i % 2 == 0 else r * 0.45
+        angle = -math.pi / 2 + i * math.pi / 5
+        points.append((x + radius * math.cos(angle), y + radius * math.sin(angle)))
+    pygame.draw.polygon(surface, colour, points)
 
 
 # ==========================================
@@ -2064,7 +2410,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v15.0!"
+        self.message = "Welcome to Pokemon: The New World v16.0!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -2081,7 +2427,14 @@ class Game:
         self.dex_page = 0
         self.dex_selected = None
         self.trophies = 0
+        self.elite_trophies = 0
         self.tournament = None
+
+        # New in v16.0
+        self.region = "The New World"
+        self.items = {name: 0 for name in ITEMS}
+        self.items["Potion"] = 3
+        self.shiny_caught = set()
 
         self.buttons = []
         self.popup = ""
@@ -2093,6 +2446,7 @@ class Game:
         self.pending_enemy_turn = False
 
         self.pc_page = 0
+        self.chart_return = "menu"
 
         if storage_read():
             self.message = "Save file found! Press LOAD to continue."
@@ -2100,6 +2454,24 @@ class Game:
     # ======================================
     # SAVE / LOAD
     # ======================================
+
+    def save_text(self):
+        data = {
+            "version": 1,
+            "team": [creature_to_dict(c) for c in self.team],
+            "pc": [creature_to_dict(c) for c in self.pc],
+            "active": self.active,
+            "balls": self.balls,
+            "coins": self.coins,
+            "trophies": self.trophies,
+            "pokedex": {"seen": sorted(self.seen),
+                        "caught": sorted(self.caught),
+                        "shiny": sorted(self.shiny_caught)},
+            "elite_trophies": self.elite_trophies,
+            "region": self.region,
+            "items": self.items,
+        }
+        return json.dumps(data)
 
     def save_game(self):
         if self.tournament:
@@ -2110,20 +2482,8 @@ class Game:
             self.message = "Finish or run from your battle before saving!"
             return
 
-        data = {
-            "version": 1,
-            "team": [creature_to_dict(c) for c in self.team],
-            "pc": [creature_to_dict(c) for c in self.pc],
-            "active": self.active,
-            "balls": self.balls,
-            "coins": self.coins,
-            "trophies": self.trophies,
-            "pokedex": {"seen": sorted(self.seen),
-                        "caught": sorted(self.caught)}
-        }
-
         try:
-            storage_write(json.dumps(data))
+            storage_write(self.save_text())
             self.message = "Game saved!"
         except Exception:
             self.message = "Could not save the game."
@@ -2135,6 +2495,11 @@ class Game:
             self.message = "No save file found."
             return
 
+        if self.apply_save(text):
+            self.message = "Game loaded!"
+
+    def apply_save(self, text):
+        """Loads a save from its text. Returns True if it worked."""
         try:
             data = json.loads(text)
             team = [creature_from_dict(d) for d in data["team"]]
@@ -2143,7 +2508,7 @@ class Game:
                 raise ValueError("empty team")
         except Exception:
             self.message = "The save file is damaged and could not be loaded."
-            return
+            return False
 
         self.team = team
         self.pc = pc
@@ -2155,6 +2520,13 @@ class Game:
         dex = data.get("pokedex", {})
         self.seen = _int_set(dex.get("seen", []))
         self.caught = _int_set(dex.get("caught", []))
+        self.shiny_caught = _int_set(dex.get("shiny", []))
+        self.elite_trophies = int(data.get("elite_trophies", 0))
+        region = data.get("region", "The New World")
+        self.region = region if region in REGIONS else "The New World"
+        if "items" in data:   # saves from before v16.0 keep the free Potions
+            for name in self.items:
+                self.items[name] = int(data["items"].get(name, 0))
         self.tournament = None
 
         self.enemy = None
@@ -2166,7 +2538,42 @@ class Game:
         self.pc_page = 0
         self.mode = "menu"
         self.send_out_healthy()
-        self.message = "Game loaded!"
+        return True
+
+    # ======================================
+    # EXPORT / IMPORT SAVE CODE (v16.0)
+    # ======================================
+
+    def export_save(self):
+        if self.tournament or self.enemy:
+            self.message = "Finish your battle before exporting!"
+            return
+        try:
+            self.message = export_code(make_save_code(self.save_text()))
+        except Exception:
+            self.message = "Could not export the save code."
+
+    def import_save(self):
+        if self.tournament or self.enemy:
+            self.message = "Finish your battle before importing!"
+            return
+        try:
+            code = import_code()
+        except Exception:
+            self.message = (f"No save code found. Put it in {CODE_FILE}"
+                            if not WEB else "Could not read the save code.")
+            return
+        if not code.strip():
+            self.message = "Import cancelled."
+            return
+        try:
+            text = read_save_code(code)
+        except Exception:
+            self.message = "That is not a valid save code."
+            return
+        if self.apply_save(text):
+            storage_write(text)
+            self.message = "Save code imported and saved!"
 
     # ======================================
     # HEAL (free)
@@ -2210,6 +2617,19 @@ class Game:
         pygame.draw.rect(screen, colour, rect, border_radius=12)
         pygame.draw.rect(screen, BORDER, rect, 2, border_radius=12)
 
+    def type_badges(self, types, x, y):
+        """Draws each type as a coloured label. Returns the end x."""
+        for t in types.split("/"):
+            colour = TYPE_COLOURS.get(t, (120, 120, 140))
+            image = SMALL.render(t.upper(), True, WHITE)
+            w = image.get_width() + 16
+            pygame.draw.rect(screen, shade(colour, -70), (x, y, w, 22),
+                             border_radius=8)
+            pygame.draw.rect(screen, colour, (x, y, w, 22), 2, border_radius=8)
+            screen.blit(image, (x + 8, y + 2))
+            x += w + 6
+        return x
+
     def button(self, label, rect, action, colour=BLUE):
         r = pygame.Rect(rect)
         pygame.draw.rect(screen, colour, r, border_radius=9)
@@ -2220,13 +2640,15 @@ class Game:
         self.buttons.append((r, action))
 
     def background(self):
+        # Each region has its own sky and ground colours
+        _types, sky, ground = REGIONS[self.region]
         screen.fill((20, 30, 60))
-        pygame.draw.rect(screen, (35, 70, 115), (0, 0, 1000, 450))
-        pygame.draw.rect(screen, (35, 105, 80), (0, 450, 1000, 250))
+        pygame.draw.rect(screen, sky, (0, 0, 1000, 450))
+        pygame.draw.rect(screen, ground, (0, 450, 1000, 250))
 
         # Background hills
-        pygame.draw.ellipse(screen, (40, 90, 105), (-100, 350, 500, 160))
-        pygame.draw.ellipse(screen, (45, 100, 90), (400, 350, 600, 160))
+        pygame.draw.ellipse(screen, shade(sky, 10), (-100, 350, 500, 160))
+        pygame.draw.ellipse(screen, shade(ground, -10), (400, 350, 600, 160))
 
         # Sun
         pygame.draw.circle(screen, (255, 210, 100), (850, 90), 42)
@@ -2234,7 +2656,7 @@ class Game:
 
         # Grass
         for x in range(0, 1000, 35):
-            pygame.draw.line(screen, (45, 135, 80),
+            pygame.draw.line(screen, shade(ground, 25),
                              (x, 475), (x - 5, 455), 2)
 
     def health_bar(self, x, y, width, creature):
@@ -2382,34 +2804,112 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 15.0 - TYPE EFFECTIVENESS", 150)
+        self.centred("VERSION 16.0 - EVOLUTION, REGIONS AND MORE", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
-        self.panel((20, 20, 210, 70))
+        self.panel((20, 20, 230, 70))
         self.text(f"Coins: {self.coins}", 38, 30, SMALL, GOLD)
-        self.text(f"Trophies: {self.trophies}", 38, 55, SMALL, GOLD)
+        self.text(f"Trophies: {self.trophies}   Elite: {self.elite_trophies}",
+                  38, 55, SMALL, GOLD)
+
+        # Current region
+        self.panel((750, 20, 230, 70))
+        self.text("Region:", 768, 30, SMALL, GOLD)
+        self.text(self.region, 768, 55, SMALL)
 
         # Show Flame on the main menu
         screen.blit(get_sprite("Flame", "Fire", 170), (415, 225))
 
+        cols = (200, 350, 500, 650)
         label = "CONTINUE BATTLE" if self.enemy else "START BATTLE"
-        self.button(label, (300, 405, 195, 52), "battle")
-        self.button("TOURNAMENT", (505, 405, 195, 52),
+        self.button(label, (200, 400, 290, 50), "battle")
+        self.button("TOURNAMENT", (500, 400, 140, 50),
                     "tournament", (120, 75, 160))
-        self.button("TEAM", (300, 467, 127, 45), "team")
-        self.button("POKE BALLS", (437, 467, 126, 45), "balls")
-        self.button("HEAL", (573, 467, 127, 45), "heal", (190, 70, 110))
-        self.button("POKEMON PC", (300, 522, 127, 45), "pc")
-        self.button("SHOP", (437, 522, 126, 45), "shop", (170, 120, 30))
-        self.button("POKEDEX", (573, 522, 127, 45), "pokedex", (60, 90, 150))
-        if WEB:
-            self.button("SAVE", (300, 577, 195, 45), "save", (45, 115, 75))
-            self.button("LOAD", (505, 577, 195, 45), "load", (45, 115, 75))
-        else:
-            self.button("SAVE", (300, 577, 127, 45), "save", (45, 115, 75))
-            self.button("LOAD", (437, 577, 126, 45), "load", (45, 115, 75))
-            self.button("QUIT", (573, 577, 127, 45), "quit", (145, 50, 60))
+        self.button("ELITE CUP", (650, 400, 140, 50), "elite",
+                    (150, 60, 120) if self.trophies else (70, 65, 85))
+
+        row = [("TEAM", "team", BLUE), ("POKE BALLS", "balls", BLUE),
+               ("HEAL", "heal", (190, 70, 110)), ("FLY", "fly", (50, 130, 160))]
+        for x, (name, action, colour) in zip(cols, row):
+            self.button(name, (x, 458, 140, 44), action, colour)
+
+        row = [("POKEMON PC", "pc", BLUE), ("SHOP", "shop", (170, 120, 30)),
+               ("POKEDEX", "pokedex", (60, 90, 150)),
+               ("TYPE CHART", "typechart", (60, 90, 150))]
+        for x, (name, action, colour) in zip(cols, row):
+            self.button(name, (x, 510, 140, 44), action, colour)
+
+        row = [("SAVE", "save"), ("LOAD", "load"),
+               ("EXPORT CODE", "export"), ("IMPORT CODE", "import")]
+        for x, (name, action) in zip(cols, row):
+            self.button(name, (x, 562, 140, 44), action, (45, 115, 75))
+
+        if not WEB:
+            self.button("QUIT", (425, 614, 150, 40), "quit", (145, 50, 60))
+
+    def draw_fly(self):
+        self.background()
+        self.centred("FLY TO A REGION", 50, BIG, GOLD)
+        self.centred("Each region has its own common Pokemon types.", 92, SMALL)
+        self.panel((70, 112, 860, 490))
+
+        for i, name in enumerate(REGION_NAMES):
+            col, row = divmod(i, 5)
+            x, y = 90 + col * 420, 125 + row * 95
+            favourite, sky, ground = REGIONS[name]
+            colour = (45, 115, 75) if name == self.region else shade(sky, -25)
+            label = name + ("  (HERE)" if name == self.region else "")
+            self.button(label, (x, y, 400, 44), ("fly_to", name), colour)
+            info = ", ".join(favourite) if favourite else "Every type"
+            self.text(info, x + 8, y + 50, SMALL, GOLD)
+
+        self.centred(self.message, 615, SMALL, GOLD)
+        self.button("BACK", (420, 640, 160, 45), "back")
+
+    def draw_typechart(self):
+        self.background()
+        self.centred("TYPE CHART", 35, BIG, GOLD)
+        self.panel((25, 65, 950, 570))
+        self.text("TYPE", 50, 75, SMALL, GOLD)
+        self.text("STRONG AGAINST (2x damage)", 190, 75, SMALL, GOLD)
+        self.text("WEAK TO (takes 2x damage)", 590, 75, SMALL, GOLD)
+
+        for i, attacker in enumerate(TYPE_CHART):
+            y = 102 + i * 27
+            self.type_badges(attacker, 45, y)
+            strong = [t for t, m in TYPE_CHART[attacker].items() if m > 1]
+            weak = [t for t in TYPE_CHART
+                    if TYPE_CHART[t].get(attacker, 1) > 1]
+            self.text(", ".join(strong) or "-", 190, y + 2, SMALL)
+            self.text(", ".join(weak) or "-", 590, y + 2, SMALL)
+
+        self.centred("Light, Cosmic, Void and Glitch take normal damage "
+                     "from everything.", 616, SMALL, GOLD)
+        self.button("BACK", (420, 645, 160, 42), "back")
+
+    def draw_items(self):
+        self.draw_battle()
+        if not self.enemy:
+            return
+        self.buttons.clear()
+
+        self.panel((250, 165, 500, 315))
+        self.text("USE AN ITEM", 390, 180, BIG, GOLD)
+
+        for i, (name, (kind, amount)) in enumerate(ITEMS.items()):
+            y = 240 + i * 60
+            if kind == "heal":
+                info = f"+{amount} HP to {self.pokemon.name}"
+            else:
+                info = "Revives a fainted Pokemon"
+            self.text(f"{name} x{self.items[name]}", 280, y, FONT)
+            self.text(info, 280, y + 28, SMALL, GOLD)
+            if self.items[name] > 0:
+                self.button("USE", (620, y, 100, 40), ("use_item", name),
+                            (45, 115, 75))
+
+        self.button("BACK", (420, 435, 160, 38), "back")
 
     def draw_battle(self):
         self.background()
@@ -2421,25 +2921,29 @@ class Game:
         p, e = self.pokemon, self.enemy
 
         self.panel((555, 35, 405, 115))
-        self.text(e.name, 580, 48, BIG)
-        self.text("Type: " + e.types, 580, 85, SMALL, GOLD)
+        self.text(e.name, 580, 45, BIG)
+        if e.shiny:
+            draw_star(screen, 940, 58)
+        self.type_badges(e.types, 580, 83)
         self.text(f"Lv {e.level}", 880, 55, SMALL, GOLD)
         self.text(f"HP: {e.hp}/{e.max_hp}", 580, 108, SMALL)
         self.health_bar(580, 130, 340, e)
 
         self.panel((35, 350, 420, 120))
-        self.text(p.name, 60, 365, BIG)
-        self.text("Type: " + p.types, 60, 400, SMALL, GOLD)
+        self.text(p.name, 60, 362, BIG)
+        if p.shiny:
+            draw_star(screen, 340, 380)
+        self.type_badges(p.types, 60, 398)
         self.text(f"HP: {p.hp}/{p.max_hp}", 60, 425, SMALL)
         self.text(f"Lv {p.level}", 360, 372, SMALL, GOLD)
         self.text(f"XP {p.xp}/{xp_needed(p.level)}", 260, 425, SMALL)
         self.health_bar(60, 455, 350, p)
 
-        screen.blit(get_sprite(e.name, e.types), (680, 155))
-        screen.blit(get_sprite(p.name, p.types), (160, 190))
+        screen.blit(get_sprite(e.name, e.types, shiny=e.shiny), (680, 155))
+        screen.blit(get_sprite(p.name, p.types, shiny=p.shiny), (160, 190))
 
         if self.tournament:
-            trainer = TOURNAMENT[self.tournament["round"]][0]
+            trainer = self.tournament_list()[self.tournament["round"]][0]
             left = len(self.tournament["team"]) - self.tournament["index"]
             self.panel((20, 20, 330, 60))
             self.text(f"ROUND {self.tournament['round'] + 1} - {trainer}",
@@ -2470,19 +2974,28 @@ class Game:
         self.button("FORFEIT" if self.tournament else "RUN",
                     (730, 550, 100, 45), "run", (130, 55, 60))
         self.button("MENU", (845, 550, 110, 45), "menu")
+        self.button("ITEMS", (40, 610, 160, 45), "items", (45, 115, 75))
+        self.text(f"Region: {self.region}", 230, 622, SMALL)
 
     def draw_moves(self):
         self.draw_battle()
+        if not self.enemy:
+            return
         self.buttons.clear()
 
         self.panel((250, 165, 500, 315))
-        self.text("CHOOSE YOUR ATTACK", 335, 180, BIG, GOLD)
+        self.centred("CHOOSE YOUR ATTACK", 200, BIG, GOLD)
 
         for i, (move, power) in enumerate(self.pokemon.moves):
+            move_type = get_move_type(move)
+            multiplier = type_multiplier(move_type, self.enemy.types)
+            hint = {0: "  NO EFFECT", 0.25: "  x0.25", 0.5: "  x0.5",
+                    2: "  x2!", 4: "  x4!!"}.get(multiplier, "")
+            colour = shade(TYPE_COLOURS.get(move_type, (120, 120, 140)), -60)
             self.button(
-                f"{i + 1}. {move} - Power {power}",
-                (300, 235 + i * 53, 400, 43),
-                ("move", i)
+                f"{i + 1}. {move} ({move_type}) - Power {power}{hint}",
+                (270, 235 + i * 53, 460, 43),
+                ("move", i), colour
             )
 
         self.button("BACK", (420, 440, 160, 35), "back")
@@ -2496,8 +3009,10 @@ class Game:
             y = 75 + (i // 3) * 145
 
             self.panel((x, y, 300, 130))
-            screen.blit(get_sprite(p.name, p.types, 100),
+            screen.blit(get_sprite(p.name, p.types, 100, shiny=p.shiny),
                         (x + 5, y + 10))
+            if p.shiny:
+                draw_star(screen, x + 18, y + 18)
 
             self.text(p.name, x + 110, y + 10, SMALL)
             self.text(f"Lv {p.level}", x + 245, y + 10, SMALL, GOLD)
@@ -2569,33 +3084,32 @@ class Game:
 
     def draw_shop(self):
         self.background()
-        self.centred("POKE MART", 70, BIG, GOLD)
-        self.panel((200, 120, 600, 430))
-        self.text(f"Your coins: {self.coins}", 240, 140, FONT, GOLD)
+        self.centred("POKE MART", 45, BIG, GOLD)
+        self.panel((170, 80, 660, 500))
+        self.text(f"Your coins: {self.coins}", 210, 95, FONT, GOLD)
 
         for i, (name, price) in enumerate(SHOP_PRICES.items()):
-            y = 210 + i * 95
-            self.text(name, 240, y, FONT)
-            self.text(f"{price} coins  -  you have {self.balls[name]}",
-                      240, y + 32, SMALL)
-            self.button("BUY 1", (560, y, 100, 40), ("buy", (name, 1)),
+            y = 140 + i * 68
+            have = self.balls.get(name, self.items.get(name, 0))
+            self.text(name, 210, y, FONT)
+            self.text(f"{price} coins  -  you have {have}", 210, y + 28, SMALL)
+            self.button("BUY 1", (570, y + 4, 100, 40), ("buy", (name, 1)),
                         (45, 115, 75))
-            self.button("BUY 5", (670, y, 100, 40), ("buy", (name, 5)),
+            self.button("BUY 5", (680, y + 4, 100, 40), ("buy", (name, 5)),
                         (45, 115, 75))
 
         self.text("Win battles and tournaments to earn coins!",
-                  240, 500, SMALL)
-        self.centred(self.message, 585, SMALL, GOLD)
-        self.button("BACK", (420, 620, 160, 45), "back")
+                  210, 550, SMALL)
+        self.centred(self.message, 600, SMALL, GOLD)
+        self.button("BACK", (420, 630, 160, 45), "back")
 
     def draw_tournament(self):
         self.background()
-        self.centred("BATTLE TOURNAMENT", 45, BIG, GOLD)
-
         t = self.tournament
+        self.centred(TOURNAMENT_NAMES[t["tier"]], 45, BIG, GOLD)
         self.panel((150, 90, 700, 400))
 
-        for i, (trainer, level, names, prize) in enumerate(TOURNAMENT):
+        for i, (trainer, level, names, prize) in enumerate(self.tournament_list()):
             y = 115 + i * 72
             if t and i < t["round"]:
                 status, colour = "BEATEN", GREEN
@@ -2644,6 +3158,8 @@ class Game:
             else:
                 label, colour = f"#{number:03} ???", (60, 60, 75)
             self.button(label, (x, y, 440, 38), ("dex", number), colour)
+            if number in self.shiny_caught:
+                draw_star(screen, x + 425, y + 19, 8)
 
         self.panel((60, 500, 880, 130))
         chosen = next((d for d in DEX_ALL if d[0] == self.dex_selected), None)
@@ -2665,9 +3181,11 @@ class Game:
                 self.text(f"#{number:03} ???  -  not seen yet", 185, 512, FONT)
 
         self.centred(f"Page {self.dex_page + 1} of {pages}", 485, SMALL)
-        self.button("PREVIOUS", (120, 645, 160, 40), "dex_prev")
-        self.button("BACK", (400, 645, 200, 40), "back")
-        self.button("NEXT", (720, 645, 160, 40), "dex_next")
+        self.button("PREVIOUS", (60, 645, 160, 40), "dex_prev")
+        self.button("TYPE CHART", (250, 645, 200, 40), "typechart",
+                    (60, 90, 150))
+        self.button("BACK", (480, 645, 200, 40), "back")
+        self.button("NEXT", (780, 645, 160, 40), "dex_next")
 
     def draw_victory(self):
         self.background()
@@ -2676,8 +3194,8 @@ class Game:
         beaten = self.defeated_enemy
         if beaten:
             self.centred(f"You defeated {beaten.name}!", 220)
-            screen.blit(get_sprite(beaten.name, beaten.types),
-                        (420, 260))
+            screen.blit(get_sprite(beaten.name, beaten.types,
+                                   shiny=beaten.shiny), (420, 260))
 
         self.panel((150, 425, 700, 70))
         self.centred(self.message, 460, SMALL, GOLD)
@@ -2740,6 +3258,10 @@ class Game:
         self.coins += coins
 
         level_ups = gain_xp(self.pokemon, xp)
+        if self.pokemon.pokedex_number:
+            # An evolved Pokemon counts as seen and caught in the Pokedex
+            self.seen.add(self.pokemon.pokedex_number)
+            self.caught.add(self.pokemon.pokedex_number)
         text = f"+{xp} XP"
         if coins:
             text += f", +{coins} coins"
@@ -2758,25 +3280,38 @@ class Game:
             return
 
         self.coins -= cost
-        self.balls[name] += amount
+        if name in self.balls:
+            self.balls[name] += amount
+        else:
+            self.items[name] += amount
         self.message = f"You bought {amount} {name}{'s' if amount > 1 else ''}!"
 
     # ======================================
     # TOURNAMENT
     # ======================================
 
-    def start_tournament(self):
+    def tournament_list(self):
+        return TOURNAMENTS[self.tournament["tier"]]
+
+    def start_tournament(self, tier=0):
         if self.enemy:
             self.message = "Finish your current battle first!"
+            return
+
+        if tier == 1 and not self.trophies:
+            self.message = "Win the Battle Tournament first to unlock the Elite Cup!"
             return
 
         # Everyone starts the tournament fully healed
         for pokemon in self.team:
             pokemon.heal(pokemon.max_hp)
 
-        self.tournament = {"round": 0, "team": [], "index": 0}
+        self.tournament = {"round": 0, "team": [], "index": 0, "tier": tier}
         self.mode = "tournament"
-        self.message = "Beat all 5 trainers to win a trophy!"
+        if tier:
+            self.message = "The Elite Cup! Beat all 5 elite trainers for an Elite trophy!"
+        else:
+            self.message = "Beat all 5 trainers to win a trophy!"
 
     def next_round(self):
         t = self.tournament
@@ -2787,7 +3322,7 @@ class Game:
             self.message = "Your team needs to recover!"
             return
 
-        t["team"] = trainer_team(t["round"])
+        t["team"] = trainer_team(t["tier"], t["round"])
         t["index"] = 0
         self.enemy = t["team"][0]
 
@@ -2797,12 +3332,12 @@ class Game:
         self.pending_enemy_turn = False
         self.mode = "battle"
 
-        trainer = TOURNAMENT[t["round"]][0]
+        trainer = self.tournament_list()[t["round"]][0]
         self.message = f"{trainer} sent out {self.enemy.name}!"
 
     def tournament_pokemon_beaten(self, enemy, reward_text):
         t = self.tournament
-        trainer, level, names, prize = TOURNAMENT[t["round"]]
+        trainer, level, names, prize = self.tournament_list()[t["round"]]
         t["index"] += 1
 
         if t["index"] < len(t["team"]):
@@ -2817,9 +3352,12 @@ class Game:
         self.coins += prize
         t["round"] += 1
 
-        if t["round"] >= len(TOURNAMENT):
+        if t["round"] >= len(self.tournament_list()):
             t["won"] = True
-            self.trophies += 1
+            if t["tier"]:
+                self.elite_trophies += 1
+            else:
+                self.trophies += 1
             self.message = (f"YOU BEAT {trainer.upper()}! You are the CHAMPION! "
                             f"+{prize} coins")
         else:
@@ -2852,7 +3390,7 @@ class Game:
             return
 
         self.send_out_healthy()
-        self.enemy = random_enemy()
+        self.enemy = random_enemy(self.region)
         if self.enemy.pokedex_number:
             self.seen.add(self.enemy.pokedex_number)
 
@@ -2870,6 +3408,9 @@ class Game:
             self.message = f"A {RARE_KIND[self.enemy.name].upper()} Pokemon appeared: {self.enemy.name}!"
         else:
             self.message = f"A wild {self.enemy.name} appeared!"
+
+        if self.enemy.shiny:
+            self.message = "SHINY! " + self.message
 
     # ======================================
     # PLAYER ATTACK
@@ -2939,7 +3480,9 @@ class Game:
                 return
 
         p, e = self.pokemon, self.enemy
-        move, power = random.choice(e.moves)
+        # Trainers almost always pick their best move, wild Pokemon often do
+        smart = 0.9 if self.tournament else 0.6
+        move, power = choose_enemy_move(e, p, smart)
 
         damage = power + random.randint(3, 10) + e.bonus
         move_type = get_move_type(move)
@@ -3072,6 +3615,8 @@ class Game:
             caught = self.enemy
             if caught.pokedex_number:
                 self.caught.add(caught.pokedex_number)
+                if caught.shiny:
+                    self.shiny_caught.add(caught.pokedex_number)
             self.enemy = None
 
             if len(self.team) < PARTY_LIMIT:
@@ -3081,7 +3626,8 @@ class Game:
                 self.pc.append(caught)
                 place = "your PC"
 
-            self.message = f"You caught {caught.name}! Sent to {place}!"
+            shiny = "a SHINY " if caught.shiny else ""
+            self.message = f"You caught {shiny}{caught.name}! Sent to {place}!"
             self.mode = "menu"
             self.animation = None
             self.pending_enemy_turn = False
@@ -3090,6 +3636,56 @@ class Game:
             self.message = "The Pokemon broke free!"
             self.mode = "battle"
             self.enemy_attack()
+
+    # ======================================
+    # BATTLE ITEMS (v16.0)
+    # ======================================
+
+    def use_item(self, name):
+        if not self.enemy:
+            self.message = "Items can only be used in battle!"
+            return
+
+        if self.animation:
+            self.message = "Wait until the attack finishes!"
+            return
+
+        if self.items.get(name, 0) <= 0:
+            self.message = f"You have no {name}s left!"
+            return
+
+        kind, amount = ITEMS[name]
+
+        if kind == "heal":
+            p = self.pokemon
+            if p.fainted:
+                self.message = "Use a Revive on a fainted Pokemon!"
+                return
+            if p.hp >= p.max_hp:
+                self.message = f"{p.name} already has full HP!"
+                return
+            before = p.hp
+            p.heal(amount)
+            self.message = f"You used a {name}! {p.name} got {p.hp - before} HP back!"
+        else:
+            fainted = next((p for p in self.team if p.fainted), None)
+            if not fainted:
+                self.message = "None of your Pokemon have fainted!"
+                return
+            fainted.heal(fainted.max_hp * amount // 100)
+            self.message = f"You used a Revive! {fainted.name} is back in the fight!"
+
+        self.items[name] -= 1
+        self.mode = "battle"
+        # Using an item takes your turn
+        self.pending_enemy_turn = False
+        self.enemy_attack_after_item()
+
+    def enemy_attack_after_item(self):
+        note = self.message
+        self.enemy_attack()
+        if self.enemy and self.mode == "battle":
+            self.message = note + " " + self.message
 
     # ======================================
     # POKEMON PC
@@ -3157,6 +3753,12 @@ class Game:
                 self.buy(*index)
             elif kind == "dex":
                 self.dex_selected = index
+            elif kind == "use_item":
+                self.use_item(index)
+            elif kind == "fly_to":
+                self.region = index
+                self.message = f"You flew to {index}!"
+                self.mode = "menu"
 
             return
 
@@ -3186,8 +3788,40 @@ class Game:
             self.mode = "pc"
 
         elif action == "back":
-            if self.mode in ("moves", "team", "balls", "pc", "shop", "pokedex"):
+            if self.mode == "typechart":
+                self.mode = self.chart_return
+            elif self.mode in ("moves", "team", "balls", "pc", "shop", "pokedex",
+                               "items", "fly"):
                 self.mode = self.return_mode
+
+        elif action == "items" and self.mode == "battle":
+            if self.animation:
+                self.message = "Wait until the attack finishes!"
+                return
+            self.return_mode = "battle"
+            self.mode = "items"
+
+        elif action == "fly" and self.mode == "menu":
+            if self.enemy:
+                self.message = "Finish or run from your battle before flying!"
+                return
+            self.return_mode = "menu"
+            self.mode = "fly"
+
+        elif action == "typechart" and self.mode in ("menu", "pokedex"):
+            # BACK goes to wherever the chart was opened from
+            self.chart_return = self.mode
+            self.mode = "typechart"
+
+        elif action == "elite":
+            if self.mode == "menu":
+                self.start_tournament(1)
+
+        elif action == "export":
+            self.export_save()
+
+        elif action == "import":
+            self.import_save()
 
         elif action == "pokedex":
             if self.mode == "menu":
@@ -3217,9 +3851,13 @@ class Game:
             self.end_tournament("You left the tournament.")
 
         elif action == "claim_trophy":
-            self.end_tournament(
-                f"Trophy won! You now have {self.trophies} "
-                f"troph{'y' if self.trophies == 1 else 'ies'}!")
+            if self.tournament and self.tournament["tier"]:
+                self.end_tournament(
+                    f"Elite trophy won! You now have {self.elite_trophies}!")
+            else:
+                self.end_tournament(
+                    f"Trophy won! You now have {self.trophies} "
+                    f"troph{'y' if self.trophies == 1 else 'ies'}!")
 
         elif action == "avatar":
             self.activate_avatar()
@@ -3304,7 +3942,10 @@ class Game:
             "shop": self.draw_shop,
             "pokedex": self.draw_pokedex,
             "tournament": self.draw_tournament,
-            "defeat": self.draw_defeat
+            "defeat": self.draw_defeat,
+            "items": self.draw_items,
+            "fly": self.draw_fly,
+            "typechart": self.draw_typechart
         }
 
         while True:
