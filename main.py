@@ -950,76 +950,97 @@ def outline(surf, colour, rect, radius=0, width=3):
 
 
 def make_flame(size):
-    """Flame, traced from the user's own drawing: cream body, blue cap and
-    back, open red mouth, and a red, orange and yellow flame mane."""
+    """Custom sprite for Flame."""
 
     s = pygame.Surface((100, 100), pygame.SRCALPHA)
 
-    cream = (250, 232, 160)
-    cream_shade = (222, 196, 112)
-    brown = (110, 70, 30)
-    black = (25, 18, 18)
-    navy = (25, 45, 100)
-    blue = (50, 92, 172)
-    red = (230, 52, 40)
-    orange = (242, 112, 32)
-    yellow = (250, 218, 52)
+    navy = (25, 55, 120)
+    blue = (40, 100, 205)
+    light_blue = (90, 165, 245)
+    cream = (250, 230, 185)
+    dark = (15, 25, 55)
+    orange = (255, 100, 20)
+    yellow = (255, 220, 55)
 
     # Shadow
-    pygame.draw.ellipse(s, (15, 20, 35, 120), (14, 88, 72, 10))
+    pygame.draw.ellipse(s, (15, 20, 35, 120), (12, 83, 76, 12))
 
-    # Blue back and tail spikes (behind the body)
-    back = [(44, 34), (52, 40), (60, 56), (68, 72), (78, 84),
-            (86, 88), (97, 86), (88, 96), (78, 100), (70, 92),
-            (60, 78), (50, 62), (42, 44)]
-    pygame.draw.polygon(s, navy, back)
-    pygame.draw.polygon(s, blue, [(46, 38), (54, 46), (62, 60),
-                                  (70, 74), (80, 84), (86, 86),
-                                  (76, 90), (66, 80), (56, 66),
-                                  (48, 50)])
+    # Tail
+    pygame.draw.polygon(s, navy, [
+        (72, 67), (91, 77), (96, 58), (89, 48), (82, 61)
+    ])
+    pygame.draw.polygon(s, orange, [
+        (88, 62), (100, 39), (94, 64), (99, 75), (84, 72)
+    ])
+    pygame.draw.polygon(s, yellow, [
+        (94, 60), (98, 45), (97, 65), (90, 69)
+    ])
 
-    # Flame mane (red spikes, orange and yellow inside)
-    mane = [(17, 20), (22, 6), (28, 12), (32, 0), (40, 10), (46, 0),
-            (52, 10), (58, 4), (62, 14), (70, 8), (74, 18), (83, 27),
-            (72, 28), (66, 36), (56, 34), (50, 42), (42, 36), (34, 30),
-            (24, 24)]
-    pygame.draw.polygon(s, red, mane)
-    pygame.draw.polygon(s, orange, [(30, 12), (36, 6), (44, 14),
-                                    (56, 12), (60, 22), (50, 26),
-                                    (38, 24)])
-    pygame.draw.polygon(s, yellow, [(38, 16), (46, 8), (54, 18),
-                                    (46, 24)])
+    # Back legs
+    pygame.draw.ellipse(s, navy, (57, 70, 22, 19))
+    pygame.draw.ellipse(s, navy, (23, 70, 22, 19))
 
-    # Cream body (outlined)
-    pygame.draw.ellipse(s, black, (13, 38, 70, 62))
-    pygame.draw.ellipse(s, cream, (15, 40, 66, 58))
-    pygame.draw.ellipse(s, cream_shade, (34, 64, 40, 32))
+    # Body
+    pygame.draw.ellipse(s, dark, (14, 37, 72, 48))
+    pygame.draw.ellipse(s, blue, (17, 35, 66, 45))
+    pygame.draw.ellipse(s, cream, (34, 48, 34, 31))
 
-    # Head: cream with blue cap
-    pygame.draw.ellipse(s, black, (3, 22, 42, 28))
-    pygame.draw.ellipse(s, cream, (5, 24, 38, 24))
-    pygame.draw.polygon(s, navy, [(4, 40), (4, 30), (12, 20), (30, 16),
-                                  (48, 22), (50, 30), (40, 28),
-                                  (26, 26), (14, 32), (8, 44)])
-    pygame.draw.polygon(s, blue, [(10, 30), (16, 22), (30, 19),
-                                  (42, 24), (30, 27), (16, 30)])
+    # Front paws
+    pygame.draw.ellipse(s, navy, (17, 75, 25, 12))
+    pygame.draw.ellipse(s, navy, (58, 75, 25, 12))
 
-    # Open red mouth and eye
-    pygame.draw.polygon(s, black, [(9, 40), (20, 37), (19, 50), (9, 50)])
-    pygame.draw.polygon(s, red, [(11, 41), (18, 39), (17, 48), (11, 48)])
-    pygame.draw.circle(s, red, (19, 35), 2)
-    pygame.draw.circle(s, black, (19, 35), 1)
+    # Head
+    pygame.draw.ellipse(s, dark, (19, 10, 63, 54))
+    pygame.draw.ellipse(s, blue, (22, 9, 57, 51))
 
-    # Front arm with brown outline
-    pygame.draw.ellipse(s, brown, (13, 50, 10, 16))
-    pygame.draw.ellipse(s, cream, (14, 52, 7, 13))
+    # Ears
+    pygame.draw.polygon(s, dark, [(25, 25), (15, 2), (39, 17)])
+    pygame.draw.polygon(s, light_blue, [(26, 22), (19, 7), (35, 19)])
+    pygame.draw.polygon(s, dark, [(67, 19), (85, 3), (78, 30)])
+    pygame.draw.polygon(s, light_blue, [(70, 19), (81, 9), (76, 25)])
 
-    # Brown fold lines on the body
-    pygame.draw.lines(s, brown, False, [(48, 52), (46, 60), (50, 68)], 1)
-    pygame.draw.lines(s, brown, False, [(60, 60), (62, 70), (58, 76)], 1)
+    # Cream face
+    pygame.draw.ellipse(s, cream, (34, 31, 39, 26))
+    pygame.draw.ellipse(s, cream, (48, 42, 27, 16))
+
+    # Eyes
+    pygame.draw.ellipse(s, dark, (37, 29, 9, 13))
+    pygame.draw.ellipse(s, dark, (62, 29, 9, 13))
+    pygame.draw.circle(s, WHITE, (40, 33), 3)
+    pygame.draw.circle(s, WHITE, (65, 33), 3)
+
+    # Nose and mouth
+    pygame.draw.circle(s, dark, (66, 48), 3)
+    pygame.draw.arc(s, dark, (52, 45, 19, 13), 0, math.pi, 2)
+
+    # Fiery mane around neck
+    pygame.draw.polygon(s, orange, [
+        (18, 42), (5, 32), (13, 52), (4, 62),
+        (23, 60), (29, 76), (40, 62), (54, 72),
+        (58, 55), (43, 42)
+    ])
+
+    pygame.draw.polygon(s, yellow, [
+        (19, 45), (12, 37), (18, 53), (13, 59),
+        (27, 56), (32, 68), (40, 57), (51, 64),
+        (52, 52), (39, 46)
+    ])
+
+    # Head flame
+    pygame.draw.polygon(s, orange, [
+        (39, 15), (34, 1), (47, 10),
+        (53, 0), (59, 13), (72, 7), (65, 24)
+    ])
+    pygame.draw.polygon(s, yellow, [
+        (43, 14), (42, 6), (51, 13),
+        (55, 5), (59, 17), (65, 13), (59, 24)
+    ])
+
+    # Flame highlights
+    pygame.draw.circle(s, WHITE, (45, 55), 2)
+    pygame.draw.circle(s, WHITE, (33, 48), 2)
 
     return pygame.transform.smoothscale(s, (size, size))
-
 
 
 def make_nystria_sprite(size):
