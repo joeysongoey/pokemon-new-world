@@ -333,7 +333,28 @@ def new_team():
     return team
 
 
+# Legendary NYSTRIA
+NYSTRIA_CHANCE = 0.05          # extra 5% chance per battle
+NYSTRIA_CATCH_PENALTY = 0.20   # harder to catch than normal Pokemon
+NYSTRIA_MOVES = [
+    ("Void Pulse", 45), ("Null Beam", 50),
+    ("Rift Strike", 55), ("Dragon Pulse", 45)
+]
+
+
+def make_nystria():
+    hp = random.randint(260, 300)
+    nystria = Creature("NYSTRIA", hp, list(NYSTRIA_MOVES),
+                       level=random.randint(30, 35), bonus=8)
+    nystria.types = "Void/Dragon"
+    nystria.pokedex_number = 46
+    return nystria
+
+
 def random_enemy():
+    if random.random() < NYSTRIA_CHANCE:
+        return make_nystria()
+
     if random.random() < 0.12:
         name, hp, bonus, moves = random.choice(BOSS_DATA)
         enemy = Creature(name, hp, [(m, 40) for m in moves], bonus=bonus)
@@ -341,6 +362,10 @@ def random_enemy():
         return enemy
 
     number, name, types = random.choice(WILD_POKEMON)
+
+    if name == "NYSTRIA":
+        return make_nystria()
+
     hp = random.randint(100, 190)
 
     if "/" in types:
@@ -505,9 +530,107 @@ def make_flame(size):
     return pygame.transform.smoothscale(s, (size, size))
 
 
+def make_nystria_sprite(size):
+    """Custom sprite for the legendary NYSTRIA (Void/Dragon)."""
+
+    s = pygame.Surface((100, 100), pygame.SRCALPHA)
+
+    void_dark = (30, 10, 55)
+    void = (80, 35, 140)
+    void_light = (150, 95, 225)
+    magenta = (255, 40, 140)
+    pink = (255, 140, 210)
+    cyan = (100, 230, 255)
+    horn = (225, 205, 255)
+
+    # Void aura
+    pygame.draw.circle(s, (160, 40, 200, 70), (50, 50), 48)
+    pygame.draw.circle(s, (255, 40, 140, 150), (50, 50), 47, 2)
+
+    # Shadow
+    pygame.draw.ellipse(s, (15, 10, 30, 130), (14, 85, 72, 11))
+
+    # Wings (behind body)
+    pygame.draw.polygon(s, void_dark, [
+        (38, 42), (2, 8), (8, 30), (0, 40), (12, 48), (4, 60), (30, 58)
+    ])
+    pygame.draw.polygon(s, void_dark, [
+        (62, 42), (98, 8), (92, 30), (100, 40), (88, 48), (96, 60), (70, 58)
+    ])
+    pygame.draw.polygon(s, void, [
+        (36, 44), (8, 15), (12, 32), (6, 41), (16, 48), (10, 57), (31, 55)
+    ])
+    pygame.draw.polygon(s, void, [
+        (64, 44), (92, 15), (88, 32), (94, 41), (84, 48), (90, 57), (69, 55)
+    ])
+    for end in ((8, 15), (6, 41), (10, 57)):
+        pygame.draw.line(s, magenta, (34, 46), end, 1)
+    for end in ((92, 15), (94, 41), (90, 57)):
+        pygame.draw.line(s, magenta, (66, 46), end, 1)
+
+    # Serpent tail curling round the front
+    pygame.draw.polygon(s, void_dark, [
+        (60, 78), (80, 86), (94, 78), (96, 66), (90, 70), (84, 79), (66, 74)
+    ])
+    pygame.draw.polygon(s, magenta, [(95, 68), (100, 58), (97, 72)])
+    pygame.draw.polygon(s, cyan, [(93, 70), (95, 62), (96, 72)])
+
+    # Legs
+    pygame.draw.ellipse(s, void_dark, (28, 74, 18, 14))
+    pygame.draw.ellipse(s, void_dark, (54, 74, 18, 14))
+
+    # Body
+    pygame.draw.ellipse(s, void_dark, (26, 40, 48, 44))
+    pygame.draw.ellipse(s, void, (29, 41, 42, 40))
+    pygame.draw.ellipse(s, void_light, (38, 50, 24, 26))
+
+    # Rift in the chest
+    rift = [(50, 50), (54, 57), (51, 61), (56, 68), (49, 76),
+            (51, 68), (46, 63), (49, 58)]
+    pygame.draw.polygon(s, (5, 0, 15), rift)
+    pygame.draw.polygon(s, magenta, rift, 2)
+    pygame.draw.circle(s, WHITE, (51, 63), 1)
+
+    # Neck and head
+    pygame.draw.polygon(s, void, [(42, 46), (58, 46), (56, 30), (44, 30)])
+    pygame.draw.ellipse(s, void_dark, (31, 10, 38, 30))
+    pygame.draw.ellipse(s, void, (33, 11, 34, 27))
+
+    # Snout
+    pygame.draw.polygon(s, void, [(42, 28), (58, 28), (55, 40), (45, 40)])
+    pygame.draw.polygon(s, void_light, [(45, 32), (55, 32), (53, 39), (47, 39)])
+    pygame.draw.circle(s, void_dark, (48, 37), 1)
+    pygame.draw.circle(s, void_dark, (52, 37), 1)
+
+    # Horns sweeping back
+    pygame.draw.polygon(s, horn, [(37, 16), (20, 0), (30, 4), (42, 13)])
+    pygame.draw.polygon(s, horn, [(63, 16), (80, 0), (70, 4), (58, 13)])
+    pygame.draw.polygon(s, magenta, [(24, 2), (20, 0), (27, 4)])
+    pygame.draw.polygon(s, magenta, [(76, 2), (80, 0), (73, 4)])
+
+    # Crest gem
+    pygame.draw.polygon(s, cyan, [(50, 8), (54, 13), (50, 18), (46, 13)])
+    pygame.draw.circle(s, WHITE, (49, 12), 1)
+
+    # Glowing eyes
+    pygame.draw.ellipse(s, magenta, (38, 20, 9, 6))
+    pygame.draw.ellipse(s, magenta, (53, 20, 9, 6))
+    pygame.draw.ellipse(s, pink, (40, 21, 4, 3))
+    pygame.draw.ellipse(s, pink, (55, 21, 4, 3))
+
+    # Stars floating in the aura
+    for x, y in ((12, 72), (88, 24), (20, 22), (84, 62), (50, 94)):
+        pygame.draw.circle(s, WHITE, (x, y), 1)
+
+    return pygame.transform.smoothscale(s, (size, size))
+
+
 def make_sprite(name, types="Unknown", size=160):
     if name == "Flame":
         return make_flame(size)
+
+    if name == "NYSTRIA":
+        return make_nystria_sprite(size)
 
     base = primary_type(types) if types != "Unknown" else "Normal"
     colour = TYPE_COLOURS.get(base, (120, 150, 200))
@@ -920,7 +1043,10 @@ class Game:
                  ("leaf", "vine", "grass", "thorn")):
             kind = "Grass"
         elif any(w in move_lower for w in
-                 ("shadow", "dark", "night", "phantom", "void")):
+                 ("void", "null", "rift")):
+            kind = "Void"
+        elif any(w in move_lower for w in
+                 ("shadow", "dark", "night", "phantom")):
             kind = "Ghost"
         elif any(w in move_lower for w in
                  ("dragon", "meteor", "star", "cosmic")):
@@ -999,6 +1125,14 @@ class Game:
 
         elif kind == "Steel":
             pygame.draw.rect(screen, colour, (x - 20, y - 20, 40, 40))
+
+        elif kind == "Void":
+            pygame.draw.circle(screen, (60, 20, 100), (x, y), 28)
+            pygame.draw.circle(screen, (255, 40, 140), (x, y), 28, 4)
+            pygame.draw.line(screen, (255, 40, 140),
+                             (x - 14, y - 14), (x + 14, y + 14), 4)
+            pygame.draw.line(screen, (255, 40, 140),
+                             (x + 14, y - 14), (x - 14, y + 14), 4)
 
         else:
             pygame.draw.circle(screen, colour, (x, y), 25)
@@ -1249,6 +1383,8 @@ class Game:
 
         if self.enemy.types == "Boss":
             self.message = f"BOSS BATTLE! {self.enemy.name} appeared!"
+        elif self.enemy.name == "NYSTRIA":
+            self.message = "The air tears open... the legendary NYSTRIA appeared!"
         else:
             self.message = f"A wild {self.enemy.name} appeared!"
 
@@ -1442,6 +1578,9 @@ class Game:
 
         if self.enemy.hp < self.enemy.max_hp * 0.25:
             chance += 0.15
+
+        if self.enemy.name == "NYSTRIA":
+            chance -= NYSTRIA_CATCH_PENALTY
 
         if random.random() < chance:
             caught = self.enemy
