@@ -82,7 +82,7 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
   gold star. Caught shinies get a star in the Pokedex.
 - **Elite Cup:** a harder second tournament with five Lv 40 to 62 trainers.
   It unlocks after you win the Battle Tournament.
-- **Nyxtera returns** from v10.1 as Mythical Pokemon #145 (0.3% per battle).
+- **Eclipsar returns** from v10.1 as Mythical Pokemon #145 (0.3% per battle).
 - **Types shown in battle** as coloured labels, and attack buttons are
   coloured by type with a x2 or x0.5 hint.
 - **Smarter enemies** that usually pick their most effective move.

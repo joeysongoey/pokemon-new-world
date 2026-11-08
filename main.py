@@ -1830,8 +1830,8 @@ for _row in NEW_SPECIES_DATA:
     else:
         NEW_COMMON.append((_num, _name, _types))
 
-# Nyxtera returns from v10.1 as a very rare Mythical Pokemon (#145)
-NEW_INFO["Nyxtera"] = {
+# Eclipsar returns from v10.1 as a very rare Mythical Pokemon (#145)
+NEW_INFO["Eclipsar"] = {
     "number": 145, "types": "Void/Dragon", "shape": "dragon",
     "hp": 380, "bonus": 10, "rarity": "mythical",
     "entry": ("A void dragon that swallows starlight. The star markings "
@@ -1840,11 +1840,11 @@ NEW_INFO["Nyxtera"] = {
               ("Starfall", 55, "Cosmic"), ("Black Hole", 60, "Void")],
     "stage": 3, "level": (35, 40),
 }
-for _move_name, _power, _move_type in NEW_INFO["Nyxtera"]["moves"]:
+for _move_name, _power, _move_type in NEW_INFO["Eclipsar"]["moves"]:
     MOVE_TYPES[_move_name] = _move_type
-NEW_RARE.append((145, "Nyxtera", "Void/Dragon"))
-RARE_KIND["Nyxtera"] = "Mythical"
-RARE_CHANCE["Nyxtera"] = 0.003
+NEW_RARE.append((145, "Eclipsar", "Void/Dragon"))
+RARE_KIND["Eclipsar"] = "Mythical"
+RARE_CHANCE["Eclipsar"] = 0.003
 
 WILD_POKEMON += NEW_COMMON
 DEX_ALL = sorted(WILD_POKEMON + NEW_RARE)
@@ -2351,7 +2351,7 @@ ELITE_CUP = [
     ("Elite Drake", 55,
      ["Dracoflare", "Skyragon", "Stormwyrm", "Cloudrake"], 650),
     ("Grand Champion Nyx", 62,
-     ["Talonwyrm", "Voidfang", "Shadowlisk", "Nyxtera"], 1000),
+     ["Talonwyrm", "Voidfang", "Shadowlisk", "Eclipsar"], 1000),
 ]
 
 TOURNAMENTS = [TOURNAMENT, ELITE_CUP]
@@ -3315,7 +3315,7 @@ def make_varkrion_sprite(size):
 
 
 def make_nyxtera_sprite(size):
-    """Nyxtera: a void dragon with horns, wide wings and star markings."""
+    """Eclipsar: a void dragon with horns, wide wings and star markings."""
     s = pygame.Surface((100, 100), pygame.SRCALPHA)
     night = (20, 20, 45)
     body = (55, 60, 110)
@@ -3360,7 +3360,7 @@ def make_sprite(name, types="Unknown", size=160):
     if name == "Flame":
         return make_flame(size)
 
-    if name == "Nyxtera":
+    if name == "Eclipsar":
         return make_nyxtera_sprite(size)
 
     if name == "Aetherion":
