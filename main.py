@@ -497,7 +497,7 @@ NEW_SPECIES_DATA = [
      [("Astral Stone", 44, "Rock"), ("Mind Quarry", 42, "Psychic"),
       ("Psy Boulder", 40, "Psychic"), ("Orbit Crush", 36, "Rock")]),
     (119, "Boulderox", "Rock/Ground", "golem", 180, 2, "common",
-     "A huge rock beast that charges head-first through mountains.",
+     "A huge rock beast that charges head-first through mountains. It is known for smashing boulders and cliff walls apart with a single blow.",
      [("Boulder Charge", 46, "Rock"), ("Quake Hoof", 42, "Ground"),
       ("Rock Hide", 38, "Rock"), ("Ground Shove", 36, "Ground")]),
     (120, "Ironhorn", "Steel", "quad", 170, 2, "common",
@@ -941,70 +941,73 @@ def outline(surf, colour, rect, radius=0, width=3):
 
 
 def make_flame(size):
-    """Flame, drawn from the user's own reference: cream body, blue back,
-    red and yellow flame mane and tail."""
+    """Flame, traced from the user's own drawing: cream body, blue cap and
+    back, open red mouth, and a red, orange and yellow flame mane."""
 
     s = pygame.Surface((100, 100), pygame.SRCALPHA)
 
-    navy = (28, 52, 120)
-    blue = (48, 98, 196)
-    light_blue = (110, 160, 230)
-    cream = (246, 232, 176)
-    shade_cream = (214, 190, 120)
-    dark = (30, 22, 40)
-    red = (232, 58, 36)
-    orange = (255, 120, 40)
-    yellow = (255, 214, 60)
+    cream = (250, 232, 160)
+    cream_shade = (222, 196, 112)
+    brown = (110, 70, 30)
+    black = (25, 18, 18)
+    navy = (25, 45, 100)
+    blue = (50, 92, 172)
+    red = (230, 52, 40)
+    orange = (242, 112, 32)
+    yellow = (250, 218, 52)
 
     # Shadow
-    pygame.draw.ellipse(s, (15, 20, 35, 120), (14, 86, 72, 11))
+    pygame.draw.ellipse(s, (15, 20, 35, 120), (14, 88, 72, 10))
 
-    # Blue back and tail (behind body)
-    pygame.draw.polygon(s, navy, [
-        (34, 22), (58, 40), (72, 60), (88, 78), (98, 98),
-        (84, 96), (70, 84), (60, 70), (46, 54), (30, 38)])
-    pygame.draw.polygon(s, blue, [
-        (36, 26), (56, 42), (68, 60), (82, 74), (92, 90),
-        (78, 84), (66, 72), (52, 56), (38, 40)])
+    # Blue back and tail spikes (behind the body)
+    back = [(44, 34), (52, 40), (60, 56), (68, 72), (78, 84),
+            (86, 88), (97, 86), (88, 96), (78, 100), (70, 92),
+            (60, 78), (50, 62), (42, 44)]
+    pygame.draw.polygon(s, navy, back)
+    pygame.draw.polygon(s, blue, [(46, 38), (54, 46), (62, 60),
+                                  (70, 74), (80, 84), (86, 86),
+                                  (76, 90), (66, 80), (56, 66),
+                                  (48, 50)])
 
-    # Cream body
-    pygame.draw.ellipse(s, dark, (14, 34, 58, 58))
-    pygame.draw.ellipse(s, cream, (17, 36, 54, 54))
-    pygame.draw.ellipse(s, shade_cream, (30, 62, 30, 26))
-
-    # Head with blue cap
-    pygame.draw.ellipse(s, dark, (10, 12, 46, 36))
-    pygame.draw.ellipse(s, cream, (12, 14, 42, 32))
-    pygame.draw.polygon(s, navy, [
-        (12, 22), (22, 8), (40, 6), (52, 14), (46, 22), (24, 24)])
-    pygame.draw.polygon(s, blue, [
-        (16, 22), (24, 12), (38, 10), (46, 16), (30, 20)])
-
-    # Open mouth and eye
-    pygame.draw.polygon(s, red, [(8, 40), (18, 36), (16, 46), (8, 46)])
-    pygame.draw.circle(s, dark, (34, 26), 3)
-    pygame.draw.circle(s, WHITE, (33, 25), 1)
-
-    # Flame mane (red, orange, yellow spikes)
-    mane = [
-        (26, 14), (20, 2), (28, 10), (34, 0), (38, 10),
-        (46, 2), (46, 12), (56, 6), (52, 18), (62, 14),
-        (58, 26), (66, 26), (60, 34), (46, 30), (40, 40), (30, 30)]
+    # Flame mane (red spikes, orange and yellow inside)
+    mane = [(17, 20), (22, 6), (28, 12), (32, 0), (40, 10), (46, 0),
+            (52, 10), (58, 4), (62, 14), (70, 8), (74, 18), (83, 27),
+            (72, 28), (66, 36), (56, 34), (50, 42), (42, 36), (34, 30),
+            (24, 24)]
     pygame.draw.polygon(s, red, mane)
-    pygame.draw.polygon(s, orange, [
-        (30, 12), (26, 4), (36, 10), (44, 6), (42, 16), (34, 18)])
-    pygame.draw.polygon(s, yellow, [
-        (38, 10), (40, 2), (48, 8), (46, 16), (40, 18)])
+    pygame.draw.polygon(s, orange, [(30, 12), (36, 6), (44, 14),
+                                    (56, 12), (60, 22), (50, 26),
+                                    (38, 24)])
+    pygame.draw.polygon(s, yellow, [(38, 16), (46, 8), (54, 18),
+                                    (46, 24)])
 
-    # Tail flame
-    pygame.draw.polygon(s, red, [
-        (84, 70), (98, 58), (92, 66), (100, 52), (88, 76)])
-    pygame.draw.polygon(s, yellow, [
-        (88, 72), (96, 62), (92, 74)])
+    # Cream body (outlined)
+    pygame.draw.ellipse(s, black, (13, 38, 70, 62))
+    pygame.draw.ellipse(s, cream, (15, 40, 66, 58))
+    pygame.draw.ellipse(s, cream_shade, (34, 64, 40, 32))
 
-    # Front legs
-    pygame.draw.ellipse(s, dark, (20, 84, 22, 12))
-    pygame.draw.ellipse(s, navy, (22, 85, 18, 9))
+    # Head: cream with blue cap
+    pygame.draw.ellipse(s, black, (3, 22, 42, 28))
+    pygame.draw.ellipse(s, cream, (5, 24, 38, 24))
+    pygame.draw.polygon(s, navy, [(4, 40), (4, 30), (12, 20), (30, 16),
+                                  (48, 22), (50, 30), (40, 28),
+                                  (26, 26), (14, 32), (8, 44)])
+    pygame.draw.polygon(s, blue, [(10, 30), (16, 22), (30, 19),
+                                  (42, 24), (30, 27), (16, 30)])
+
+    # Open red mouth and eye
+    pygame.draw.polygon(s, black, [(9, 40), (20, 37), (19, 50), (9, 50)])
+    pygame.draw.polygon(s, red, [(11, 41), (18, 39), (17, 48), (11, 48)])
+    pygame.draw.circle(s, red, (19, 35), 2)
+    pygame.draw.circle(s, black, (19, 35), 1)
+
+    # Front arm with brown outline
+    pygame.draw.ellipse(s, brown, (13, 50, 10, 16))
+    pygame.draw.ellipse(s, cream, (14, 52, 7, 13))
+
+    # Brown fold lines on the body
+    pygame.draw.lines(s, brown, False, [(48, 52), (46, 60), (50, 68)], 1)
+    pygame.draw.lines(s, brown, False, [(60, 60), (62, 70), (58, 76)], 1)
 
     return pygame.transform.smoothscale(s, (size, size))
 
