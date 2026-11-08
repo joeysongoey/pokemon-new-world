@@ -593,6 +593,15 @@ NEW_SPECIES_DATA = [
      "The ultimate dragon, said to hold the power of all others.",
      [("Omni Wyrm", 74, "Dragon"), ("Titan Scale", 70, "Steel"),
       ("Steel Omen", 68, "Steel"), ("Dragon Omega", 72, "Dragon")]),
+    # ---- Legendary duo ----
+    (143, "Aetherion", "Dragon/Psychic", "dragon", 340, 8, "legendary",
+     "A dragon that drifts between the stars, bending space with its psychic mind.",
+     [("Cosmic Wyrm", 72, "Dragon"), ("Mind Starfall", 70, "Psychic"),
+      ("Astral Coil", 66, "Dragon"), ("Psy Nebula", 72, "Psychic")]),
+    (144, "Varkrion", "Dark/Steel", "golem", 340, 8, "legendary",
+     "An armoured beast of shadow and steel that breaks through anything in its path.",
+     [("Void Maul", 72, "Dark"), ("Steel Eclipse", 70, "Steel"),
+      ("Titan Fang", 66, "Steel"), ("Shadow Anvil", 72, "Dark")]),
 ]
 
 NEW_INFO = {}
@@ -1636,9 +1645,110 @@ def make_wild_sprite(name, types, size):
     return final
 
 
+def make_aetherion_sprite(size):
+    """Aetherion: a starry cosmic dragon with psychic rings."""
+    s = pygame.Surface((100, 100), pygame.SRCALPHA)
+    deep = (28, 20, 70)
+    purple = (96, 58, 170)
+    pink = (255, 120, 210)
+    cyan = (120, 235, 255)
+    white = (245, 245, 255)
+
+    # Psychic rings and aura
+    for r, col in ((46, (255, 120, 210, 80)), (40, (120, 235, 255, 90))):
+        pygame.draw.circle(s, col, (50, 50), r, 3)
+    pygame.draw.ellipse(s, (15, 10, 30, 130), (16, 88, 68, 10))
+
+    # Wings made of cosmic space
+    pygame.draw.polygon(s, deep, [(36, 46), (4, 14), (12, 36), (2, 50), (30, 62)])
+    pygame.draw.polygon(s, deep, [(64, 46), (96, 14), (88, 36), (98, 50), (70, 62)])
+    pygame.draw.polygon(s, purple, [(34, 48), (10, 22), (16, 38), (8, 48), (28, 58)])
+    pygame.draw.polygon(s, purple, [(66, 48), (90, 22), (84, 38), (92, 48), (72, 58)])
+    for a, b in (((34, 48), (10, 22)), ((66, 48), (90, 22))):
+        pygame.draw.line(s, cyan, a, b, 1)
+
+    # Serpent tail with star tip
+    pygame.draw.polygon(s, deep, [(60, 74), (84, 84), (98, 76), (92, 66), (82, 74), (64, 68)])
+    pygame.draw.polygon(s, pink, [(96, 72), (100, 60), (95, 68)])
+
+    # Body and legs
+    pygame.draw.ellipse(s, deep, (26, 40, 48, 42))
+    pygame.draw.ellipse(s, purple, (29, 42, 42, 38))
+    pygame.draw.ellipse(s, cyan, (38, 54, 22, 20))
+    pygame.draw.ellipse(s, deep, (28, 74, 18, 14))
+    pygame.draw.ellipse(s, deep, (54, 74, 18, 14))
+
+    # Head with a crown of stars
+    pygame.draw.polygon(s, deep, [(34, 36), (40, 10), (50, 4), (60, 10), (66, 36)])
+    pygame.draw.ellipse(s, deep, (32, 12, 36, 30))
+    pygame.draw.ellipse(s, purple, (34, 14, 32, 26))
+    pygame.draw.polygon(s, pink, [(50, 0), (53, 6), (59, 6), (54, 10), (56, 16), (50, 12), (44, 16), (46, 10), (41, 6), (47, 6)])
+    pygame.draw.circle(s, pink, (42, 26), 4)
+    pygame.draw.circle(s, pink, (58, 26), 4)
+    pygame.draw.circle(s, white, (43, 25), 1)
+    pygame.draw.circle(s, white, (59, 25), 1)
+
+    # Star specks
+    for x, y in ((10, 70), (88, 30), (22, 20), (80, 84), (50, 96), (14, 56)):
+        pygame.draw.circle(s, white, (x, y), 1)
+    return pygame.transform.smoothscale(s, (size, size))
+
+
+def make_varkrion_sprite(size):
+    """Varkrion: an armoured shadow-steel beast with red eyes."""
+    s = pygame.Surface((100, 100), pygame.SRCALPHA)
+    black = (22, 20, 30)
+    dark = (48, 44, 62)
+    steel = (150, 160, 180)
+    light_steel = (210, 220, 235)
+    red = (255, 60, 60)
+    purple = (110, 40, 150)
+
+    pygame.draw.ellipse(s, (15, 10, 20, 130), (14, 88, 72, 10))
+
+    # Spiked back plates
+    for x in (30, 44, 58, 72):
+        pygame.draw.polygon(s, steel, [(x - 6, 36), (x, 16), (x + 6, 36)])
+        pygame.draw.polygon(s, black, [(x - 6, 36), (x, 16), (x + 6, 36)], 1)
+
+    # Legs with claws
+    for x in (26, 62):
+        pygame.draw.polygon(s, dark, [(x, 66), (x + 16, 66), (x + 16, 90), (x, 90)])
+        for dx in (0, 6, 12):
+            pygame.draw.polygon(s, steel, [(x + dx, 90), (x + dx + 3, 90), (x + dx + 1, 96)])
+
+    # Armoured body
+    pygame.draw.polygon(s, black, [(22, 40), (30, 30), (72, 30), (80, 40), (78, 72), (24, 72)])
+    pygame.draw.polygon(s, dark, [(26, 42), (32, 34), (70, 34), (76, 42), (74, 68), (28, 68)])
+    for y in (46, 56):
+        pygame.draw.line(s, steel, (30, y), (72, y), 2)
+    pygame.draw.polygon(s, purple, [(46, 48), (54, 48), (50, 64)])
+
+    # Arms with claws
+    pygame.draw.polygon(s, dark, [(20, 44), (8, 58), (14, 64), (26, 52)])
+    pygame.draw.polygon(s, dark, [(80, 44), (92, 58), (86, 64), (74, 52)])
+    for x, y in ((8, 58), (92, 58)):
+        pygame.draw.polygon(s, light_steel, [(x - 2, y), (x, y + 8), (x + 2, y)])
+
+    # Armoured head with horns
+    pygame.draw.polygon(s, black, [(28, 26), (22, 4), (40, 18)])
+    pygame.draw.polygon(s, black, [(72, 26), (78, 4), (60, 18)])
+    pygame.draw.polygon(s, black, [(30, 30), (30, 14), (50, 6), (70, 14), (70, 30)])
+    pygame.draw.polygon(s, steel, [(34, 22), (50, 16), (66, 22), (62, 26), (38, 26)])
+    pygame.draw.polygon(s, red, [(38, 20), (46, 22), (42, 24)])
+    pygame.draw.polygon(s, red, [(62, 20), (54, 22), (58, 24)])
+    return pygame.transform.smoothscale(s, (size, size))
+
+
 def make_sprite(name, types="Unknown", size=160):
     if name == "Flame":
         return make_flame(size)
+
+    if name == "Aetherion":
+        return make_aetherion_sprite(size)
+
+    if name == "Varkrion":
+        return make_varkrion_sprite(size)
 
     if name == "NYSTRIA":
         return make_nystria_sprite(size)
