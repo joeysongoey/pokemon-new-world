@@ -23,6 +23,15 @@ jobs:
           python -m pip install pygbag
           python -m pygbag --build $GITHUB_WORKSPACE
 
+      - name: Give the game files a new name so browsers load the update
+        run: |
+          cd build/web
+          V=${GITHUB_SHA::8}
+          mv pokemon-new-world.tar.gz pokemon-new-world-$V.tar.gz
+          mv pokemon-new-world.apk pokemon-new-world-$V.apk
+          sed -i "s/pokemon-new-world\.tar\.gz/pokemon-new-world-$V.tar.gz/g; s/pokemon-new-world\.apk/pokemon-new-world-$V.apk/g" index.html
+          grep -n "pokemon-new-world-$V" index.html
+
       - name: Publish to the gh-pages branch
         uses: JamesIves/github-pages-deploy-action@v4
         with:
