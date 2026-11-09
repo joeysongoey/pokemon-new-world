@@ -3370,6 +3370,8 @@ SPRITE_FILES = {
     # Original pixel creature, drawn for the team (not a copy of any official design)
     "Lucario": "brawler",
     "Luxray": "spark",
+    "Suicune": "tidefin", "Gyarados": "stormfin", "Morpeko": "pouchbit",
+    "Dialga": "gearwyrm", "Good MissingNo": "glitchbit", "Evil MissingNo": "voidbit",
 }
 _picture_cache = {}
 
