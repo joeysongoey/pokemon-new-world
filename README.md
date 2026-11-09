@@ -61,8 +61,6 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 
 ## What's new in v16.1
 
-- Pokemon caught as Nyxtera before the rename still load as Eclipsar, with their sprite.
-
 - **200 new Pokemon, #146 to #345**, bringing the Pokedex to 345. Every one has
   a type, stats, four moves and a Pokedex entry. Their entries and moves are
   short placeholders you can rewrite.

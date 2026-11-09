@@ -2479,13 +2479,8 @@ def creature_to_dict(c):
     }
 
 
-# Pokemon renamed after a save was made. Old saves are fixed up on load.
-OLD_NAMES = {"Nyxtera": "Eclipsar"}
-
-
 def creature_from_dict(d):
-    name = OLD_NAMES.get(d["name"], d["name"])
-    c = Creature(name, d["max_hp"],
+    c = Creature(d["name"], d["max_hp"],
                  [tuple(m) for m in d["moves"]],
                  d.get("level", 1), d.get("bonus", 0))
     c.hp = max(0, min(c.max_hp, d.get("hp", c.max_hp)))
