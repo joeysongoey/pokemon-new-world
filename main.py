@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v17.0")
+pygame.display.set_caption("Pokemon: The New World v17.1")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -1847,6 +1847,22 @@ NEW_RARE.append((145, "Eclipsar", "Void/Dragon"))
 RARE_KIND["Eclipsar"] = "Mythical"
 RARE_CHANCE["Eclipsar"] = 0.003
 
+# Aura Brawler (#346): EVENT ONLY. Never appears in battles or tournaments.
+# The only way to get it is the secret gift code in IMPORT CODE.
+NEW_INFO["Aura Brawler"] = {
+    "number": 346, "types": "Fighting/Steel", "shape": "golem",
+    "hp": 330, "bonus": 9, "rarity": "event",
+    "entry": ("An armoured brawler that gathers its aura into a blazing orb. "
+              "It only appears to trainers who know the secret code."),
+    "moves": [("Aura Fist", 62, "Fighting"), ("Bronze Guard Bash", 58, "Steel"),
+              ("Visor Flare", 55, "Fire"), ("Aura Orb", 66, "Fighting")],
+    "stage": 3, "level": (30, 30),
+}
+for _move_name, _power, _move_type in NEW_INFO["Aura Brawler"]["moves"]:
+    MOVE_TYPES[_move_name] = _move_type
+NEW_RARE.append((346, "Aura Brawler", "Fighting/Steel"))
+RARE_KIND["Aura Brawler"] = "Event"   # not in RARE_CHANCE, so it never appears
+
 WILD_POKEMON += NEW_COMMON
 DEX_ALL = sorted(WILD_POKEMON + NEW_RARE)
 DEX_TOTAL = len(DEX_ALL)
@@ -2507,6 +2523,17 @@ def storage_read():
 
 CODE_FILE = "pokemon_save_code.txt"
 CODE_PREFIX = "PNW1:"
+
+
+GIFT_CHECK = 1822383   # the secret gift code is not written in the code
+
+
+def is_gift_code(code):
+    text = "".join(code.split()).upper()
+    total = 7
+    for ch in text:
+        total = (total * 31 + ord(ch)) % 9999991
+    return total == GIFT_CHECK
 
 
 def make_save_code(text):
@@ -3443,6 +3470,7 @@ SPRITE_FILES = {
     "Shadelet": "null1", "Hauntalon": "null2", "Dreadgeist": "null3",
     # Original pixel creature, drawn for the team (not a copy of any official design)
     "Lucario": "brawler",
+    "Aura Brawler": "aurabrawler",
     "Luxray": "spark",
     "Suicune": "tidefin", "Gyarados": "stormfin", "Morpeko": "pouchbit",
     "Dialga": "gearwyrm", "Good MissingNo": "glitchbit", "Evil MissingNo": "voidbit",
@@ -3731,7 +3759,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v17.0!"
+        self.message = "Welcome to Pokemon: The New World v17.1!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -3756,6 +3784,7 @@ class Game:
         self.items = {name: 0 for name in ITEMS}
         self.items["Potion"] = 3
         self.shiny_caught = set()
+        self.events = set()
 
         self.buttons = []
         self.popup = ""
@@ -3791,6 +3820,7 @@ class Game:
             "elite_trophies": self.elite_trophies,
             "region": self.region,
             "items": self.items,
+            "events": sorted(self.events),
         }
         return json.dumps(data)
 
@@ -3843,6 +3873,7 @@ class Game:
         self.caught = _int_set(dex.get("caught", []))
         self.shiny_caught = _int_set(dex.get("shiny", []))
         self.elite_trophies = int(data.get("elite_trophies", 0))
+        self.events = set(data.get("events", []))
         region = data.get("region", "The New World")
         self.region = region if region in REGIONS else "The New World"
         if "items" in data:   # saves from before v16.1 keep the free Potions
@@ -3887,6 +3918,9 @@ class Game:
         if not code.strip():
             self.message = "Import cancelled."
             return
+        if is_gift_code(code):
+            self.claim_gift()
+            return
         try:
             text = read_save_code(code)
         except Exception:
@@ -3895,6 +3929,24 @@ class Game:
         if self.apply_save(text):
             storage_write(text)
             self.message = "Save code imported and saved!"
+
+    def claim_gift(self):
+        """Gives the event-only Aura Brawler, once per save."""
+        if "aura_brawler" in self.events:
+            self.message = "You already claimed Aura Brawler!"
+            return
+        gift = make_species("Aura Brawler", 30)
+        self.events.add("aura_brawler")
+        self.seen.add(346)
+        self.caught.add(346)
+        if len(self.team) < PARTY_LIMIT:
+            self.team.append(gift)
+            place = "your team"
+        else:
+            self.pc.append(gift)
+            place = "your PC"
+        storage_write(self.save_text())
+        self.message = f"EVENT! Aura Brawler joined {place}! Game saved."
 
     # ======================================
     # HEAL (free)
