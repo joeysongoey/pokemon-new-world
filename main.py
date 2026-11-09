@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v16.2")
+pygame.display.set_caption("Pokemon: The New World v17.0")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -2093,6 +2093,76 @@ def xp_reward(enemy):
     return 8 + enemy.level * 6
 
 
+# ==========================================
+# MOVES LEARNED BY LEVEL (new in v17.0)
+# At each of these levels a Pokemon learns a stronger move.
+# Dual types take turns: Lv 15 uses the first type, Lv 25 the second, and so on.
+# ==========================================
+
+LEARN_LEVELS = [15, 25, 35, 50, 70]
+LEARN_POWERS = [45, 52, 60, 70, 80]
+
+LEARNSET = {
+    "Normal":   ["Body Bash", "Rampage Rush", "Mega Stomp", "Giga Slam", "Final Charge"],
+    "Fire":     ["Cinder Lash", "Blaze Kick", "Inferno Roar", "Magma Burst", "Solar Inferno"],
+    "Water":    ["Bubble Barrage", "Riptide", "Torrent Crash", "Tsunami Slam", "Ocean Fury"],
+    "Grass":    ["Thorn Whip", "Seed Storm", "Bloom Blast", "Forest Wrath", "Gaia Bloom"],
+    "Electric": ["Static Snap", "Arc Bolt", "Thunder Lance", "Storm Surge", "Zeus Strike"],
+    "Ice":      ["Frost Bite", "Hail Spear", "Glacial Crash", "Avalanche Fang", "Absolute Zero"],
+    "Rock":     ["Pebble Blast", "Boulder Roll", "Crag Smash", "Landslide", "Meteor Crush"],
+    "Ground":   ["Sand Whirl", "Dust Devil", "Fissure Fist", "Tectonic Slam", "World Quake"],
+    "Ghost":    ["Haunt Touch", "Spectral Fang", "Wraith Wail", "Soul Rend", "Grave Eclipse"],
+    "Steel":    ["Iron Tap", "Bolt Bash", "Titan Fist", "Alloy Cannon", "Steel Tempest"],
+    "Psychic":  ["Mind Poke", "Psi Pulse", "Dream Crush", "Astral Mind", "Psychic Nova"],
+    "Poison":   ["Acid Spit", "Sludge Bomb", "Toxic Fang", "Venom Torrent", "Plague Storm"],
+    "Flying":   ["Wing Flick", "Cyclone Dive", "Tempest Wing", "Hurricane Drop", "Sky Fury"],
+    "Fighting": ["Palm Strike", "Dragon Kick", "Iron Fist", "Thousand Blows", "Ultimate Smash"],
+    "Fairy":    ["Glitter Puff", "Pixie Beam", "Starlight Kiss", "Moonblast Wave", "Fairy Requiem"],
+    "Light":    ["Glow Flash", "Prism Ray", "Dawn Spear", "Halo Burst", "Holy Radiance"],
+    "Dark":     ["Sneak Bite", "Shadow Fang", "Midnight Claw", "Eclipse Strike", "Abyss Crush"],
+    "Dragon":   ["Drake Bite", "Wyvern Claw", "Draco Storm", "Elder Roar", "Dragon Ascent"],
+    "Bug":      ["Silk Shot", "Stinger Rush", "Swarm Storm", "Mega Horn Drill", "Insect Empire"],
+    "Cosmic":   ["Star Dust", "Comet Tail", "Nebula Beam", "Supernova", "Big Bang"],
+    "Void":     ["Null Touch", "Void Rend", "Rift Collapse", "Event Horizon", "Oblivion"],
+    "Glitch":   ["Bit Flip", "Data Corrupt", "Pixel Crash", "Buffer Overflow", "Fatal Error"],
+}
+for _type, _moves in LEARNSET.items():
+    for _move in _moves:
+        MOVE_TYPES[_move] = _type
+
+
+def move_for_level(types, level):
+    """The move a Pokemon of these types learns at this level, or None."""
+    if level not in LEARN_LEVELS:
+        return None
+    step = LEARN_LEVELS.index(level)
+    own = [t for t in types.split("/") if t in LEARNSET] or ["Normal"]
+    move_type = own[step % len(own)]
+    return LEARNSET[move_type][step], LEARN_POWERS[step]
+
+
+def next_move_level(level):
+    """The next level at which a new move is learned, or None."""
+    return next((lv for lv in LEARN_LEVELS if lv > level), None)
+
+
+def learn_move(creature):
+    """Teaches a new move if the Pokemon just reached a learning level."""
+    learned = move_for_level(creature.types, creature.level)
+    if not learned:
+        return None
+    move, power = learned
+    if any(m == move for m, _p in creature.moves):
+        return None
+    if len(creature.moves) < 4:
+        creature.moves.append((move, power))
+        return f"{creature.name} learned {move}!"
+    weakest = min(range(len(creature.moves)), key=lambda i: creature.moves[i][1])
+    old = creature.moves[weakest][0]
+    creature.moves[weakest] = (move, power)
+    return f"{creature.name} forgot {old} and learned {move}!"
+
+
 def gain_xp(creature, amount):
     """Adds XP and returns a list of level-up messages."""
     messages = []
@@ -2110,6 +2180,10 @@ def gain_xp(creature, amount):
         evolved = evolve_if_ready(creature)
         if evolved:
             messages.append(evolved)
+
+        learned = learn_move(creature)
+        if learned:
+            messages.append(learned)
 
     if creature.level >= MAX_LEVEL:
         creature.xp = 0
@@ -3657,7 +3731,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v16.1!"
+        self.message = "Welcome to Pokemon: The New World v17.0!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -4051,7 +4125,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 16.2 - EVOLUTION, REGIONS AND MORE", 150)
+        self.centred("VERSION 17.0 - NEW MOVES BY LEVEL", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -4266,6 +4340,9 @@ class Game:
             self.text("Type: " + p.types, x + 110, y + 32, SMALL)
             self.text(f"HP {p.hp}/{p.max_hp}", x + 110, y + 52, SMALL)
             self.health_bar(x + 110, y + 75, 160, p)
+            upcoming = next_move_level(p.level)
+            if upcoming:
+                self.text(f"Move Lv{upcoming}", x + 236, y + 102, SMALL, GOLD)
 
             if i == self.active:
                 self.text("ACTIVE", x + 110, y + 100, SMALL, GOLD)
