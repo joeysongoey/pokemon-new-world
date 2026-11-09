@@ -3367,6 +3367,8 @@ SPRITE_FILES = {
     "Rockruffle": "mechB1", "Cragoyle": "mechB2", "Terradon": "mechB3",
     "Starlingo": "celestial1", "Galaxion": "celestial2", "Lumidrake": "celestial3",
     "Shadelet": "null1", "Hauntalon": "null2", "Dreadgeist": "null3",
+    # Original pixel creature, drawn for the team (not a copy of any official design)
+    "Lucario": "brawler",
 }
 _picture_cache = {}
 
