@@ -61,7 +61,7 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 
 ## What's new in v16.2
 
-- The team's Lucario now uses a new original pixel-art creature, not a copy of Lucario's design.
+- The team's Lucario and Luxray now use new original pixel-art creatures, not copies of their official designs.
 
 - **Omni-Dex sprites:** 21 sprites cut from the Omni-Dex screenshot now appear in the game
   for Embercub, Blazepaw, Pyroclaw, Frostbit, Glacieron, Cryowraith, Leaflet, Thornox,
