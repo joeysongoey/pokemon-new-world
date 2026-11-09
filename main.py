@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v17.2")
+pygame.display.set_caption("Pokemon: The New World v18.0")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -2078,6 +2078,12 @@ class Creature:
         self.pokedex_number = None
         self.xp = 0
         self.shiny = False
+        # New in v18.0
+        self.bond = 0
+        self.titles = []
+        self.title = ""
+        self.mastery = {}    # move name -> times used
+        self.defeats = {}    # type -> Pokemon of that type defeated
 
     @property
     def fainted(self):
@@ -2275,11 +2281,242 @@ def region_pool(region):
     """Wild Pokemon that live in this region."""
     common = [row for row in WILD_POKEMON if row[1] != "NYSTRIA"]
     favourite = REGIONS.get(region, ((),))[0]
-    if not favourite or random.random() > REGION_CHANCE:
+    chance = 1.0 if region in SECRET_AREAS else REGION_CHANCE
+    if not favourite or random.random() > chance:
         return common
     local = [row for row in common
              if any(t in favourite for t in row[2].split("/"))]
     return local or common
+
+
+# ==========================================
+# v18.0: BONDS, TITLES AND MOVE MASTERY
+# ==========================================
+
+# A short word for each type, used in titles and Bond moves
+TYPE_WORD = {
+    "Fire": "Flame", "Water": "Tide", "Grass": "Leaf", "Electric": "Storm",
+    "Ice": "Frost", "Rock": "Stone", "Ground": "Quake", "Ghost": "Spirit",
+    "Steel": "Iron", "Psychic": "Mind", "Poison": "Venom", "Flying": "Sky",
+    "Fighting": "Fist", "Fairy": "Pixie", "Light": "Light", "Dark": "Shadow",
+    "Dragon": "Dragon", "Bug": "Swarm", "Cosmic": "Cosmic", "Void": "Void",
+    "Glitch": "Glitch", "Normal": "Wild",
+}
+
+# Bond: each Pokemon gets bond points for winning battles.
+# Every 20 points is one heart. At 5 hearts it learns its Bond move.
+BOND_STEP = 20
+BOND_MAX = 100
+BOND_WIN = 4
+BOND_MOVE_POWER = 85
+BOND_LINES = {
+    1: "{n} seems happy to battle with you.",
+    2: "{n} looks back at you before every attack.",
+    3: "{n} trusts you completely!",
+    4: "{n} would never give up on you!",
+    5: "{n} is your best friend!",
+}
+BOND_MOVES = {}
+for _type, _word in TYPE_WORD.items():
+    BOND_MOVES[_type] = f"{_word} Bond Strike"
+    MOVE_TYPES[f"{_word} Bond Strike"] = _type
+
+# Move mastery: using a move 20 times masters it (+10 power, gold sparkle)
+MASTERY_USES = 20
+MASTERY_BONUS = 10
+
+# Titles
+HUNTER_TARGET = 10   # defeat this many of a type to become its Hunter
+
+
+def join_text(first, second):
+    """Joins two sentences with the right full stop between them."""
+    first = first.strip()
+    if first and first[-1] not in ".!?":
+        first += "."
+    return (first + " " + second).strip()
+
+
+def type_word(types):
+    return TYPE_WORD.get(types.split("/")[0], "Wild")
+
+
+def teach_move(creature, move, power):
+    """Adds a move, replacing the weakest if it already knows four."""
+    if len(creature.moves) < 4:
+        creature.moves.append((move, power))
+        return f"{creature.name} learned {move}!"
+    weakest = min(range(len(creature.moves)), key=lambda i: creature.moves[i][1])
+    old = creature.moves[weakest][0]
+    creature.moves[weakest] = (move, power)
+    return f"{creature.name} forgot {old} and learned {move}!"
+
+
+def give_title(creature, title):
+    """Gives a title once. Returns a message, or None if it already had it."""
+    if title in creature.titles:
+        return None
+    creature.titles.append(title)
+    if not creature.title:
+        creature.title = title
+    return f"{creature.name} earned the title {title}!"
+
+
+def bond_hearts(creature):
+    return min(5, creature.bond // BOND_STEP)
+
+
+def add_bond(creature, amount):
+    """Adds bond points. Returns any messages about new hearts."""
+    before = bond_hearts(creature)
+    creature.bond = min(BOND_MAX, creature.bond + amount)
+    after = bond_hearts(creature)
+    messages = []
+    if after > before:
+        messages.append(BOND_LINES[after].format(n=creature.name)
+                        + f" (Bond {after}/5)")
+        if after == 5:
+            move = BOND_MOVES.get(creature.types.split("/")[0],
+                                  "Wild Bond Strike")
+            if not any(m == move for m, _p in creature.moves):
+                messages.append(teach_move(creature, move, BOND_MOVE_POWER))
+            title = give_title(creature, "Best Friend")
+            if title:
+                messages.append(title)
+    return messages
+
+
+def is_mastered(creature, move):
+    return creature.mastery.get(move, 0) >= MASTERY_USES
+
+
+def use_move(creature, move):
+    """Counts one use of a move. Returns a message when it gets mastered."""
+    creature.mastery[move] = creature.mastery.get(move, 0) + 1
+    if creature.mastery[move] == MASTERY_USES:
+        return f"{creature.name} MASTERED {move}! (+{MASTERY_BONUS} power)"
+    return None
+
+
+# ==========================================
+# v18.0: SECRET AREAS AND LEGENDARY ENCOUNTERS
+# ==========================================
+
+SECRET_AREAS = {
+    "Hidden Cave": {
+        "types": ("Rock", "Ground", "Dark", "Ghost", "Bug"),
+        "sky": (30, 26, 40), "ground": (75, 62, 55),
+        "need": ("wins", 15), "hint": "Win 15 battles to find it",
+        "legend": "Terravion", "puzzle": None,
+    },
+    "Abandoned Lab": {
+        "types": ("Steel", "Electric", "Poison", "Psychic"),
+        "sky": (38, 46, 52), "ground": (88, 98, 104),
+        "need": ("caught", 25), "hint": "Catch 25 kinds of Pokemon",
+        "legend": "Chronolux", "puzzle": "lab",
+    },
+    "Mysterious Dimension": {
+        "types": ("Void", "Cosmic", "Psychic", "Dragon", "Ghost"),
+        "sky": (45, 18, 75), "ground": (28, 10, 48),
+        "need": ("trophies", 1), "hint": "Win the Battle Tournament",
+        "legend": "Voidragon", "puzzle": "rift",
+        "duo": ("Aetherion", "Varkrion"),
+    },
+}
+for _name, _area in SECRET_AREAS.items():
+    REGIONS[_name] = (_area["types"], _area["sky"], _area["ground"])
+
+AREA_LEGEND_CHANCE = 0.05   # chance the area's legendary appears
+DUO_CHANCE = 0.03           # chance of the Duo Legendary Battle
+
+# Puzzles: (intro, riddle, answers, index of the right answer)
+PUZZLES = {
+    "lab": ("A sealed door blocks the lab. Its keypad shows a riddle:",
+            "I have keys but open no locks. I have space but no room.",
+            ["A keyboard", "A piano", "A map", "A clock"], 0),
+    "rift": ("Three portals hum. A voice whispers from the dark:",
+             "The more you take, the more you leave behind. What am I?",
+             ["Coins", "Footsteps", "Shadows", "Memories"], 1),
+}
+
+# Special introductions for legendary Pokemon
+LEGEND_INTROS = {
+    "Terravion": ["The cave walls start to shake...",
+                  "Rocks crash down as TERRAVION rises from the earth!"],
+    "Chronolux": ["Every clock in the lab stops at once...",
+                  "CHRONOLUX steps out of a frozen moment!"],
+    "Voidragon": ["The stars go out one by one...",
+                  "VOIDRAGON tears through the dimension!"],
+    "NYSTRIA": ["The air tears open...",
+                "The legendary NYSTRIA appeared!"],
+}
+
+
+def legend_intro(enemy):
+    if enemy.name in LEGEND_INTROS:
+        return LEGEND_INTROS[enemy.name]
+    kind = RARE_KIND.get(enemy.name, "Legendary").upper()
+    return ["The sky goes dark and the ground trembles...",
+            f"The {kind} Pokemon {enemy.name.upper()} appeared!"]
+
+
+def empower_partner(partner, fallen):
+    """In a Duo battle, the survivor takes the fallen partner's power."""
+    best_move, best_power = max(fallen.moves, key=lambda m: m[1])
+    partner.types = (partner.types.split("/")[0] + "/"
+                     + fallen.types.split("/")[0])
+    partner.bonus += 8
+    partner.max_hp += 60
+    partner.hp = partner.max_hp
+    weakest = min(range(len(partner.moves)), key=lambda i: partner.moves[i][1])
+    partner.moves[weakest] = (best_move, best_power + 10)
+    return (f"{partner.name} absorbed {fallen.name}'s power! It became "
+            f"{partner.types}, fully healed and learned {best_move}!")
+
+
+# ==========================================
+# v18.0: TYPE MASTER CHALLENGES
+# Three trainers of one type. Win for coins, a badge, a title and a
+# SHINY Pokemon of that type.
+# ==========================================
+
+TYPE_CHALLENGES = {}
+for _type, _word in TYPE_WORD.items():
+    _pool = sorted(n for _num, n, ty in DEX_ALL
+                   if _type in ty.split("/")
+                   and n not in RARE_KIND and n != "NYSTRIA")
+    if len(_pool) < 6:
+        continue
+    _rng = random.Random(_type)
+    _picks = _rng.sample(_pool, min(9, len(_pool)))
+    while len(_picks) < 9:
+        _picks.append(_rng.choice(_pool))
+    TYPE_CHALLENGES[_type] = [
+        (f"{_word} Trainer", 25, _picks[0:3], 150),
+        (f"{_word} Expert", 32, _picks[3:6], 250),
+        (f"{_type} Master", 40, _picks[6:9], 400),
+    ]
+
+
+def challenge_prize(types):
+    """A random non-legendary Pokemon of this type, for the reward."""
+    pool = [n for _num, n, ty in DEX_ALL
+            if types in ty.split("/") and n not in RARE_KIND and n != "NYSTRIA"]
+    return random.choice(pool)
+
+
+# ==========================================
+# v18.0: BOSS REMATCHES
+# ==========================================
+
+def make_rematch_boss(name, number):
+    """A boss that gets stronger every rematch."""
+    _name, hp, bonus, moves = next(b for b in BOSS_DATA if b[0] == name)
+    boss = Creature(name, int(hp * (1 + 0.4 * number)) + 60 * number,
+                    [(m, 40 + 10 * number) for m in moves],
+                    level=40 + 10 * number, bonus=bonus + 6 * number)
+    boss.types = "Boss"
+    return boss
 
 
 # ==========================================
@@ -2577,7 +2814,8 @@ def creature_to_dict(c):
         "moves": [list(m) for m in c.moves],
         "level": c.level, "bonus": c.bonus, "xp": c.xp,
         "types": c.types, "pokedex_number": c.pokedex_number,
-        "shiny": c.shiny
+        "shiny": c.shiny, "bond": c.bond, "titles": c.titles,
+        "title": c.title, "mastery": c.mastery, "defeats": c.defeats
     }
 
 
@@ -2590,6 +2828,11 @@ def creature_from_dict(d):
     c.pokedex_number = d.get("pokedex_number")
     c.xp = int(d.get("xp", 0))
     c.shiny = bool(d.get("shiny", False))
+    c.bond = int(d.get("bond", 0))
+    c.titles = list(d.get("titles", []))
+    c.title = d.get("title", "")
+    c.mastery = dict(d.get("mastery", {}))
+    c.defeats = dict(d.get("defeats", {}))
     return c
 
 
@@ -3734,6 +3977,14 @@ def get_sprite(name, types="Unknown", size=160, shiny=False):
     return make_sprite(name, types, size)
 
 
+def draw_heart(surface, x, y, filled):
+    """A small heart for the bond meter."""
+    colour = (235, 70, 110) if filled else (70, 70, 95)
+    pygame.draw.circle(surface, colour, (x - 3, y), 4)
+    pygame.draw.circle(surface, colour, (x + 3, y), 4)
+    pygame.draw.polygon(surface, colour, [(x - 7, y + 1), (x + 7, y + 1), (x, y + 9)])
+
+
 def draw_star(surface, x, y, r=9, colour=(255, 215, 60)):
     """A small five-pointed star, used to mark shiny Pokemon."""
     points = []
@@ -3759,7 +4010,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v17.2!"
+        self.message = "Welcome to Pokemon: The New World v18.0!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -3786,10 +4037,22 @@ class Game:
         self.shiny_caught = set()
         self.events = set()
 
+        # New in v18.0
+        self.wins = 0
+        self.bosses_beaten = {}     # boss name -> times beaten
+        self.rematch_wins = {}      # boss name -> rematches won
+        self.master_badges = set()
+        self.puzzles_solved = set()
+        self.rematch = None         # boss name during a rematch
+        self.duo_partner = None     # second legendary in a Duo battle
+        self.intro_lines = []
+        self.puzzle = None
+
         self.buttons = []
         self.popup = ""
         self.popup_colour = WHITE
         self.flash = 0
+        self.mastery_flash = 0
 
         self.animation = None
         self.animation_start = 0
@@ -3822,6 +4085,11 @@ class Game:
             "region": self.region,
             "items": self.items,
             "events": sorted(self.events),
+            "wins": self.wins,
+            "bosses_beaten": self.bosses_beaten,
+            "rematch_wins": self.rematch_wins,
+            "type_badges": sorted(self.master_badges),
+            "puzzles": sorted(self.puzzles_solved),
         }
         return json.dumps(data)
 
@@ -3875,6 +4143,13 @@ class Game:
         self.shiny_caught = _int_set(dex.get("shiny", []))
         self.elite_trophies = int(data.get("elite_trophies", 0))
         self.events = set(data.get("events", []))
+        self.wins = int(data.get("wins", 0))
+        self.bosses_beaten = dict(data.get("bosses_beaten", {}))
+        self.rematch_wins = dict(data.get("rematch_wins", {}))
+        self.master_badges = set(data.get("type_badges", []))
+        self.puzzles_solved = set(data.get("puzzles", []))
+        self.rematch = None
+        self.duo_partner = None
         region = data.get("region", "The New World")
         self.region = region if region in REGIONS else "The New World"
         if "items" in data:   # saves from before v16.1 keep the free Potions
@@ -4189,12 +4464,13 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 17.2 - EVENT CODES", 150)
+        self.centred("VERSION 18.0 - BONDS, LEGENDS AND CHALLENGES", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
-        self.panel((20, 20, 230, 70))
-        self.text(f"Coins: {self.coins}", 38, 30, SMALL, GOLD)
+        self.panel((20, 20, 300, 70))
+        self.text(f"Coins: {self.coins}    Badges: {len(self.master_badges)}",
+                  38, 30, SMALL, GOLD)
         self.text(f"Trophies: {self.trophies}   Elite: {self.elite_trophies}",
                   38, 55, SMALL, GOLD)
 
@@ -4207,12 +4483,14 @@ class Game:
         screen.blit(get_sprite("Flame", "Fire", 170), (415, 225))
 
         cols = (200, 350, 500, 650)
-        label = "CONTINUE BATTLE" if self.enemy else "START BATTLE"
-        self.button(label, (200, 400, 290, 50), "battle")
-        self.button("TOURNAMENT", (500, 400, 140, 50),
+        self.button("CONTINUE" if self.enemy else "BATTLE",
+                    (200, 400, 140, 50), "battle")
+        self.button("TOURNAMENT", (350, 400, 140, 50),
                     "tournament", (120, 75, 160))
-        self.button("ELITE CUP", (650, 400, 140, 50), "elite",
+        self.button("ELITE CUP", (500, 400, 140, 50), "elite",
                     (150, 60, 120) if self.trophies else (70, 65, 85))
+        self.button("CHALLENGES", (650, 400, 140, 50), "challenges",
+                    (170, 90, 40))
 
         row = [("TEAM", "team", BLUE), ("POKE BALLS", "balls", BLUE),
                ("HEAL", "heal", (190, 70, 110)), ("FLY", "fly", (50, 130, 160))]
@@ -4262,22 +4540,129 @@ class Game:
 
     def draw_fly(self):
         self.background()
-        self.centred("FLY TO A REGION", 50, BIG, GOLD)
-        self.centred("Each region has its own common Pokemon types.", 92, SMALL)
-        self.panel((70, 112, 860, 490))
+        self.centred("FLY TO A REGION", 40, BIG, GOLD)
+        self.centred("Each region has its own common Pokemon types.", 80, SMALL)
+        self.panel((60, 100, 880, 510))
 
         for i, name in enumerate(REGION_NAMES):
             col, row = divmod(i, 5)
-            x, y = 90 + col * 420, 125 + row * 95
+            x, y = 80 + col * 430, 112 + row * 70
             favourite, sky, ground = REGIONS[name]
             colour = (45, 115, 75) if name == self.region else shade(sky, -25)
             label = name + ("  (HERE)" if name == self.region else "")
-            self.button(label, (x, y, 400, 44), ("fly_to", name), colour)
+            self.button(label, (x, y, 410, 40), ("fly_to", name), colour)
             info = ", ".join(favourite) if favourite else "Every type"
-            self.text(info, x + 8, y + 50, SMALL, GOLD)
+            self.text(info, x + 8, y + 44, SMALL, GOLD)
 
-        self.centred(self.message, 615, SMALL, GOLD)
-        self.button("BACK", (420, 640, 160, 45), "back")
+        self.centred("SECRET AREAS", 478, FONT, GOLD)
+        for i, name in enumerate(SECRET_AREAS):
+            area = SECRET_AREAS[name]
+            x, y = 80 + i * 285, 505
+            if self.area_unlocked(name):
+                colour = (45, 115, 75) if name == self.region else (95, 55, 135)
+                self.button(name, (x, y, 270, 44), ("fly_to", name), colour)
+                info = ", ".join(area["types"][:3])
+            else:
+                self.button("???", (x, y, 270, 44), ("locked", area["hint"]),
+                            (60, 60, 75))
+                info = area["hint"]
+            self.text(info, x + 6, y + 50, SMALL, GOLD)
+
+        self.centred(self.message, 625, SMALL, GOLD)
+        self.button("BACK", (420, 645, 160, 42), "back")
+
+    def draw_intro(self):
+        """A dramatic introduction before a legendary battle."""
+        self.background()
+        shade_layer = pygame.Surface((1000, 700), pygame.SRCALPHA)
+        shade_layer.fill((0, 0, 0, 150))
+        screen.blit(shade_layer, (0, 0))
+
+        pulse = (pygame.time.get_ticks() // 120) % 10
+        pygame.draw.circle(screen, GOLD, (500, 300), 120 + pulse * 4, 4)
+
+        if self.enemy:
+            if self.duo_partner:
+                screen.blit(get_sprite(self.enemy.name, self.enemy.types, 180,
+                                       shiny=self.enemy.shiny), (260, 200))
+                screen.blit(get_sprite(self.duo_partner.name,
+                                       self.duo_partner.types, 180), (560, 200))
+            else:
+                screen.blit(get_sprite(self.enemy.name, self.enemy.types, 200,
+                                       shiny=self.enemy.shiny), (400, 190))
+
+        for i, line in enumerate(self.intro_lines):
+            self.centred(line, 70 + i * 45, FONT if i else SMALL,
+                         GOLD if i == 1 else WHITE)
+
+        self.button("BATTLE!", (380, 560, 240, 60), "intro_go", (160, 50, 60))
+
+    def draw_puzzle(self):
+        self.background()
+        intro, riddle, answers, _right = PUZZLES[self.puzzle]
+        self.centred(self.region.upper(), 70, BIG, GOLD)
+        self.panel((120, 120, 760, 160))
+        self.centred(intro, 155, SMALL)
+        for i, line in enumerate(wrap_text(riddle, FONT, 700)):
+            self.centred(line, 200 + i * 34, FONT, GOLD)
+
+        for i, answer in enumerate(answers):
+            x = 180 + (i % 2) * 330
+            y = 320 + (i // 2) * 75
+            self.button(answer, (x, y, 310, 55), ("answer", i), (95, 55, 135))
+
+        self.centred(self.message, 500, SMALL, GOLD)
+        self.button("LATER", (420, 560, 160, 45), "back")
+
+    def draw_challenges(self):
+        self.background()
+        self.centred("CHALLENGES", 90, BIG, GOLD)
+        self.panel((220, 150, 560, 330))
+        self.button("TYPE MASTERS", (300, 185, 400, 60), "typemasters",
+                    (170, 90, 40))
+        self.centred("Beat 3 trainers of one type for a badge, a title "
+                     "and a SHINY Pokemon", 268, SMALL)
+        self.button("BOSS REMATCHES", (300, 320, 400, 60), "rematches",
+                    (145, 50, 60))
+        self.centred("Fight bosses you have beaten. They get stronger "
+                     "every time!", 403, SMALL)
+        self.centred(self.message, 510, SMALL, GOLD)
+        self.button("BACK", (420, 560, 160, 45), "back")
+
+    def draw_typemasters(self):
+        self.background()
+        self.centred("TYPE MASTER CHALLENGES", 40, BIG, GOLD)
+        self.centred(f"Badges: {len(self.master_badges)} / {len(TYPE_CHALLENGES)}",
+                     82, SMALL)
+        for i, types in enumerate(TYPE_CHALLENGES):
+            col, row = i % 4, i // 4
+            x, y = 70 + col * 220, 110 + row * 85
+            colour = shade(TYPE_COLOURS.get(types, (120, 120, 140)), -55)
+            self.button(types.upper(), (x, y, 200, 60),
+                        ("typemaster", types), colour)
+            if types in self.master_badges:
+                draw_star(screen, x + 182, y + 16, 10)
+        self.centred(self.message, 625, SMALL, GOLD)
+        self.button("BACK", (420, 645, 160, 42), "back")
+
+    def draw_rematches(self):
+        self.background()
+        self.centred("BOSS REMATCHES", 70, BIG, GOLD)
+        self.panel((150, 120, 700, 360))
+        for i, (name, hp, bonus, moves) in enumerate(BOSS_DATA):
+            y = 150 + i * 105
+            beaten = self.bosses_beaten.get(name, 0)
+            won = self.rematch_wins.get(name, 0)
+            self.text(name, 180, y, FONT)
+            if beaten:
+                self.text(f"Rematches won: {won}   Next: Rematch {won + 1} "
+                          f"(Lv {50 + 10 * won})", 180, y + 32, SMALL, GOLD)
+                self.button("FIGHT", (690, y + 2, 130, 50),
+                            ("rematch_boss", name), (145, 50, 60))
+            else:
+                self.text("Beat it in a wild battle first", 180, y + 32, SMALL)
+        self.centred(self.message, 510, SMALL, GOLD)
+        self.button("BACK", (420, 560, 160, 45), "back")
 
     def draw_typechart(self):
         self.background()
@@ -4343,16 +4728,30 @@ class Game:
 
         self.panel((35, 350, 420, 120))
         self.text(p.name, 60, 362, BIG)
+        if p.title:
+            self.text(p.title, 60 + BIG.size(p.name)[0] + 12, 374, SMALL, GOLD)
         if p.shiny:
             draw_star(screen, 340, 380)
         self.type_badges(p.types, 60, 398)
         self.text(f"HP: {p.hp}/{p.max_hp}", 60, 425, SMALL)
-        self.text(f"Lv {p.level}", 360, 372, SMALL, GOLD)
+        self.text(f"Lv {p.level}", 380, 401, SMALL, GOLD)
         self.text(f"XP {p.xp}/{xp_needed(p.level)}", 260, 425, SMALL)
         self.health_bar(60, 455, 350, p)
 
         screen.blit(get_sprite(e.name, e.types, shiny=e.shiny), (680, 155))
         screen.blit(get_sprite(p.name, p.types, shiny=p.shiny), (160, 190))
+
+        if self.duo_partner:
+            q = self.duo_partner
+            screen.blit(get_sprite(q.name, q.types, 110), (860, 230))
+            self.text(f"+ {q.name}", 860, 345, SMALL, GOLD)
+
+        if self.mastery_flash:
+            self.mastery_flash -= 1
+            for i in range(6):
+                angle = i * math.pi / 3 + self.mastery_flash * 0.2
+                draw_star(screen, 760 + 95 * math.cos(angle),
+                          235 + 95 * math.sin(angle), 11)
 
         if self.tournament:
             trainer = self.tournament_list()[self.tournament["round"]][0]
@@ -4376,7 +4775,12 @@ class Game:
         self.draw_animation()
 
         self.panel((20, 490, 960, 190))
-        self.text(self.message, 40, 505, SMALL, GOLD)
+        lines = wrap_text(self.message, SMALL, 920)
+        if len(lines) > 2:
+            lines = lines[:2]
+            lines[1] += " ..."
+        for i, line in enumerate(lines):
+            self.text(line, 40, 498 + i * 22, SMALL, GOLD)
 
         self.button("ATTACKS", (40, 550, 160, 45), "moves")
         self.button("SWITCH TEAM", (215, 550, 160, 45), "team")
@@ -4409,6 +4813,8 @@ class Game:
                 (270, 235 + i * 53, 460, 43),
                 ("move", i), colour
             )
+            if is_mastered(self.pokemon, move):
+                draw_star(screen, 717, 235 + i * 53 + 21, 9)
 
         self.button("BACK", (420, 440, 160, 35), "back")
 
@@ -4421,26 +4827,35 @@ class Game:
             y = 75 + (i // 3) * 145
 
             self.panel((x, y, 300, 130))
-            screen.blit(get_sprite(p.name, p.types, 100, shiny=p.shiny),
-                        (x + 5, y + 10))
+            screen.blit(get_sprite(p.name, p.types, 88, shiny=p.shiny),
+                        (x + 8, y + 6))
             if p.shiny:
                 draw_star(screen, x + 18, y + 18)
 
-            self.text(p.name, x + 110, y + 10, SMALL)
-            self.text(f"Lv {p.level}", x + 245, y + 10, SMALL, GOLD)
-            self.text("Type: " + p.types, x + 110, y + 32, SMALL)
-            self.text(f"HP {p.hp}/{p.max_hp}", x + 110, y + 52, SMALL)
+            self.text(p.name, x + 110, y + 8, SMALL)
+            self.text(f"Lv {p.level}", x + 258, y + 8, SMALL, GOLD)
+            if p.title:
+                self.text(p.title, x + 110, y + 29, SMALL, GOLD)
+            else:
+                self.text("Type: " + p.types, x + 110, y + 29, SMALL)
+            self.text(f"HP {p.hp}/{p.max_hp}", x + 110, y + 50, SMALL)
+            for h in range(5):
+                draw_heart(screen, x + 222 + h * 15, y + 58,
+                           h < bond_hearts(p))
             self.health_bar(x + 110, y + 75, 160, p)
+            if p.titles:
+                self.button("TITLE", (x + 8, y + 98, 90, 26), ("title", i),
+                            (150, 110, 30))
             upcoming = next_move_level(p.level)
             if upcoming:
-                self.text(f"Move Lv{upcoming}", x + 236, y + 102, SMALL, GOLD)
+                self.text(f"Move Lv{upcoming}", x + 216, y + 102, SMALL, GOLD)
 
             if i == self.active:
                 self.text("ACTIVE", x + 110, y + 100, SMALL, GOLD)
             elif p.fainted:
                 self.text("FAINTED", x + 110, y + 100, SMALL, RED)
             else:
-                self.button("SELECT", (x + 110, y + 95, 120, 28),
+                self.button("SELECT", (x + 110, y + 95, 100, 28),
                             ("switch", i))
 
         self.button("BACK", (790, 650, 160, 42), "back")
@@ -4521,7 +4936,7 @@ class Game:
     def draw_tournament(self):
         self.background()
         t = self.tournament
-        self.centred(TOURNAMENT_NAMES[t["tier"]], 45, BIG, GOLD)
+        self.centred(self.tournament_name(), 45, BIG, GOLD)
         self.panel((150, 90, 700, 400))
 
         for i, (trainer, level, names, prize) in enumerate(self.tournament_list()):
@@ -4542,8 +4957,8 @@ class Game:
         self.centred(self.message, 515, SMALL, GOLD)
 
         if t and t.get("won"):
-            self.button("CLAIM TROPHY", (350, 550, 300, 55),
-                        "claim_trophy", (170, 120, 30))
+            self.button("CLAIM REWARD" if t.get("type") else "CLAIM TROPHY",
+                        (350, 550, 300, 55), "claim_trophy", (170, 120, 30))
         else:
             self.button(f"START ROUND {t['round'] + 1}", (300, 550, 250, 55),
                         "next_round", (120, 75, 160))
@@ -4658,6 +5073,8 @@ class Game:
 
         self.active = 0
         self.enemy = None
+        self.duo_partner = None
+        self.rematch = None
         self.avatar_turns = 0
         self.pending_enemy_turn = False
         self.mode = "defeat"
@@ -4673,6 +5090,7 @@ class Game:
         self.coins += coins
 
         level_ups = gain_xp(self.pokemon, xp)
+        level_ups += self.battle_milestones(enemy)
         if self.pokemon.pokedex_number:
             # An evolved Pokemon counts as seen and caught in the Pokedex
             self.seen.add(self.pokemon.pokedex_number)
@@ -4683,6 +5101,31 @@ class Game:
         if level_ups:
             text += ". " + " ".join(level_ups)
         return text
+
+    def battle_milestones(self, enemy):
+        """Bond, titles and win counts after beating a Pokemon. (v18.0)"""
+        p = self.pokemon
+        notes = add_bond(p, BOND_WIN)
+
+        for t in enemy.types.split("/"):
+            if t == "Boss":
+                continue
+            p.defeats[t] = p.defeats.get(t, 0) + 1
+            if p.defeats[t] == HUNTER_TARGET:
+                notes.append(give_title(p, f"{TYPE_WORD.get(t, t)} Hunter"))
+
+        if enemy.types == "Boss":
+            notes.append(give_title(p, "Boss Breaker"))
+            if not self.tournament:
+                self.bosses_beaten[enemy.name] = (
+                    self.bosses_beaten.get(enemy.name, 0) + 1)
+
+        if p.hp < p.max_hp * 0.1:
+            notes.append(give_title(p, f"{type_word(p.types)} Survivor"))
+
+        if not self.tournament:
+            self.wins += 1
+        return [n for n in notes if n]
 
     # ======================================
     # SHOP
@@ -4706,7 +5149,26 @@ class Game:
     # ======================================
 
     def tournament_list(self):
+        if "rounds" in self.tournament:
+            return self.tournament["rounds"]
         return TOURNAMENTS[self.tournament["tier"]]
+
+    def tournament_name(self):
+        t = self.tournament
+        if t.get("type"):
+            return f"{t['type'].upper()} MASTER CHALLENGE"
+        return TOURNAMENT_NAMES[t["tier"]]
+
+    def start_type_challenge(self, types):
+        if self.enemy:
+            self.message = "Finish your current battle first!"
+            return
+        for pokemon in self.team:
+            pokemon.heal(pokemon.max_hp)
+        self.tournament = {"round": 0, "team": [], "index": 0, "tier": 0,
+                           "rounds": TYPE_CHALLENGES[types], "type": types}
+        self.mode = "tournament"
+        self.message = f"Beat 3 {types} trainers to earn the {types} Master badge!"
 
     def start_tournament(self, tier=0):
         if self.enemy:
@@ -4737,7 +5199,11 @@ class Game:
             self.message = "Your team needs to recover!"
             return
 
-        t["team"] = trainer_team(t["tier"], t["round"])
+        if "rounds" in t:
+            _trainer, level, names, _prize = t["rounds"][t["round"]]
+            t["team"] = [trainer_pokemon(n, level) for n in names]
+        else:
+            t["team"] = trainer_team(t["tier"], t["round"])
         t["index"] = 0
         self.enemy = t["team"][0]
 
@@ -4769,10 +5235,14 @@ class Game:
 
         if t["round"] >= len(self.tournament_list()):
             t["won"] = True
-            if t["tier"]:
+            if t.get("type"):
+                t["final_message"] = self.type_challenge_rewards(t["type"])
+            elif t["tier"]:
                 self.elite_trophies += 1
+                self.team_title("Elite Champion")
             else:
                 self.trophies += 1
+                self.team_title("Champion")
             self.message = (f"YOU BEAT {trainer.upper()}! You are the CHAMPION! "
                             f"+{prize} coins")
         else:
@@ -4783,6 +5253,117 @@ class Game:
                             f"Your team recovered some HP.")
 
         self.mode = "tournament"
+
+    def team_title(self, title):
+        for pokemon in self.team:
+            give_title(pokemon, title)
+
+    def type_challenge_rewards(self, types):
+        """Badge, titles and a SHINY Pokemon for a Type Master win."""
+        first = types not in self.master_badges
+        self.master_badges.add(types)
+        title = f"{TYPE_WORD[types]} Champion"
+        for pokemon in self.team:
+            if types in pokemon.types.split("/"):
+                give_title(pokemon, title)
+        text = f"{types} Master badge earned! Your {types} Pokemon became {title}s."
+        if first:
+            name = challenge_prize(types)
+            gift = trainer_pokemon(name, 30)
+            gift.shiny = True
+            if gift.pokedex_number:
+                self.seen.add(gift.pokedex_number)
+                self.caught.add(gift.pokedex_number)
+                self.shiny_caught.add(gift.pokedex_number)
+            if len(self.team) < PARTY_LIMIT:
+                self.team.append(gift)
+            else:
+                self.pc.append(gift)
+            text += f" A SHINY {name} joined you!"
+        return text
+
+    # ======================================
+    # BOSS REMATCHES (v18.0)
+    # ======================================
+
+    def start_rematch(self, name):
+        if self.enemy:
+            self.message = "Finish your current battle first!"
+            return
+        if not self.bosses_beaten.get(name):
+            self.message = f"Beat {name} in a wild battle first!"
+            return
+        if all(p.fainted for p in self.team):
+            self.message = "Your team needs to recover!"
+            return
+        self.send_out_healthy()
+        number = self.rematch_wins.get(name, 0) + 1
+        self.enemy = make_rematch_boss(name, number)
+        self.rematch = name
+        self.duo_partner = None
+        self.avatar_turns = 0
+        self.avatar_used = False
+        self.animation = None
+        self.pending_enemy_turn = False
+        self.mode = "battle"
+        self.message = f"REMATCH {number}! {name} is stronger than ever!"
+
+    # ======================================
+    # DUO LEGENDARY BATTLES (v18.0)
+    # ======================================
+
+    def duo_continue(self, fallen, before_text):
+        """The second legendary steps in and takes its partner's power."""
+        partner = self.duo_partner
+        self.duo_partner = None
+        change = empower_partner(partner, fallen)
+        self.enemy = partner
+        if partner.pokedex_number:
+            self.seen.add(partner.pokedex_number)
+        self.avatar_turns = 0
+        self.pending_enemy_turn = False
+        self.animation = None
+        self.mode = "battle"
+        self.message = f"{before_text} {change}"
+
+    # ======================================
+    # SECRET AREAS (v18.0)
+    # ======================================
+
+    def area_unlocked(self, name):
+        kind, amount = SECRET_AREAS[name]["need"]
+        have = {"wins": self.wins, "caught": len(self.caught),
+                "trophies": self.trophies}[kind]
+        return have >= amount
+
+    def area_encounter(self):
+        """A legendary or Duo battle in a secret area, or None."""
+        area = SECRET_AREAS.get(self.region)
+        if not area:
+            return None
+        puzzle = area["puzzle"]
+        if puzzle and puzzle not in self.puzzles_solved:
+            return None
+        if area.get("duo") and random.random() < DUO_CHANCE:
+            first, second = area["duo"]
+            lines = ["Two shadows circle overhead...",
+                     f"{first.upper()} and {second.upper()} appear TOGETHER!",
+                     "Defeat one and the other takes its power!"]
+            return make_species(first), make_species(second), lines
+        if random.random() < AREA_LEGEND_CHANCE:
+            enemy = make_species(area["legend"])
+            return enemy, None, legend_intro(enemy)
+        return None
+
+    def answer_puzzle(self, choice):
+        _intro, _riddle, _answers, right = PUZZLES[self.puzzle]
+        if choice == right:
+            self.puzzles_solved.add(self.puzzle)
+            self.puzzle = None
+            self.mode = "menu"
+            self.message = "The way opens! A legendary Pokemon now lives here..."
+        else:
+            self.message = "Nothing happens. Try again!"
 
     def end_tournament(self, message):
         self.tournament = None
@@ -4805,9 +5386,19 @@ class Game:
             return
 
         self.send_out_healthy()
-        self.enemy = random_enemy(self.region)
-        if self.enemy.pokedex_number:
-            self.seen.add(self.enemy.pokedex_number)
+        self.rematch = None
+        self.duo_partner = None
+        special = self.area_encounter()
+        if special:
+            self.enemy, self.duo_partner, intro = special
+        else:
+            self.enemy = random_enemy(self.region)
+            intro = None
+            if self.enemy.name == "NYSTRIA" or self.enemy.name in RARE_KIND:
+                intro = legend_intro(self.enemy)
+        for mon in (self.enemy, self.duo_partner):
+            if mon and mon.pokedex_number:
+                self.seen.add(mon.pokedex_number)
 
         self.avatar_turns = 0
         self.avatar_used = False
@@ -4826,6 +5417,14 @@ class Game:
 
         if self.enemy.shiny:
             self.message = "SHINY! " + self.message
+
+        if self.duo_partner:
+            self.message = (f"DUO BATTLE! {self.enemy.name} and "
+                            f"{self.duo_partner.name} appeared!")
+
+        if intro:
+            self.intro_lines = intro
+            self.mode = "intro"
 
     # ======================================
     # PLAYER ATTACK
@@ -4850,6 +5449,11 @@ class Game:
 
         move, power = p.moves[index]
         damage = power + random.randint(5, 15) + p.bonus
+        mastered = is_mastered(p, move)
+        if mastered:
+            damage += MASTERY_BONUS
+            self.mastery_flash = 14
+        mastery_note = use_move(p, move)
 
         if self.avatar_turns and p.name in SUN_TEAM:
             damage += 40
@@ -4867,11 +5471,27 @@ class Game:
             self.pending_enemy_turn = False
             reward_text = self.reward_win(e)
 
+            if mastery_note:
+                reward_text = join_text(reward_text, mastery_note)
+
             if self.tournament:
                 self.tournament_pokemon_beaten(e, reward_text)
                 return
 
-            self.message = f"{e.name} was defeated! {reward_text}"
+            if self.duo_partner:
+                self.duo_continue(e, join_text(f"{e.name} fell! {reward_text}", ""))
+                return
+
+            extra = ""
+            if self.rematch:
+                won = self.rematch_wins.get(self.rematch, 0) + 1
+                self.rematch_wins[self.rematch] = won
+                bonus = 150 * won
+                self.coins += bonus
+                extra = f" REMATCH WON! +{bonus} bonus coins."
+                self.rematch = None
+
+            self.message = f"{e.name} was defeated! {reward_text}{extra}"
             self.defeated_enemy = e
             self.enemy = None
             self.avatar_turns = 0
@@ -4879,6 +5499,10 @@ class Game:
         else:
             self.message = (f"{effect}{p.name} used {move}! "
                             f"{damage} damage!")
+            if mastered:
+                self.message = "MASTERED! " + self.message
+            if mastery_note:
+                self.message += " " + mastery_note
             self.pending_enemy_turn = True
 
     # ======================================
@@ -4909,12 +5533,20 @@ class Game:
             damage = max(1, damage - 15)
             self.avatar_turns -= 1
 
+        hung_on = False
+        if (damage >= p.hp and bond_hearts(p) >= 3
+                and random.random() < 0.2):
+            damage = max(0, p.hp - 1)
+            hung_on = True
+
         self.start_animation(move, False)
         p.take_damage(damage)
         self.show_hit(damage, RED)
 
         self.message = (f"{effect}{e.name} used {move}! "
                         f"You lost {damage} HP!")
+        if hung_on:
+            self.message += f" {p.name} hung on for you!"
 
         if p.fainted:
             fainted_name = p.name
@@ -5043,6 +5675,9 @@ class Game:
 
             shiny = "a SHINY " if caught.shiny else ""
             self.message = f"You caught {shiny}{caught.name}! Sent to {place}!"
+            if self.duo_partner:
+                self.duo_continue(caught, self.message)
+                return
             self.mode = "menu"
             self.animation = None
             self.pending_enemy_turn = False
@@ -5174,9 +5809,31 @@ class Game:
             elif kind == "use_item":
                 self.use_item(index)
             elif kind == "fly_to":
+                if index in SECRET_AREAS and not self.area_unlocked(index):
+                    self.message = f"Locked! {SECRET_AREAS[index]['hint']}."
+                    return
                 self.region = index
                 self.message = f"You flew to {index}!"
                 self.mode = "menu"
+                area = SECRET_AREAS.get(index)
+                if area and area["puzzle"] and area["puzzle"] not in self.puzzles_solved:
+                    self.puzzle = area["puzzle"]
+                    self.message = ""
+                    self.mode = "puzzle"
+            elif kind == "locked":
+                self.message = f"Locked! {index}."
+            elif kind == "answer":
+                self.answer_puzzle(index)
+            elif kind == "typemaster":
+                self.start_type_challenge(index)
+            elif kind == "rematch_boss":
+                self.start_rematch(index)
+            elif kind == "title":
+                p = self.team[index]
+                options = [""] + p.titles
+                p.title = options[(options.index(p.title) + 1) % len(options)]
+                self.message = (f"{p.name} is now {p.name} the {p.title}!"
+                                if p.title else f"{p.name} has no title shown.")
 
             return
 
@@ -5221,6 +5878,36 @@ class Game:
 
         elif action == "code_enter":
             self.enter_event_code()
+
+        elif action == "challenges" and self.mode == "menu":
+            if self.enemy:
+                self.message = "Finish or run from your battle first!"
+                return
+            self.message = ""
+            self.mode = "challenges"
+
+        elif action == "typemasters" and self.mode == "challenges":
+            self.message = "Pick a type. A gold star means you have its badge."
+            self.mode = "typemasters"
+
+        elif action == "rematches" and self.mode == "challenges":
+            self.message = ""
+            self.mode = "rematches"
+
+        elif action == "intro_go" and self.mode == "intro":
+            self.mode = "battle"
+
+        elif action == "back" and self.mode in ("typemasters", "rematches"):
+            self.message = ""
+            self.mode = "challenges"
+
+        elif action == "back" and self.mode in ("challenges", "puzzle"):
+            if self.mode == "puzzle":
+                self.message = "You can solve the puzzle later by flying back here."
+            else:
+                self.message = ""
+            self.puzzle = None
+            self.mode = "menu"
 
         elif action == "back" and self.mode == "code":
             self.mode = "menu"
@@ -5290,7 +5977,9 @@ class Game:
             self.end_tournament("You left the tournament.")
 
         elif action == "claim_trophy":
-            if self.tournament and self.tournament["tier"]:
+            if self.tournament and self.tournament.get("final_message"):
+                self.end_tournament(self.tournament["final_message"])
+            elif self.tournament and self.tournament["tier"]:
                 self.end_tournament(
                     f"Elite trophy won! You now have {self.elite_trophies}!")
             else:
@@ -5311,6 +6000,8 @@ class Game:
                 return
 
             self.enemy = None
+            self.duo_partner = None
+            self.rematch = None
             self.avatar_turns = 0
             self.animation = None
             self.pending_enemy_turn = False
@@ -5397,7 +6088,12 @@ class Game:
             "items": self.draw_items,
             "fly": self.draw_fly,
             "typechart": self.draw_typechart,
-            "code": self.draw_code
+            "code": self.draw_code,
+            "intro": self.draw_intro,
+            "puzzle": self.draw_puzzle,
+            "challenges": self.draw_challenges,
+            "typemasters": self.draw_typemasters,
+            "rematches": self.draw_rematches
         }
 
         while True:

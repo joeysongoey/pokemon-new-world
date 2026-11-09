@@ -1,4 +1,4 @@
-# Pokemon: The New World v17.2
+# Pokemon: The New World v18.0
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,30 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v18.0
+
+- **Bond system:** Pokemon gain bond for every battle they win. Every 20 points
+  is a heart (shown on the team screen) with its own line of dialogue. At 3 hearts
+  a Pokemon can hang on with 1 HP. At 5 hearts it learns its own Bond Strike move.
+- **Titles:** Pokemon earn titles like Void Hunter (beat 10 Void Pokemon),
+  Flame Champion (Fire Type Master), Glitch Survivor (win under 10% HP),
+  Boss Breaker, Champion and Best Friend. The title shows next to their name.
+  Tap TITLE on the team screen to change it.
+- **Move Mastery:** using a move 20 times masters it, adding +10 power, a gold
+  star and a gold sparkle when it hits.
+- **CHALLENGES** button on the menu:
+  - **Type Masters:** beat 3 trainers of one type (18 types) for coins, a badge,
+    a title and a SHINY Pokemon of that type.
+  - **Boss Rematches:** fight bosses you've beaten again. They get stronger
+    every time, with bonus coins for winning.
+- **Secret Areas** on the FLY screen: Hidden Cave (win 15 battles), Abandoned Lab
+  (catch 25 kinds) and Mysterious Dimension (win the Battle Tournament). Each has
+  its own wild Pokemon.
+- **Legendary encounters:** each secret area has its own legendary, with a
+  special introduction screen. The Lab and the Dimension have a riddle to solve first.
+- **Duo Legendary Battles:** in the Mysterious Dimension, Aetherion and Varkrion
+  can appear together. Beat or catch one and the other takes its power.
 
 ## What's new in v17.2
 
