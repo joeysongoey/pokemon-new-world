@@ -1,4 +1,4 @@
-# Pokemon: The New World v17.1
+# Pokemon: The New World v17.2
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -59,10 +59,15 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
 
+## What's new in v17.2
+
+- **EVENT CODE button** with an on-screen keyboard, so event codes work on
+  iPads and phones that block pop-up boxes. A real keyboard works too.
+
 ## What's new in v17.1
 
 - **Aura Brawler (#346), an event-only Pokemon.** It never appears in battles or
-  tournaments. Enter the secret event code in IMPORT CODE to get it. Your save stays
+  tournaments. Enter the secret code with the EVENT CODE button to get it. Your save stays
   as it is, and a save code exported afterwards keeps Aura Brawler.
 
 ## What's new in v17.0

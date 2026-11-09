@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v17.1")
+pygame.display.set_caption("Pokemon: The New World v17.2")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -3759,7 +3759,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v17.1!"
+        self.message = "Welcome to Pokemon: The New World v17.2!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -3797,6 +3797,7 @@ class Game:
 
         self.pc_page = 0
         self.chart_return = "menu"
+        self.code_text = ""
 
         if storage_read():
             self.message = "Save file found! Press LOAD to continue."
@@ -3929,6 +3930,17 @@ class Game:
         if self.apply_save(text):
             storage_write(text)
             self.message = "Save code imported and saved!"
+
+    def enter_event_code(self):
+        if not self.code_text:
+            self.message = "Type a code first!"
+            return
+        if is_gift_code(self.code_text):
+            self.claim_gift()
+            self.mode = "menu"
+        else:
+            self.message = "That code doesn't work. Check the spelling!"
+        self.code_text = ""
 
     def claim_gift(self):
         """Gives the event-only Aura Brawler, once per save."""
@@ -4177,7 +4189,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 17.0 - NEW MOVES BY LEVEL", 150)
+        self.centred("VERSION 17.2 - EVENT CODES", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -4218,8 +4230,35 @@ class Game:
         for x, (name, action) in zip(cols, row):
             self.button(name, (x, 562, 140, 44), action, (45, 115, 75))
 
-        if not WEB:
-            self.button("QUIT", (425, 614, 150, 40), "quit", (145, 50, 60))
+        if WEB:
+            self.button("EVENT CODE", (425, 614, 150, 40), "code",
+                        (150, 60, 120))
+        else:
+            self.button("EVENT CODE", (340, 614, 150, 40), "code",
+                        (150, 60, 120))
+            self.button("QUIT", (510, 614, 150, 40), "quit", (145, 50, 60))
+
+    def draw_code(self):
+        """On-screen keyboard for event codes. Works on iPads and phones."""
+        self.background()
+        self.centred("ENTER EVENT CODE", 60, BIG, GOLD)
+
+        self.panel((250, 105, 500, 70))
+        shown = self.code_text + ("_" if (pygame.time.get_ticks() // 500) % 2 else " ")
+        self.centred(shown, 140, BIG)
+
+        keys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        for i, ch in enumerate(keys):
+            col, row = i % 9, i // 9
+            self.button(ch, (155 + col * 77, 200 + row * 62, 67, 52),
+                        ("code_key", ch))
+
+        self.button("DELETE", (155, 455, 200, 50), "code_del", (145, 50, 60))
+        self.button("CLEAR", (400, 455, 200, 50), "code_clear", (145, 50, 60))
+        self.button("ENTER", (645, 455, 200, 50), "code_enter", (45, 115, 75))
+
+        self.centred(self.message, 550, SMALL, GOLD)
+        self.button("BACK", (420, 600, 160, 45), "back")
 
     def draw_fly(self):
         self.background()
@@ -5129,6 +5168,9 @@ class Game:
                 self.buy(*index)
             elif kind == "dex":
                 self.dex_selected = index
+            elif kind == "code_key":
+                if len(self.code_text) < 16:
+                    self.code_text += index
             elif kind == "use_item":
                 self.use_item(index)
             elif kind == "fly_to":
@@ -5162,6 +5204,27 @@ class Game:
         elif action == "pc":
             self.return_mode = self.mode
             self.mode = "pc"
+
+        elif action == "code" and self.mode == "menu":
+            if self.enemy:
+                self.message = "Finish or run from your battle first!"
+                return
+            self.code_text = ""
+            self.message = "Type the code, then press ENTER."
+            self.mode = "code"
+
+        elif action == "code_del":
+            self.code_text = self.code_text[:-1]
+
+        elif action == "code_clear":
+            self.code_text = ""
+
+        elif action == "code_enter":
+            self.enter_event_code()
+
+        elif action == "back" and self.mode == "code":
+            self.mode = "menu"
+            self.message = ""
 
         elif action == "back":
             if self.mode == "typechart":
@@ -5290,6 +5353,18 @@ class Game:
     # ======================================
 
     def handle_key(self, key):
+        # Typing on a real keyboard also works on the event code screen
+        if self.mode == "code" and key != pygame.K_ESCAPE:
+            if key == pygame.K_BACKSPACE:
+                self.do("code_del")
+            elif key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                self.do("code_enter")
+            else:
+                name = pygame.key.name(key).upper()
+                if len(name) == 1 and name.isalnum():
+                    self.do(("code_key", name))
+            return
+
         if key == pygame.K_ESCAPE:
             self.do("back")
 
@@ -5321,7 +5396,8 @@ class Game:
             "defeat": self.draw_defeat,
             "items": self.draw_items,
             "fly": self.draw_fly,
-            "typechart": self.draw_typechart
+            "typechart": self.draw_typechart,
+            "code": self.draw_code
         }
 
         while True:
