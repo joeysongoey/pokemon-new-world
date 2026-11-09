@@ -59,6 +59,13 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
 
+## What's new in v16.2
+
+- **Omni-Dex sprites:** 21 sprites cut from the Omni-Dex screenshot now appear in the game
+  for Embercub, Blazepaw, Pyroclaw, Frostbit, Glacieron, Cryowraith, Leaflet, Thornox,
+  Floragon, Mechling, Ironclast, Titanforge, Rockruffle, Cragoyle, Terradon, Starlingo,
+  Galaxion, Lumidrake, Shadelet, Hauntalon and Dreadgeist. The pictures are in `sprites/`.
+
 ## What's new in v16.1
 
 - **200 new Pokemon, #146 to #345**, bringing the Pokedex to 345. Every one has

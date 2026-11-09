@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import json
+import os
 import pygame
 import random
 import sys
@@ -21,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v16.1")
+pygame.display.set_caption("Pokemon: The New World v16.2")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -3356,7 +3357,47 @@ def make_nyxtera_sprite(size):
     return pygame.transform.smoothscale(s, (size, size))
 
 
+# Sprites cut from the Omni-Dex screenshot (in the sprites/ folder).
+# Each Pokemon name maps to one picture file.
+SPRITE_FILES = {
+    "Embercub": "fire1", "Blazepaw": "fire2", "Pyroclaw": "fire3",
+    "Frostbit": "ice1", "Glacieron": "ice2", "Cryowraith": "ice3",
+    "Leaflet": "flora1", "Thornox": "flora2", "Floragon": "flora3",
+    "Mechling": "mechA1", "Ironclast": "mechA2", "Titanforge": "mechA3",
+    "Rockruffle": "mechB1", "Cragoyle": "mechB2", "Terradon": "mechB3",
+    "Starlingo": "celestial1", "Galaxion": "celestial2", "Lumidrake": "celestial3",
+    "Shadelet": "null1", "Hauntalon": "null2", "Dreadgeist": "null3",
+}
+_picture_cache = {}
+
+
+def load_picture(name, size):
+    """Loads a sprite file, scaled to fit the size. Returns None if it can't."""
+    key = (name, size)
+    if key not in _picture_cache:
+        try:
+            image = pygame.image.load(
+                os.path.join("sprites", SPRITE_FILES[name] + ".png")
+            ).convert_alpha()
+            w, h = image.get_size()
+            factor = size / max(w, h)
+            image = pygame.transform.scale(
+                image, (max(1, int(w * factor)), max(1, int(h * factor))))
+        except Exception:
+            image = None
+        _picture_cache[key] = image
+    return _picture_cache[key]
+
+
 def make_sprite(name, types="Unknown", size=160):
+    if name in SPRITE_FILES:
+        picture = load_picture(name, size)
+        if picture is not None:
+            surface = pygame.Surface((size, size), pygame.SRCALPHA)
+            surface.blit(picture, ((size - picture.get_width()) // 2,
+                                   size - picture.get_height()))
+            return surface
+
     if name == "Flame":
         return make_flame(size)
 
@@ -4005,7 +4046,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 16.1 - EVOLUTION, REGIONS AND MORE", 150)
+        self.centred("VERSION 16.2 - EVOLUTION, REGIONS AND MORE", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
