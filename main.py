@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v18.2")
+pygame.display.set_caption("Pokemon: The New World v18.3")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -4728,6 +4728,58 @@ def wild_stage(name):
     return 2
 
 
+def add_detail(art, c1, c2, head_point, rng):
+    """Shading, rim light, an outline and a per-species pattern. (v18.3)"""
+    shape = pygame.mask.from_surface(art, 120)   # skips the ground shadow
+
+    # Each species gets its own markings: spots, stripes, speckles or none
+    pattern = rng.choice(("spots", "stripes", "speckles", "bands", "none"))
+    if pattern != "none":
+        marks = pygame.Surface(art.get_size(), pygame.SRCALPHA)
+        colour = shade(c2, -20) + (120,)
+        hx, hy = head_point
+        for _ in range(26):
+            x, y = rng.randint(8, 92), rng.randint(30, 92)
+            if (x - hx) ** 2 + (y - hy) ** 2 < 300:
+                continue   # keep the face clear
+            if pattern == "spots":
+                pygame.draw.circle(marks, colour, (x, y), rng.randint(2, 4))
+            elif pattern == "speckles":
+                pygame.draw.circle(marks, colour, (x, y), 1)
+            elif pattern == "stripes":
+                pygame.draw.line(marks, colour, (x, y), (x + 3, y + 9), 2)
+            else:
+                pygame.draw.line(marks, colour, (x - 5, y), (x + 5, y), 2)
+        inner = shape.copy()
+        inner.erase(shape, (-3, -3))
+        body = shape.copy()
+        body.erase(inner, (0, 0))
+        clip = body.to_surface(setcolor=(255, 255, 255, 255),
+                               unsetcolor=(255, 255, 255, 0))
+        marks.blit(clip, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        art.blit(marks, (0, 0))
+
+    # Shadow along the bottom-right edges, light along the top-left
+    dark = shape.copy()
+    dark.erase(shape, (-4, -4))
+    art.blit(dark.to_surface(setcolor=(10, 10, 30, 85),
+                             unsetcolor=(0, 0, 0, 0)), (0, 0))
+    light = shape.copy()
+    light.erase(shape, (2, 2))
+    art.blit(light.to_surface(setcolor=(255, 255, 255, 75),
+                              unsetcolor=(0, 0, 0, 0)), (0, 0))
+
+    # A crisp dark outline around the whole Pokemon
+    grown = pygame.mask.Mask(art.get_size())
+    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        grown.draw(shape, (dx, dy))
+    grown.erase(shape, (0, 0))
+    outline = grown.to_surface(setcolor=shade(c1, -110) + (255,),
+                               unsetcolor=(0, 0, 0, 0))
+    art.blit(outline, (0, 0))
+    return art
+
+
 def make_wild_sprite(name, types, size):
     parts = types.split("/")
     c1 = TYPE_COLOURS.get(parts[0], (150, 150, 170))
@@ -4756,6 +4808,8 @@ def make_wild_sprite(name, types, size):
         type_accent(art, parts[0], *tail_point)
         if len(parts) > 1:
             type_accent(art, parts[1], *head_point)
+
+    art = add_detail(art, c1, c2, head_point, rng)
 
     # First forms are smaller, final forms are full size
     scale = {1: 0.78, 2: 0.9, 3: 1.0}[stage]
@@ -5218,7 +5272,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v18.2!"
+        self.message = "Welcome to Pokemon: The New World v18.3!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -5672,7 +5726,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 18.2 - 546 POKEMON", 150)
+        self.centred("VERSION 18.3 - DETAILED SPRITES", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
