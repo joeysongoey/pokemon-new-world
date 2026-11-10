@@ -1,4 +1,4 @@
-# Pokemon: The New World v18.1
+# Pokemon: The New World v18.2
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,13 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v18.2
+
+- **100 more Pokemon, #447 to #546**, bringing the Pokedex to 546.
+- The new Lumidrake was renamed Radiadrake, since Lumidrake is already #59.
+- New Glitch-type moves: Data Rush, Byte Crash and Bit Flip.
+- Void now has a Type Master challenge (20 challenges in all).
 
 ## What's new in v18.1
 
