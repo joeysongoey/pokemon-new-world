@@ -1,4 +1,4 @@
-# Pokemon: The New World v18.0
+# Pokemon: The New World v18.1
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,16 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v18.1
+
+- **100 new Pokemon, #347 to #446**, bringing the Pokedex to 446. HP and attack
+  come from the stats list. The game doesn't use DEF and SPD yet.
+- Names already in the game were renamed: Snowhopper, Sparktusk, Lavaclaw,
+  Puffloon, Reeflisk, Psydrake, Cindermole, Thornlisk, Mindpixie, Blazelisk,
+  Bramblox, Frostowl, Nimbudrake, Rimefang and Shadebramble.
+- Light now has a Type Master challenge.
+- Fixed: single-type Pokemon from v16.1 no longer have the same move twice.
 
 ## What's new in v18.0
 
