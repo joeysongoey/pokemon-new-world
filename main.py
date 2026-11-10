@@ -4917,6 +4917,7 @@ SPRITE_FILES = {
     "Lucario": "brawler",
     "Aura Brawler": "aurabrawler",
     "Aetherion": "aetherion",
+    "Varkrion": "varkrion",
     "Luxray": "spark",
     "Suicune": "tidefin", "Gyarados": "stormfin", "Morpeko": "pouchbit",
     "Dialga": "gearwyrm", "Good MissingNo": "glitchbit", "Evil MissingNo": "voidbit",
