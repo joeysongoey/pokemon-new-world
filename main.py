@@ -4906,11 +4906,15 @@ def make_nyxtera_sprite(size):
 # Sprites cut from the Omni-Dex screenshot (in the sprites/ folder).
 # Each Pokemon name maps to one picture file.
 SPRITE_FILES = {
-    "Embercub": "fire1", "Blazepaw": "fire2", "Pyroclaw": "fire3",
-    "Frostbit": "ice1", "Glacieron": "ice2", "Cryowraith": "ice3",
+    "Embercub": "omni_embercub", "Blazepaw": "omni_blazepaw",
+    "Pyroclaw": "omni_pyroclaw",
+    "Frostbit": "omni_frostbit", "Glacieron": "omni_glacieron",
+    "Cryowraith": "omni_cryowraith",
+    "Aquaffin": "omni_aquaffin", "Abyssurge": "omni_abyssurge",
+    "Voltkit": "omni_voltkit",
     "Leaflet": "flora1", "Thornox": "flora2", "Floragon": "flora3",
-    "Mechling": "mechA1", "Ironclast": "mechA2", "Titanforge": "mechA3",
-    "Rockruffle": "mechB1", "Cragoyle": "mechB2", "Terradon": "mechB3",
+    "Mechling": "omni_mechling", "Ironclast": "mechA2", "Titanforge": "mechA3",
+    "Rockruffle": "omni_rockruffle", "Cragoyle": "mechB2", "Terradon": "mechB3",
     "Starlingo": "celestial1", "Galaxion": "celestial2", "Lumidrake": "celestial3",
     "Shadelet": "null1", "Hauntalon": "null2", "Dreadgeist": "null3",
     # Original pixel creature, drawn for the team (not a copy of any official design)

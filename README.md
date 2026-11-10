@@ -61,6 +61,9 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 
 ## What's new in v18.2
 
+- New sprites for Embercub, Blazepaw, Pyroclaw, Voltkit, Frostbit, Glacieron,
+  Cryowraith, Aquaffin, Abyssurge, Mechling and Rockruffle.
+
 - Aetherion has a new crystal dragon sprite, and Varkrion has a new shadow dragon sprite.
 
 - **100 more Pokemon, #447 to #546**, bringing the Pokedex to 546.
