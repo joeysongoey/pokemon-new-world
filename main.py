@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v18.3")
+pygame.display.set_caption("Pokemon: The New World v18.4")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -4288,6 +4288,77 @@ def draw_eye(s, x, y, r=4, angry=False, colour=EYE_DARK):
                          (x + r, y - r + 1), 2)
 
 
+# ==========================================
+# HIGH QUALITY SPRITES (v18.4)
+# Sprites are drawn at 3x size, then shrunk, for smooth sharp edges.
+# The drawing code still uses 0-100 coordinates; this scales them.
+# ==========================================
+
+HIRES = 3
+_REAL_DRAW = pygame.draw
+
+
+class _ScaledDraw:
+    """Stands in for pygame.draw while a sprite is being drawn."""
+
+    def __init__(self, k):
+        self.k = k
+
+    def _pt(self, p):
+        return (p[0] * self.k, p[1] * self.k)
+
+    def _rect(self, r):
+        r = tuple(r)
+        return (r[0] * self.k, r[1] * self.k, r[2] * self.k, r[3] * self.k)
+
+    def _w(self, width):
+        return width * self.k if width else 0
+
+    def polygon(self, s, colour, points, width=0):
+        return _REAL_DRAW.polygon(s, colour, [self._pt(p) for p in points],
+                                  self._w(width))
+
+    def ellipse(self, s, colour, rect, width=0):
+        return _REAL_DRAW.ellipse(s, colour, self._rect(rect), self._w(width))
+
+    def circle(self, s, colour, centre, radius, width=0):
+        return _REAL_DRAW.circle(s, colour, self._pt(centre),
+                                 radius * self.k, self._w(width))
+
+    def rect(self, s, colour, rect, width=0, *args, **kw):
+        return _REAL_DRAW.rect(s, colour, self._rect(rect), self._w(width))
+
+    def line(self, s, colour, a, b, width=1):
+        return _REAL_DRAW.line(s, colour, self._pt(a), self._pt(b),
+                               max(1, width * self.k))
+
+    def lines(self, s, colour, closed, points, width=1):
+        return _REAL_DRAW.lines(s, colour, closed,
+                                [self._pt(p) for p in points],
+                                max(1, width * self.k))
+
+    def arc(self, s, colour, rect, start, stop, width=1):
+        return _REAL_DRAW.arc(s, colour, self._rect(rect), start, stop,
+                              max(1, width * self.k))
+
+    def __getattr__(self, name):
+        return getattr(_REAL_DRAW, name)
+
+
+def art_canvas():
+    """A blank canvas for drawing a sprite in high quality."""
+    return pygame.Surface((100 * HIRES, 100 * HIRES), pygame.SRCALPHA)
+
+
+def draw_hires(maker, *args):
+    """Runs a sprite maker with every drawing call scaled up."""
+    pygame.draw = _ScaledDraw(HIRES)
+    try:
+        return maker(*args)
+    finally:
+        pygame.draw = _REAL_DRAW
+
+
 def shape_poly(s, fill, points, edge):
     pygame.draw.polygon(s, fill, points)
     pygame.draw.polygon(s, edge, points, 2)
@@ -4728,19 +4799,23 @@ def wild_stage(name):
     return 2
 
 
-def add_detail(art, c1, c2, head_point, rng):
-    """Shading, rim light, an outline and a per-species pattern. (v18.3)"""
+def add_detail(art, c1, c2, head_point, rng, k=HIRES, markings=True,
+               outline=True, rim=True):
+    """Shading, rim light, an outline and a per-species pattern. (v18.3)
+    k is how many real pixels make up one drawing unit."""
     shape = pygame.mask.from_surface(art, 120)   # skips the ground shadow
 
     # Each species gets its own markings: spots, stripes, speckles or none
     pattern = rng.choice(("spots", "stripes", "speckles", "bands", "none"))
+    if not markings:
+        pattern = "none"
     if pattern != "none":
         marks = pygame.Surface(art.get_size(), pygame.SRCALPHA)
         colour = shade(c2, -20) + (120,)
         hx, hy = head_point
         for _ in range(26):
             x, y = rng.randint(8, 92), rng.randint(30, 92)
-            if (x - hx) ** 2 + (y - hy) ** 2 < 300:
+            if (x - hx) ** 2 + (y - hy) ** 2 < 700:
                 continue   # keep the face clear
             if pattern == "spots":
                 pygame.draw.circle(marks, colour, (x, y), rng.randint(2, 4))
@@ -4751,7 +4826,7 @@ def add_detail(art, c1, c2, head_point, rng):
             else:
                 pygame.draw.line(marks, colour, (x - 5, y), (x + 5, y), 2)
         inner = shape.copy()
-        inner.erase(shape, (-3, -3))
+        inner.erase(shape, (-3 * k, -3 * k))
         body = shape.copy()
         body.erase(inner, (0, 0))
         clip = body.to_surface(setcolor=(255, 255, 255, 255),
@@ -4761,18 +4836,24 @@ def add_detail(art, c1, c2, head_point, rng):
 
     # Shadow along the bottom-right edges, light along the top-left
     dark = shape.copy()
-    dark.erase(shape, (-4, -4))
+    dark.erase(shape, (-4 * k, -4 * k))
     art.blit(dark.to_surface(setcolor=(10, 10, 30, 85),
                              unsetcolor=(0, 0, 0, 0)), (0, 0))
-    light = shape.copy()
-    light.erase(shape, (2, 2))
-    art.blit(light.to_surface(setcolor=(255, 255, 255, 75),
-                              unsetcolor=(0, 0, 0, 0)), (0, 0))
+    if rim:
+        light = shape.copy()
+        light.erase(shape, (2 * k, 2 * k))
+        art.blit(light.to_surface(setcolor=(255, 255, 255, 75),
+                                  unsetcolor=(0, 0, 0, 0)), (0, 0))
+
+    if not outline:
+        return art
 
     # A crisp dark outline around the whole Pokemon
     grown = pygame.mask.Mask(art.get_size())
-    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-        grown.draw(shape, (dx, dy))
+    for dx in range(-k, k + 1):
+        for dy in range(-k, k + 1):
+            if abs(dx) + abs(dy) <= k:
+                grown.draw(shape, (dx, dy))
     grown.erase(shape, (0, 0))
     outline = grown.to_surface(setcolor=shade(c1, -110) + (255,),
                                unsetcolor=(0, 0, 0, 0))
@@ -4797,7 +4878,7 @@ def make_wild_sprite(name, types, size):
     stage = wild_stage(name)
     rng = random.Random(name)  # same "random" details every time
 
-    art = pygame.Surface((100, 100), pygame.SRCALPHA)
+    art = art_canvas()
     pygame.draw.ellipse(art, (15, 20, 35, 110), (14, 86, 72, 11))
     tail_point, head_point = SHAPE_DRAWERS[SHAPES[name]](
         art, name, c1, c2, stage, rng)
@@ -4822,7 +4903,7 @@ def make_wild_sprite(name, types, size):
 
 def make_aetherion_sprite(size):
     """Aetherion: a starry cosmic dragon with psychic rings."""
-    s = pygame.Surface((100, 100), pygame.SRCALPHA)
+    s = art_canvas()
     deep = (28, 20, 70)
     purple = (96, 58, 170)
     pink = (255, 120, 210)
@@ -4871,7 +4952,7 @@ def make_aetherion_sprite(size):
 
 def make_varkrion_sprite(size):
     """Varkrion: an armoured shadow-steel beast with red eyes."""
-    s = pygame.Surface((100, 100), pygame.SRCALPHA)
+    s = art_canvas()
     black = (22, 20, 30)
     dark = (48, 44, 62)
     steel = (150, 160, 180)
@@ -4917,7 +4998,7 @@ def make_varkrion_sprite(size):
 
 def make_nyxtera_sprite(size):
     """Eclipsar: a void dragon with horns, wide wings and star markings."""
-    s = pygame.Surface((100, 100), pygame.SRCALPHA)
+    s = art_canvas()
     night = (20, 20, 45)
     body = (55, 60, 110)
     star = (140, 230, 255)
@@ -5008,10 +5089,22 @@ def make_sprite(name, types="Unknown", size=160):
             surface = pygame.Surface((size, size), pygame.SRCALPHA)
             surface.blit(picture, ((size - picture.get_width()) // 2,
                                    size - picture.get_height()))
-            return surface
+            # Soft shading and a light edge, like the drawn sprites
+            return add_detail(surface, WHITE, WHITE, (0, 0), random.Random(name),
+                              k=max(1, size // 80), markings=False,
+                              outline=False, rim=False)
 
+    # Flame and NYSTRIA keep their original look
     if name == "Flame":
         return make_flame(size)
+
+    if name == "NYSTRIA":
+        return make_nystria_sprite(size)
+
+    return draw_hires(make_drawn_sprite, name, types, size)
+
+
+def make_drawn_sprite(name, types, size):
 
     if name == "Eclipsar":
         return make_nyxtera_sprite(size)
@@ -5022,16 +5115,13 @@ def make_sprite(name, types="Unknown", size=160):
     if name == "Varkrion":
         return make_varkrion_sprite(size)
 
-    if name == "NYSTRIA":
-        return make_nystria_sprite(size)
-
     if name in SHAPES:
         return make_wild_sprite(name, types, size)
 
     base = primary_type(types) if types != "Unknown" else "Normal"
     colour = TYPE_COLOURS.get(base, (120, 150, 200))
 
-    s = pygame.Surface((100, 100), pygame.SRCALPHA)
+    s = art_canvas()
 
     dark_colour = tuple(max(0, c - 65) for c in colour)
     light_colour = tuple(min(255, c + 65) for c in colour)
@@ -5272,7 +5362,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v18.3!"
+        self.message = "Welcome to Pokemon: The New World v18.4!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -5726,7 +5816,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 18.3 - DETAILED SPRITES", 150)
+        self.centred("VERSION 18.4 - HIGH QUALITY SPRITES", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies

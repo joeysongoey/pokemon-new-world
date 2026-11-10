@@ -1,4 +1,4 @@
-# Pokemon: The New World v18.3
+# Pokemon: The New World v18.4
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,13 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v18.4
+
+- **High quality sprites:** every drawn Pokemon is now drawn at 3x size and
+  shrunk, so edges are smooth and sharp instead of blurry.
+- Picture sprites get soft shading too.
+- Flame and NYSTRIA keep their original look.
 
 ## What's new in v18.3
 
