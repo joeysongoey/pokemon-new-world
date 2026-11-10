@@ -5058,6 +5058,7 @@ SPRITE_FILES = {
     "Aetherion": "aetherion",
     "Varkrion": "varkrion",
     "Eclipsar": "eclipsar2",
+    "NYSTRIA": "nystria",
     "Luxray": "spark",
     "Suicune": "tidefin", "Gyarados": "stormfin", "Morpeko": "pouchbit",
     "Dialga": "gearwyrm", "Good MissingNo": "glitchbit", "Evil MissingNo": "voidbit",
