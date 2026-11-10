@@ -61,6 +61,8 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 
 ## What's new in v18.2
 
+- Aetherion has a new crystal dragon sprite.
+
 - **100 more Pokemon, #447 to #546**, bringing the Pokedex to 546.
 - The new Lumidrake was renamed Radiadrake, since Lumidrake is already #59.
 - New Glitch-type moves: Data Rush, Byte Crash and Bit Flip.

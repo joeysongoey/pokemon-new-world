@@ -4916,6 +4916,7 @@ SPRITE_FILES = {
     # Original pixel creature, drawn for the team (not a copy of any official design)
     "Lucario": "brawler",
     "Aura Brawler": "aurabrawler",
+    "Aetherion": "aetherion",
     "Luxray": "spark",
     "Suicune": "tidefin", "Gyarados": "stormfin", "Morpeko": "pouchbit",
     "Dialga": "gearwyrm", "Good MissingNo": "glitchbit", "Evil MissingNo": "voidbit",
