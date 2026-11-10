@@ -5054,7 +5054,7 @@ SPRITE_FILES = {
     "Shadelet": "null1", "Hauntalon": "null2", "Dreadgeist": "null3",
     # Original pixel creature, drawn for the team (not a copy of any official design)
     "Lucario": "brawler",
-    "Aura Brawler": "aurabrawler",
+    "Aura Brawler": "aurabrawler2",
     "Aetherion": "aetherion",
     "Varkrion": "varkrion",
     "Eclipsar": "eclipsar",

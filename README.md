@@ -62,6 +62,7 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 ## What's new in v18.4
 
 - Eclipsar has a new eclipse dragon sprite.
+- Aura Brawler has a new armoured sprite with blue aura fists.
 
 - **High quality sprites:** every drawn Pokemon is now drawn at 3x size and
   shrunk, so edges are smooth and sharp instead of blurry.
