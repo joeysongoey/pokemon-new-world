@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v18.5")
+pygame.display.set_caption("Pokemon: The New World v18.6")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -3557,6 +3557,13 @@ for _move_name, _power, _move_type in NEW_INFO["Aura Brawler"]["moves"]:
 NEW_RARE.append((346, "Aura Brawler", "Fighting/Steel"))
 RARE_KIND["Aura Brawler"] = "Event"   # not in RARE_CHANCE, so it never appears
 
+# Aetherion and Varkrion are only earned in the Trial of the Deep (v18.6)
+TRIAL_DUO = ("Aetherion", "Varkrion")
+TRIAL_LEVEL = 100
+TRIAL_REWARD_LEVEL = 70
+for _name in TRIAL_DUO:
+    RARE_CHANCE.pop(_name, None)
+
 WILD_POKEMON += NEW_COMMON
 DEX_ALL = sorted(WILD_POKEMON + NEW_RARE + AREA_ONLY)
 AREA_NAMES = {name for _num, name, _types in AREA_ONLY}
@@ -4159,7 +4166,6 @@ SECRET_AREAS = {
         "sky": (45, 18, 75), "ground": (28, 10, 48),
         "need": ("trophies", 1), "hint": "Win the Tournament",
         "legend": "Voidragon", "puzzle": "rift",
-        "duo": ("Aetherion", "Varkrion"),
     },
     # Unlocked only by the XRENCHA event code (v18.5)
     "Xrencha": {
@@ -4265,6 +4271,17 @@ def challenge_prize(types):
 # ==========================================
 # v18.0: BOSS REMATCHES
 # ==========================================
+
+def make_trial_legend(name):
+    """Aetherion or Varkrion at Lv 100, as strong as a fully trained Pokemon."""
+    mon = make_species(name, TRIAL_LEVEL)
+    grown = TRIAL_LEVEL - 5
+    mon.max_hp = int((NEW_INFO[name]["hp"] + 8 * grown) * 2.2)
+    mon.hp = mon.max_hp
+    mon.bonus = NEW_INFO[name]["bonus"] + 2 * grown
+    mon.moves = [(m, p + 20) for m, p in mon.moves]
+    return mon
+
 
 def make_rematch_boss(name, number):
     """A boss that gets stronger every rematch."""
@@ -5932,7 +5949,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v18.5!"
+        self.message = "Welcome to Pokemon: The New World v18.6!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -5969,6 +5986,7 @@ class Game:
         self.duo_partner = None     # second legendary in a Duo battle
         self.intro_lines = []
         self.puzzle = None
+        self.trial = False          # True during the Trial of the Deep (v18.6)
 
         self.buttons = []
         self.popup = ""
@@ -6400,8 +6418,8 @@ class Game:
     def draw_menu(self):
         self.background()
 
-        self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 18.5 - A NEW LOCATION ONLY TO THE WORTHY", 150)
+        self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
+        self.centred("VERSION 18.6 - TRIAL OF THE DEEP", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -6418,6 +6436,23 @@ class Game:
 
         # Show Flame on the main menu
         screen.blit(get_sprite("Flame", "Fire", 170), (415, 225))
+
+        # Xrencha only has three options (v18.6)
+        if self.region == "Xrencha":
+            self.button("CONTINUE" if self.enemy else "BATTLE",
+                        (215, 420, 160, 56), "battle")
+            label = ("CONTINUE TRIAL" if self.trial and self.enemy
+                     else "TRIAL OF THE DEEP")
+            self.button(label, (390, 420, 220, 56), "trial", (40, 60, 130))
+            self.button("FLY", (625, 420, 160, 56), "fly", (50, 130, 160))
+            if "trial_deep" in self.events:
+                self.centred("Trial of the Deep: COMPLETE", 500, SMALL, GOLD)
+            else:
+                self.centred("Win the Trial of the Deep to earn the Legendary Duo",
+                             500, SMALL, GOLD)
+            self.centred("Fly back to another region to heal, shop and save.",
+                         530, SMALL)
+            return
 
         cols = (200, 350, 500, 650)
         self.button("CONTINUE" if self.enemy else "BATTLE",
@@ -7004,11 +7039,15 @@ class Game:
     def team_defeated(self):
         for pokemon in self.team:
             pokemon.heal(pokemon.max_hp)
+        failed_trial = self.trial
+        self.trial = False
 
         if self.tournament:
             round_number = self.tournament["round"] + 1
             self.tournament = None
             self.message = f"You were knocked out of the tournament in Round {round_number}."
+        elif failed_trial:
+            self.message = "You failed the Trial of the Deep. Train harder and try again!"
         else:
             self.message = ""
 
@@ -7250,6 +7289,58 @@ class Game:
         self.message = f"REMATCH {number}! {name} is stronger than ever!"
 
     # ======================================
+    # TRIAL OF THE DEEP (v18.6)
+    # ======================================
+
+    def start_trial(self):
+        if self.region != "Xrencha":
+            self.message = "The Trial of the Deep is only in Xrencha!"
+            return
+        if self.enemy:
+            self.message = "Finish your current battle first!"
+            return
+        for pokemon in self.team:
+            pokemon.heal(pokemon.max_hp)
+        self.send_out_healthy()
+        first, second = TRIAL_DUO
+        self.enemy = make_trial_legend(first)
+        self.duo_partner = make_trial_legend(second)
+        for mon in (self.enemy, self.duo_partner):
+            self.seen.add(mon.pokedex_number)
+        self.trial = True
+        self.rematch = None
+        self.avatar_turns = 0
+        self.avatar_used = False
+        self.animation = None
+        self.pending_enemy_turn = False
+        self.message = "TRIAL OF THE DEEP! Aetherion and Varkrion, both Lv 100!"
+        self.intro_lines = ["Your team is healed. The ground falls away into the deep...",
+                            "AETHERION and VARKRION rise at Lv 100!",
+                            "Defeat them both to earn the Legendary Duo!"]
+        self.mode = "intro"
+
+    def trial_reward(self):
+        """Gives the Legendary Duo the first time the trial is won."""
+        self.trial = False
+        if "trial_deep" in self.events:
+            return " You beat the Trial of the Deep again!"
+        self.events.add("trial_deep")
+        for name in TRIAL_DUO:
+            mon = make_species(name, 30)
+            gain_xp(mon, sum(xp_needed(lv) for lv in range(30, TRIAL_REWARD_LEVEL)))
+            mon.hp = mon.max_hp
+            self.seen.add(mon.pokedex_number)
+            self.caught.add(mon.pokedex_number)
+            if len(self.team) < PARTY_LIMIT:
+                self.team.append(mon)
+            else:
+                self.pc.append(mon)
+        self.coins += 1000
+        storage_write(self.save_text())
+        return (" TRIAL COMPLETE! Aetherion and Varkrion joined you! "
+                "+1000 coins. Game saved.")
+
+    # ======================================
     # DUO LEGENDARY BATTLES (v18.0)
     # ======================================
 
@@ -7431,6 +7522,8 @@ class Game:
                 return
 
             extra = ""
+            if self.trial:
+                extra = self.trial_reward()
             if self.rematch:
                 won = self.rematch_wins.get(self.rematch, 0) + 1
                 self.rematch_wins[self.rematch] = won
@@ -7572,6 +7665,11 @@ class Game:
 
         if self.tournament:
             self.message = "You can't catch another trainer's Pokemon!"
+            self.mode = "battle"
+            return
+
+        if self.trial:
+            self.message = "The trial legendaries can't be caught. Defeat them both!"
             self.mode = "battle"
             return
 
@@ -7827,6 +7925,12 @@ class Game:
         elif action == "code_enter":
             self.enter_event_code()
 
+        elif action == "trial" and self.mode == "menu":
+            if self.trial and self.enemy:
+                self.mode = "battle"
+            else:
+                self.start_trial()
+
         elif action == "challenges" and self.mode == "menu":
             if self.enemy:
                 self.message = "Finish or run from your battle first!"
@@ -7947,6 +8051,8 @@ class Game:
                 self.end_tournament("You forfeited the tournament.")
                 return
 
+            was_trial = self.trial
+            self.trial = False
             self.enemy = None
             self.duo_partner = None
             self.rematch = None
@@ -7954,7 +8060,8 @@ class Game:
             self.animation = None
             self.pending_enemy_turn = False
             self.mode = "menu"
-            self.message = "You escaped from battle!"
+            self.message = ("You fled the Trial of the Deep." if was_trial
+                            else "You escaped from battle!")
 
         elif action == "menu":
             if self.animation:

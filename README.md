@@ -1,4 +1,4 @@
-# Pokemon: The New World v18.5
+# Pokemon: The New World v18.6
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,16 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v18.6
+
+- **Xrencha menu:** in Xrencha the main menu only has BATTLE, TRIAL OF THE DEEP
+  and FLY. Fly to another region to heal, shop and save.
+- **Trial of the Deep:** fight Aetherion and Varkrion together at Lv 100. Your team
+  is healed first, and they can't be caught. Win to get both as Lv 70 Pokemon plus
+  1000 coins (first win only). You'll need a team around Lv 80.
+- Aetherion and Varkrion no longer appear in the wild or in the Mysterious
+  Dimension. The trial is the only way to get them.
 
 ## What's new in v18.5
 
