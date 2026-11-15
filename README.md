@@ -1,4 +1,4 @@
-# Pokemon: The New World v18.9
+# Pokemon: The New World v19.0
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,18 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v19.0
+
+- **EXPLORE:** walk around a retro world as your own trainer. Use the on-screen
+  D-pad, or arrow keys and WASD. A (Space or Enter) talks or uses things, and
+  B (X) closes messages.
+- **Hometown:** walk into HEAL to heal your team and SHOP to buy things. Read the
+  signpost.
+- **Tall grass:** wild Pokemon jump out as you walk, and battles use the normal
+  battle screen. After the battle you're back where you were.
+- **Route to the Sungolia Temple:** the road east of town leads to the temple. If
+  you've unlocked Xrencha, its doors open Story Mode.
 
 ## What's new in v18.9
 

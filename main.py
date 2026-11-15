@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v18.9")
+pygame.display.set_caption("Pokemon: The New World v19.0")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -4631,6 +4631,113 @@ def make_rematch_boss(name, number):
 
 
 # ==========================================
+# EXPLORE: A WORLD TO WALK AROUND (v19.0)
+# Map pictures are in sprites/map_*.png. Each map has a grid:
+#   . walk   , tall grass   # blocked   i sign
+#   H heal   S shop   h house   T temple door   < > exits
+# ==========================================
+
+WORLD = {
+    "town": {
+        "name": "Hometown",
+        "grid": [
+            "################################",
+            "#..............................#",
+            "#.....................,,,,,,,,.#",
+            "#.#####.....####....#.,,,,,,,,.#",
+            "#.#####.....####......,,,,,,,,.#",
+            "#.#####.....####......,,,,,,,,.#",
+            "#.##H##.....##S#.....#,,,,,,,,.#",
+            "#.....................,,,,,,,,.#",
+            "#......#..............,,,,,,,,.#",
+            "#..............................#",
+            "#.....................#........#",
+            "#..............................>",
+            "#..............................>",
+            "#............###....i..........#",
+            "#............###...............#",
+            "#.######.....#h#..#..,,,,,,,,..#",
+            "#.######....#........,,,,,,,,..#",
+            "#.######.............,,,,,,,,..#",
+            "#.######............#,,,,,,,,..#",
+            "#.######...########..,,,,,,,,..#",
+            "#.................#............#",
+            "################################",
+        ],
+        "signs": {"20,13": "East: Route to the Sungolia Temple"},
+    },
+    "temple": {
+        "name": "Route to the Sungolia Temple",
+        "grid": [
+            "################################",
+            "#.........############.........#",
+            "#..,,,,,,.############.,,,,,,,.#",
+            "#..,,,,,,.############.,,,,,,,.#",
+            "#..,,,,,,.############.,,,,,,,.#",
+            "#..,,,,,,.#####TT#####.,,,,,,,.#",
+            "#..,,,,,,..............,,,,,,,.#",
+            "#..,,,,,,..............,,,,,,,.#",
+            "#..,,,,,,..............,,,,#,,.#",
+            "#........#...i......#.#........#",
+            "#..#....................#####..#",
+            "<.......................#####..#",
+            "<.......................#####..#",
+            "#............................#.#",
+            "#..,,,,,,#,.#......,#,,,,,,,,..#",
+            "#..,,,,,,,,........,,,,,,,,,,..#",
+            "#..,,,,,,,,........,,,,,,,,,,..#",
+            "#..,,,,,,,,........,,,,,,,,,,..#",
+            "#..,,,#,,,,........,,,,,,,#,,..#",
+            "#..,,,,,,,,........,,,,,,,,,,..#",
+            "#..............................#",
+            "################################",
+        ],
+        "signs": {"13,9": "The Sungolia Temple, built to honour the Sun Pokemon"},
+    },
+}
+WORLD_EXITS = {("town", ">"): ("temple", 1), ("temple", "<"): ("town", 30)}
+WORLD_TILE = 32             # each map square on screen
+WORLD_STEP_FRAMES = 9       # frames to walk one square
+WORLD_ENCOUNTER = 0.12      # chance of a wild Pokemon per step in tall grass
+WORLD_WALKABLE = ".,<>"
+DIRECTIONS = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
+
+_world_pictures = {}
+
+
+def world_picture(name):
+    """The map picture, scaled up to screen size. Loaded once."""
+    if name not in _world_pictures:
+        picture = pygame.image.load(os.path.join("sprites", f"map_{name}.png"))
+        picture = picture.convert()
+        _world_pictures[name] = pygame.transform.scale(
+            picture, (picture.get_width() * 2, picture.get_height() * 2))
+    return _world_pictures[name]
+
+
+def trainer_frames():
+    """Walking frames for the player: 3 per direction."""
+    if "trainer" not in _world_pictures:
+        sheet = pygame.image.load(os.path.join("sprites", "trainer.png"))
+        sheet = sheet.convert_alpha()
+        frames = {}
+        for row, direction in enumerate(("down", "up", "left", "right")):
+            frames[direction] = [
+                pygame.transform.scale(sheet.subsurface((col * 16, row * 20, 16, 20)),
+                                       (32, 40))
+                for col in range(3)]
+        _world_pictures["trainer"] = frames
+    return _world_pictures["trainer"]
+
+
+def world_tile(world, x, y):
+    grid = WORLD[world]["grid"]
+    if 0 <= y < len(grid) and 0 <= x < len(grid[0]):
+        return grid[y][x]
+    return "#"
+
+
+# ==========================================
 # SHINY POKEMON (new in v16.1)
 # ==========================================
 
@@ -6288,7 +6395,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v18.9!"
+        self.message = "Welcome to Pokemon: The New World v19.0!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -6327,6 +6434,15 @@ class Game:
         self.intro_lines = []
         self.puzzle = None
         self.trial = False          # True during the Trial of the Deep (v18.6)
+
+        # Explore mode (v19.0)
+        self.exploring = False
+        self.world = "town"
+        self.wx, self.wy = 9, 10
+        self.facing = "down"
+        self.step = None            # (dx, dy, frames done) while walking
+        self.step_count = 0
+        self.world_msg = ""
         self.story_step = 0         # where you are in story mode (v18.7)
         self.story_battle = False
         self.story_pending = False  # show CONTINUE STORY after a story win
@@ -6772,7 +6888,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 18.9 - THE FULL STORY", 165)
+        self.centred("VERSION 19.0 - EXPLORE THE WORLD", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -6836,12 +6952,16 @@ class Game:
             self.button(name, (x, 562, 140, 44), action, (45, 115, 75))
 
         if WEB:
-            self.button("EVENT CODE", (425, 614, 150, 40), "code",
+            self.button("EXPLORE", (340, 614, 150, 40), "explore",
+                        (60, 150, 80))
+            self.button("EVENT CODE", (510, 614, 150, 40), "code",
                         (150, 60, 120))
         else:
-            self.button("EVENT CODE", (340, 614, 150, 40), "code",
+            self.button("EXPLORE", (255, 614, 150, 40), "explore",
+                        (60, 150, 80))
+            self.button("EVENT CODE", (425, 614, 150, 40), "code",
                         (150, 60, 120))
-            self.button("QUIT", (510, 614, 150, 40), "quit", (145, 50, 60))
+            self.button("QUIT", (595, 614, 150, 40), "quit", (145, 50, 60))
 
     def draw_code(self):
         """On-screen keyboard for event codes. Works on iPads and phones."""
@@ -6907,6 +7027,63 @@ class Game:
         if name == STORY_CATCH and "xlovon_named" not in self.events:
             return HIDDEN_NAME
         return name
+
+    def draw_explore(self):
+        self.world_update()
+        if self.mode != "explore":
+            return    # a battle, shop or story started this frame
+
+        picture = world_picture(self.world)
+        px = self.wx * WORLD_TILE
+        py = self.wy * WORLD_TILE
+        frame = 0
+        if self.step:
+            dx, dy, done = self.step
+            px += dx * WORLD_TILE * done // WORLD_STEP_FRAMES
+            py += dy * WORLD_TILE * done // WORLD_STEP_FRAMES
+            frame = 1 + (self.step_count % 2)
+
+        cam_x = max(0, min(picture.get_width() - WIDTH, px + 16 - WIDTH // 2))
+        cam_y = max(0, min(picture.get_height() - HEIGHT, py + 16 - HEIGHT // 2))
+        screen.fill(BLACK)
+        screen.blit(picture, (-cam_x, -cam_y))
+
+        sx, sy = px - cam_x, py - cam_y
+        pygame.draw.ellipse(screen, (30, 50, 30), (sx + 5, sy + 24, 22, 9))
+        screen.blit(trainer_frames()[self.facing][frame], (sx, sy - 10))
+
+        # Area name
+        name = WORLD[self.world]["name"]
+        self.panel((16, 14, SMALL.size(name)[0] + 30, 34))
+        self.text(name, 31, 21, SMALL, GOLD)
+
+        # Message box
+        if self.world_msg:
+            self.panel((230, 600, 540, 80))
+            for i, line in enumerate(wrap_text(self.world_msg, SMALL, 510)[:3]):
+                self.text(line, 245, 610 + i * 21, SMALL)
+
+        # Touch controls
+        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        for direction, rect in self.dpad_rects().items():
+            pygame.draw.rect(overlay, (20, 22, 34, 170), rect, border_radius=10)
+            pygame.draw.rect(overlay, (255, 255, 255, 200), rect, 2, border_radius=10)
+            cx, cy = rect.center
+            dx, dy = DIRECTIONS[direction]
+            tip = (cx + dx * 12, cy + dy * 12)
+            side1 = (cx - dy * 10 - dx * 6, cy - dx * 10 - dy * 6)
+            side2 = (cx + dy * 10 - dx * 6, cy + dx * 10 - dy * 6)
+            pygame.draw.polygon(overlay, (255, 255, 255, 230), [tip, side1, side2])
+        pygame.draw.circle(overlay, (60, 170, 90, 200), (915, 560), 36)
+        pygame.draw.circle(overlay, (255, 255, 255, 220), (915, 560), 36, 3)
+        pygame.draw.circle(overlay, (200, 70, 80, 200), (835, 625), 32)
+        pygame.draw.circle(overlay, (255, 255, 255, 220), (835, 625), 32, 3)
+        screen.blit(overlay, (0, 0))
+        self.text("A", 908, 548, FONT)
+        self.text("B", 828, 613, FONT)
+        self.buttons.append((pygame.Rect(879, 524, 72, 72), "world_a"))
+        self.buttons.append((pygame.Rect(803, 593, 64, 64), "world_b"))
+        self.button("MENU", (870, 14, 110, 40), "world_menu", (40, 44, 70))
 
     def draw_story(self):
         self.background()
@@ -7398,6 +7575,11 @@ class Game:
             self.button("CONTINUE STORY", (350, 510, 300, 55), "story_go",
                         (40, 60, 130))
             return
+        if self.exploring:
+            self.button("KEEP EXPLORING", (350, 510, 300, 55), "explore_back",
+                        (45, 115, 75))
+            self.button("MAIN MENU", (350, 580, 300, 50), "leave_explore")
+            return
         self.button("NEXT BATTLE", (350, 510, 300, 55), "battle")
         self.button("MAIN MENU", (350, 580, 300, 50), "menu")
 
@@ -7406,6 +7588,13 @@ class Game:
         self.centred("TEAM DEFEATED", 190, BIG, RED)
         self.centred("Your Pokemon have been healed!", 250)
         self.centred(self.message, 300, SMALL, GOLD)
+        if self.exploring:
+            # Wake up outside the healing centre
+            self.world, self.wx, self.wy, self.facing = "town", 4, 7, "down"
+            self.button("KEEP EXPLORING", (350, 400, 300, 55), "explore_back",
+                        (45, 115, 75))
+            self.button("MAIN MENU", (350, 470, 300, 50), "leave_explore")
+            return
         self.button("MAIN MENU", (350, 400, 300, 55), "menu")
 
     # ======================================
@@ -7680,6 +7869,117 @@ class Game:
         self.pending_enemy_turn = False
         self.mode = "battle"
         self.message = f"REMATCH {number}! {name} is stronger than ever!"
+
+    # ======================================
+    # EXPLORE MODE (v19.0)
+    # ======================================
+
+    def start_exploring(self):
+        if self.enemy:
+            self.message = "Finish or run from your battle first!"
+            return
+        self.exploring = True
+        self.mode = "explore"
+        self.world_msg = "Walk with the arrows. Tall grass hides wild Pokemon!"
+
+    def stop_exploring(self):
+        self.exploring = False
+        self.mode = "menu"
+        self.message = "Tap EXPLORE to carry on where you left off."
+
+    def world_input(self):
+        """Which way the player is pushing: keys or the touch D-pad."""
+        keys = pygame.key.get_pressed()
+        for direction, codes in (("up", (pygame.K_UP, pygame.K_w)),
+                                 ("down", (pygame.K_DOWN, pygame.K_s)),
+                                 ("left", (pygame.K_LEFT, pygame.K_a)),
+                                 ("right", (pygame.K_RIGHT, pygame.K_d))):
+            if any(keys[c] for c in codes):
+                return direction
+        if pygame.mouse.get_pressed()[0]:
+            mx, my = pygame.mouse.get_pos()
+            mx = mx * WIDTH // WINDOW_WIDTH
+            my = my * HEIGHT // WINDOW_HEIGHT
+            for direction, rect in self.dpad_rects().items():
+                if rect.collidepoint((mx, my)):
+                    return direction
+        return None
+
+    def dpad_rects(self):
+        cx, cy, s = 120, 575, 52
+        return {"up": pygame.Rect(cx - s // 2, cy - s * 3 // 2, s, s),
+                "down": pygame.Rect(cx - s // 2, cy + s // 2, s, s),
+                "left": pygame.Rect(cx - s * 3 // 2, cy - s // 2, s, s),
+                "right": pygame.Rect(cx + s // 2, cy - s // 2, s, s)}
+
+    def world_update(self):
+        if self.step:
+            dx, dy, done = self.step
+            done += 1
+            if done < WORLD_STEP_FRAMES:
+                self.step = (dx, dy, done)
+                return
+            self.step = None
+            self.wx += dx
+            self.wy += dy
+            self.step_count += 1
+            self.arrive()
+            return
+
+        direction = self.world_input()
+        if not direction:
+            return
+        self.facing = direction
+        dx, dy = DIRECTIONS[direction]
+        tile = world_tile(self.world, self.wx + dx, self.wy + dy)
+        if tile in WORLD_WALKABLE:
+            self.step = (dx, dy, 0)
+            self.world_msg = ""
+        elif tile in "HShT":
+            self.use_door(tile)
+
+    def arrive(self):
+        """Things that happen when the player steps onto a square."""
+        tile = world_tile(self.world, self.wx, self.wy)
+        if (self.world, tile) in WORLD_EXITS:
+            self.world, self.wx = WORLD_EXITS[(self.world, tile)]
+            self.world_msg = WORLD[self.world]["name"]
+            return
+        if tile == "," and random.random() < WORLD_ENCOUNTER:
+            self.message = ""
+            self.start_battle()
+            if not self.enemy:
+                self.world_msg = self.message
+
+    def use_door(self, door):
+        if door == "H":
+            self.heal_team()
+            self.world_msg = "Your Pokemon were fully healed! Come again!"
+        elif door == "S":
+            self.return_mode = "explore"
+            self.message = ""
+            self.mode = "shop"
+        elif door == "h":
+            self.world_msg = ("Nobody's home. A note on the door says: "
+                              "'Gone to explore the Sungolia Temple!'")
+        elif door == "T":
+            if "xrencha" in self.events:
+                self.open_story()
+            else:
+                self.world_msg = ("The temple doors are sealed shut... Maybe a "
+                                  "secret event code will open them.")
+
+    def world_press_a(self):
+        """Talk to or use whatever is in front of the player."""
+        if self.step:
+            return
+        dx, dy = DIRECTIONS[self.facing]
+        x, y = self.wx + dx, self.wy + dy
+        tile = world_tile(self.world, x, y)
+        if tile == "i":
+            self.world_msg = WORLD[self.world]["signs"].get(f"{x},{y}", "")
+        elif tile in "HShT":
+            self.use_door(tile)
 
     # ======================================
     # STORY MODE (v18.7)
@@ -8485,6 +8785,25 @@ class Game:
         elif action == "code_enter":
             self.enter_event_code()
 
+        elif action == "explore" and self.mode == "menu":
+            self.start_exploring()
+
+        elif action == "world_a" and self.mode == "explore":
+            self.world_press_a()
+
+        elif action == "world_b" and self.mode == "explore":
+            self.world_msg = ""
+
+        elif action == "world_menu" and self.mode == "explore":
+            self.stop_exploring()
+
+        elif action == "explore_back" and self.mode in ("victory", "defeat"):
+            self.mode = "explore"
+            self.world_msg = ""
+
+        elif action == "leave_explore":
+            self.stop_exploring()
+
         elif action == "story" and self.mode == "menu":
             self.open_story()
 
@@ -8689,6 +9008,15 @@ class Game:
                     self.do(("code_key", name))
             return
 
+        if self.mode == "explore":
+            if key in (pygame.K_SPACE, pygame.K_RETURN, pygame.K_z):
+                self.do("world_a")
+            elif key == pygame.K_x:
+                self.do("world_b")
+            elif key == pygame.K_ESCAPE:
+                self.do("world_menu")
+            return
+
         if key == pygame.K_ESCAPE:
             self.do("back")
 
@@ -8727,7 +9055,8 @@ class Game:
             "puzzle": self.draw_puzzle,
             "challenges": self.draw_challenges,
             "typemasters": self.draw_typemasters,
-            "rematches": self.draw_rematches
+            "rematches": self.draw_rematches,
+            "explore": self.draw_explore
         }
 
         while True:
@@ -8756,6 +9085,10 @@ class Game:
                 self.flash -= 1
             else:
                 self.popup = ""
+
+            # After a battle or shop while exploring, go back to the map
+            if self.exploring and self.mode == "menu":
+                self.mode = "explore"
 
             self.buttons = []
             screens[self.mode]()
