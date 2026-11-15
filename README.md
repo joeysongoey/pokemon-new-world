@@ -1,4 +1,4 @@
-# Pokemon: The New World v18.4
+# Pokemon: The New World v18.5
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,19 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v18.5
+
+- **Xrencha:** a secret new place on the FLY screen, unlocked with a secret event
+  code (EVENT CODE button). It has 75 Pokemon that live nowhere else (#547 to #621).
+- **Two Origin legendaries,** found only in Xrencha: Solvarion, the Celestial Origin
+  (Light/Cosmic, #622), and Nulvexion, the Void Origin (Void/Glitch, #623). They can
+  also appear together in a Duo Legendary Battle.
+- **20 new types:** Crystal, Moon, Wind, Thunder, Rune, Magma, Earth, Eclipse, Dream,
+  Swamp, Shadow, Nature, Gravity, Metal, Sound, Plasma, Stone, Blood, Beast and Time,
+  each with its own colour, moves and level-up moves. They take normal damage from
+  every type for now.
+- The Pokedex now has 623 Pokemon.
 
 ## What's new in v18.4
 

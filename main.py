@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v18.4")
+pygame.display.set_caption("Pokemon: The New World v18.5")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -230,7 +230,28 @@ TYPE_COLOURS = {
     "Bug": (170, 210, 65),
     "Cosmic": (130, 140, 255),
     "Void": (100, 40, 150),
-    "Glitch": (100, 255, 200)
+    "Glitch": (100, 255, 200),
+    # Xrencha types (v18.5)
+    "Crystal": (150, 240, 235),
+    "Moon": (200, 205, 240),
+    "Wind": (190, 235, 220),
+    "Thunder": (250, 210, 60),
+    "Rune": (120, 180, 200),
+    "Magma": (230, 70, 30),
+    "Earth": (150, 110, 70),
+    "Eclipse": (60, 50, 90),
+    "Dream": (220, 170, 255),
+    "Swamp": (90, 120, 70),
+    "Shadow": (70, 60, 90),
+    "Nature": (100, 180, 80),
+    "Gravity": (90, 70, 160),
+    "Metal": (160, 165, 175),
+    "Sound": (240, 150, 90),
+    "Plasma": (255, 90, 200),
+    "Stone": (140, 135, 125),
+    "Blood": (170, 30, 50),
+    "Beast": (190, 120, 70),
+    "Time": (200, 180, 110),
 }
 
 MOVE_TYPES = {}
@@ -3006,6 +3027,469 @@ NEW_SPECIES_DATA = [
       ('Wyrm Blast', 46, 'Dragon'),
       ('Boulder Hurl', 40, 'Rock'),
       ('Quick Dash', 32, 'Normal')]),
+    # ---- #547 to #623: Xrencha, area only (v18.5) ----
+    (547, 'Quorvex', 'Cosmic', 'orb', 225, 4, 'area',
+     'Quorvex is a Cosmic type from Xrencha. It watches the stars all night long.',
+     [('Star Dust', 42, 'Cosmic'),
+      ('Comet Tail', 46, 'Cosmic'),
+      ('Nebula Beam', 40, 'Cosmic'),
+      ('Quick Dash', 32, 'Normal')]),
+    (548, 'Zenthari', 'Light', 'orb', 207, 4, 'area',
+     'Zenthari is a Light type from Xrencha. It glows softly to light up dark paths.',
+     [('Gleam Rush', 42, 'Light'),
+      ('Radiant Flash', 46, 'Light'),
+      ('Glow Flash', 40, 'Light'),
+      ('Quick Dash', 32, 'Normal')]),
+    (549, 'Brontiq', 'Electric/Dragon', 'orb', 270, 5, 'area',
+     'Brontiq is a Electric and Dragon type from Xrencha. It crackles with static when it runs.',
+     [('Spark Dash', 42, 'Electric'),
+      ('Volt Surge', 46, 'Electric'),
+      ('Dragon Rush', 40, 'Dragon'),
+      ('Quick Dash', 32, 'Normal')]),
+    (550, 'Myrquill', 'Poison/Crystal', 'bug', 252, 4, 'area',
+     'Myrquill is a Poison and Crystal type from Xrencha. It leaves a sticky trail wherever it goes.',
+     [('Toxic Spray', 42, 'Poison'),
+      ('Venom Crash', 46, 'Poison'),
+      ('Crystal Rend', 40, 'Crystal'),
+      ('Quick Dash', 32, 'Normal')]),
+    (551, 'Vexmora', 'Void', 'ghost', 216, 5, 'area',
+     'Vexmora is a Void type from Xrencha. It flickers in and out of sight.',
+     [('Null Rush', 42, 'Void'),
+      ('Rift Bite', 46, 'Void'),
+      ('Null Touch', 40, 'Void'),
+      ('Quick Dash', 32, 'Normal')]),
+    (552, 'Oryndel', 'Psychic/Light', 'imp', 207, 4, 'area',
+     'Oryndel is a Psychic and Light type from Xrencha. It hums quietly and seems to know what you are thinking.',
+     [('Mind Ripple', 42, 'Psychic'),
+      ('Psy Beam', 46, 'Psychic'),
+      ('Gleam Rush', 40, 'Light'),
+      ('Quick Dash', 32, 'Normal')]),
+    (553, 'Kravolith', 'Rock/Cosmic', 'golem', 306, 5, 'area',
+     'Kravolith is a Rock and Cosmic type from Xrencha. It sits still for hours, looking like a boulder.',
+     [('Boulder Hurl', 42, 'Rock'),
+      ('Rock Crash', 46, 'Rock'),
+      ('Star Dust', 40, 'Cosmic'),
+      ('Quick Dash', 32, 'Normal')]),
+    (554, 'Xylune', 'Moon', 'orb', 198, 3, 'area',
+     'Xylune is a Moon type from Xrencha. It only wakes up when the moon rises.',
+     [('Lunar Rend', 42, 'Moon'),
+      ('Lunar Pulse', 46, 'Moon'),
+      ('Lunar Flick', 40, 'Moon'),
+      ('Quick Dash', 32, 'Normal')]),
+    (555, 'Dravoryx', 'Dragon/Dark', 'dragon', 279, 5, 'area',
+     'Dravoryx is a Dragon and Dark type from Xrencha. It guards a hidden cave full of shiny stones.',
+     [('Dragon Rush', 42, 'Dragon'),
+      ('Wyrm Blast', 46, 'Dragon'),
+      ('Night Slash', 40, 'Dark'),
+      ('Quick Dash', 32, 'Normal')]),
+    (556, 'Pellum', 'Normal/Grass', 'quad', 243, 3, 'area',
+     'Pellum is a Normal and Grass type from Xrencha. It wanders the fields looking for berries.',
+     [('Heavy Smash', 42, 'Normal'),
+      ('Crush Rush', 46, 'Normal'),
+      ('Leaf Rush', 40, 'Grass'),
+      ('Quick Dash', 32, 'Normal')]),
+    (557, 'Zyphora', 'Wind/Light', 'bird', 207, 4, 'area',
+     'Zyphora is a Wind and Light type from Xrencha. It rides strong winds from mountain to mountain.',
+     [('Gust Rend', 42, 'Wind'),
+      ('Gust Pulse', 46, 'Wind'),
+      ('Gleam Rush', 40, 'Light'),
+      ('Quick Dash', 32, 'Normal')]),
+    (558, 'Gromnix', 'Steel/Thunder', 'golem', 279, 5, 'area',
+     'Gromnix is a Steel and Thunder type from Xrencha. It polishes its shiny body with dust.',
+     [('Metal Claw', 42, 'Steel'),
+      ('Iron Ram', 46, 'Steel'),
+      ('Tempest Rend', 40, 'Thunder'),
+      ('Quick Dash', 32, 'Normal')]),
+    (559, 'Auralith', 'Light/Crystal', 'orb', 234, 4, 'area',
+     'Auralith is a Light and Crystal type from Xrencha. It glows softly to light up dark paths.',
+     [('Gleam Rush', 42, 'Light'),
+      ('Radiant Flash', 46, 'Light'),
+      ('Crystal Rend', 40, 'Crystal'),
+      ('Quick Dash', 32, 'Normal')]),
+    (560, 'Nekrune', 'Ghost/Rune', 'ghost', 225, 5, 'area',
+     'Nekrune is a Ghost and Rune type from Xrencha. It drifts through old ruins at night.',
+     [('Shade Touch', 42, 'Ghost'),
+      ('Spirit Pull', 46, 'Ghost'),
+      ('Rune Rend', 40, 'Rune'),
+      ('Quick Dash', 32, 'Normal')]),
+    (561, 'Volkrim', 'Magma', 'quad', 261, 5, 'area',
+     'Volkrim is a Magma type from Xrencha. It bathes in pools of molten rock.',
+     [('Magma Rend', 42, 'Magma'),
+      ('Magma Pulse', 46, 'Magma'),
+      ('Magma Flick', 40, 'Magma'),
+      ('Quick Dash', 32, 'Normal')]),
+    (562, 'Thalvex', 'Water/Void', 'fish', 261, 5, 'area',
+     'Thalvex is a Water and Void type from Xrencha. It splashes in streams and shallow pools.',
+     [('Tide Rush', 42, 'Water'),
+      ('Aqua Jet', 46, 'Water'),
+      ('Null Rush', 40, 'Void'),
+      ('Quick Dash', 32, 'Normal')]),
+    (563, 'Orphalon', 'Cosmic/Psychic', 'orb', 225, 4, 'area',
+     'Orphalon is a Cosmic and Psychic type from Xrencha. It watches the stars all night long.',
+     [('Star Dust', 42, 'Cosmic'),
+      ('Comet Tail', 46, 'Cosmic'),
+      ('Mind Ripple', 40, 'Psychic'),
+      ('Quick Dash', 32, 'Normal')]),
+    (564, 'Crindor', 'Bug/Steel', 'bug', 252, 4, 'area',
+     'Crindor is a Bug and Steel type from Xrencha. It buzzes around flowers in swarms.',
+     [('Swarm Bite', 42, 'Bug'),
+      ('Hive Strike', 46, 'Bug'),
+      ('Metal Claw', 40, 'Steel'),
+      ('Quick Dash', 32, 'Normal')]),
+    (565, 'Yuvanti', 'Fairy/Poison', 'orb', 207, 4, 'area',
+     'Yuvanti is a Fairy and Poison type from Xrencha. It scatters glitter when it is happy.',
+     [('Charm Burst', 42, 'Fairy'),
+      ('Moon Kiss', 46, 'Fairy'),
+      ('Toxic Spray', 40, 'Poison'),
+      ('Quick Dash', 32, 'Normal')]),
+    (566, 'Skarnyx', 'Earth/Dragon', 'golem', 297, 5, 'area',
+     'Skarnyx is a Earth and Dragon type from Xrencha. It can feel every footstep in the ground.',
+     [('Terra Rend', 42, 'Earth'),
+      ('Terra Pulse', 46, 'Earth'),
+      ('Dragon Rush', 40, 'Dragon'),
+      ('Quick Dash', 32, 'Normal')]),
+    (567, 'Ecliptor', 'Eclipse', 'dragon', 243, 5, 'area',
+     'Ecliptor is a Eclipse type from Xrencha. It is strongest when the sun is hidden.',
+     [('Eclipse Rend', 42, 'Eclipse'),
+      ('Eclipse Pulse', 46, 'Eclipse'),
+      ('Eclipse Flick', 40, 'Eclipse'),
+      ('Quick Dash', 32, 'Normal')]),
+    (568, 'Mivora', 'Dream', 'ghost', 216, 3, 'area',
+     "Mivora is a Dream type from Xrencha. It drifts into people's dreams while they sleep.",
+     [('Dream Rend', 42, 'Dream'),
+      ('Dream Pulse', 46, 'Dream'),
+      ('Dream Flick', 40, 'Dream'),
+      ('Quick Dash', 32, 'Normal')]),
+    (569, 'Qazmire', 'Swamp/Dark', 'plant', 270, 5, 'area',
+     'Qazmire is a Swamp and Dark type from Xrencha. It hides in murky water for days.',
+     [('Bog Rend', 42, 'Swamp'),
+      ('Bog Pulse', 46, 'Swamp'),
+      ('Night Slash', 40, 'Dark'),
+      ('Quick Dash', 32, 'Normal')]),
+    (570, 'Rynthos', 'Cosmic/Steel', 'orb', 261, 4, 'area',
+     'Rynthos is a Cosmic and Steel type from Xrencha. It watches the stars all night long.',
+     [('Star Dust', 42, 'Cosmic'),
+      ('Comet Tail', 46, 'Cosmic'),
+      ('Metal Claw', 40, 'Steel'),
+      ('Quick Dash', 32, 'Normal')]),
+    (571, 'Zolthari', 'Thunder/Void', 'orb', 225, 5, 'area',
+     'Zolthari is a Thunder and Void type from Xrencha. It roars so loudly that storm clouds gather.',
+     [('Tempest Rend', 42, 'Thunder'),
+      ('Tempest Pulse', 46, 'Thunder'),
+      ('Null Rush', 40, 'Void'),
+      ('Quick Dash', 32, 'Normal')]),
+    (572, 'Varnyx', 'Glitch', 'orb', 198, 5, 'area',
+     'Varnyx is a Glitch type from Xrencha. It jumps between screens and scrambles nearby pixels.',
+     [('Data Rush', 42, 'Glitch'),
+      ('Byte Crash', 46, 'Glitch'),
+      ('Bit Flip', 40, 'Glitch'),
+      ('Quick Dash', 32, 'Normal')]),
+    (573, 'Oqqurel', 'Water/Crystal', 'fish', 261, 4, 'area',
+     'Oqqurel is a Water and Crystal type from Xrencha. It splashes in streams and shallow pools.',
+     [('Tide Rush', 42, 'Water'),
+      ('Aqua Jet', 46, 'Water'),
+      ('Crystal Rend', 40, 'Crystal'),
+      ('Quick Dash', 32, 'Normal')]),
+    (574, 'Drelmora', 'Shadow', 'ghost', 243, 5, 'area',
+     'Drelmora is a Shadow type from Xrencha. It moves silently from shadow to shadow.',
+     [('Shade Rend', 42, 'Shadow'),
+      ('Shade Pulse', 46, 'Shadow'),
+      ('Shade Flick', 40, 'Shadow'),
+      ('Quick Dash', 32, 'Normal')]),
+    (575, 'Kynthul', 'Fire/Cosmic', 'quad', 234, 5, 'area',
+     'Kynthul is a Fire and Cosmic type from Xrencha. It warms its nest with a small flame.',
+     [('Ember Rush', 42, 'Fire'),
+      ('Blaze Wave', 46, 'Fire'),
+      ('Star Dust', 40, 'Cosmic'),
+      ('Quick Dash', 32, 'Normal')]),
+    (576, 'Azmorith', 'Dragon/Light', 'dragon', 270, 5, 'area',
+     'Azmorith is a Dragon and Light type from Xrencha. It guards a hidden cave full of shiny stones.',
+     [('Dragon Rush', 42, 'Dragon'),
+      ('Wyrm Blast', 46, 'Dragon'),
+      ('Gleam Rush', 40, 'Light'),
+      ('Quick Dash', 32, 'Normal')]),
+    (577, 'Pelloryn', 'Nature', 'plant', 252, 4, 'area',
+     'Pelloryn is a Nature type from Xrencha. It makes flowers bloom wherever it walks.',
+     [('Verdant Rend', 42, 'Nature'),
+      ('Verdant Pulse', 46, 'Nature'),
+      ('Verdant Flick', 40, 'Nature'),
+      ('Quick Dash', 32, 'Normal')]),
+    (578, 'Xavolith', 'Gravity/Rock', 'golem', 315, 5, 'area',
+     'Xavolith is a Gravity and Rock type from Xrencha. It pulls small rocks into orbit around itself.',
+     [('Gravity Rend', 42, 'Gravity'),
+      ('Gravity Pulse', 46, 'Gravity'),
+      ('Boulder Hurl', 40, 'Rock'),
+      ('Quick Dash', 32, 'Normal')]),
+    (579, 'Umbravi', 'Dark/Psychic', 'imp', 216, 4, 'area',
+     'Umbravi is a Dark and Psychic type from Xrencha. It hunts in the shadows after sunset.',
+     [('Night Slash', 42, 'Dark'),
+      ('Shadow Pounce', 46, 'Dark'),
+      ('Mind Ripple', 40, 'Psychic'),
+      ('Quick Dash', 32, 'Normal')]),
+    (580, 'Trezmuk', 'Metal/Poison', 'golem', 270, 5, 'area',
+     'Trezmuk is a Metal and Poison type from Xrencha. It sharpens its claws on iron bars.',
+     [('Metal Rend', 42, 'Metal'),
+      ('Metal Pulse', 46, 'Metal'),
+      ('Toxic Spray', 40, 'Poison'),
+      ('Quick Dash', 32, 'Normal')]),
+    (581, 'Ylloria', 'Fairy/Cosmic', 'orb', 207, 4, 'area',
+     'Ylloria is a Fairy and Cosmic type from Xrencha. It scatters glitter when it is happy.',
+     [('Charm Burst', 42, 'Fairy'),
+      ('Moon Kiss', 46, 'Fairy'),
+      ('Star Dust', 40, 'Cosmic'),
+      ('Quick Dash', 32, 'Normal')]),
+    (582, 'Vorthune', 'Void/Dragon', 'ghost', 288, 5, 'area',
+     'Vorthune is a Void and Dragon type from Xrencha. It flickers in and out of sight.',
+     [('Null Rush', 42, 'Void'),
+      ('Rift Bite', 46, 'Void'),
+      ('Dragon Rush', 40, 'Dragon'),
+      ('Quick Dash', 32, 'Normal')]),
+    (583, 'Quendrix', 'Sound', 'bird', 216, 4, 'area',
+     'Quendrix is a Sound type from Xrencha. It sings notes too high for people to hear.',
+     [('Echo Rend', 42, 'Sound'),
+      ('Echo Pulse', 46, 'Sound'),
+      ('Echo Flick', 40, 'Sound'),
+      ('Quick Dash', 32, 'Normal')]),
+    (584, 'Nymbrak', 'Ice/Shadow', 'quad', 252, 5, 'area',
+     'Nymbrak is a Ice and Shadow type from Xrencha. It shivers in the cold and frosts the ground.',
+     [('Frost Dash', 42, 'Ice'),
+      ('Glacier Spike', 46, 'Ice'),
+      ('Shade Rend', 40, 'Shadow'),
+      ('Quick Dash', 32, 'Normal')]),
+    (585, 'Ozarune', 'Rune/Light', 'imp', 225, 4, 'area',
+     'Ozarune is a Rune and Light type from Xrencha. It is covered in glowing ancient symbols.',
+     [('Rune Rend', 42, 'Rune'),
+      ('Rune Pulse', 46, 'Rune'),
+      ('Gleam Rush', 40, 'Light'),
+      ('Quick Dash', 32, 'Normal')]),
+    (586, 'Keldrith', 'Earth/Steel', 'golem', 297, 5, 'area',
+     'Keldrith is a Earth and Steel type from Xrencha. It can feel every footstep in the ground.',
+     [('Terra Rend', 42, 'Earth'),
+      ('Terra Pulse', 46, 'Earth'),
+      ('Metal Claw', 40, 'Steel'),
+      ('Quick Dash', 32, 'Normal')]),
+    (587, 'Fynzora', 'Plasma', 'orb', 216, 5, 'area',
+     'Fynzora is a Plasma type from Xrencha. It crackles with hot glowing energy.',
+     [('Plasma Rend', 42, 'Plasma'),
+      ('Plasma Pulse', 46, 'Plasma'),
+      ('Plasma Flick', 40, 'Plasma'),
+      ('Quick Dash', 32, 'Normal')]),
+    (588, 'Rhazmiel', 'Ghost/Dragon', 'ghost', 261, 5, 'area',
+     'Rhazmiel is a Ghost and Dragon type from Xrencha. It drifts through old ruins at night.',
+     [('Shade Touch', 42, 'Ghost'),
+      ('Spirit Pull', 46, 'Ghost'),
+      ('Dragon Rush', 40, 'Dragon'),
+      ('Quick Dash', 32, 'Normal')]),
+    (589, 'Uvexil', 'Glitch/Cosmic', 'orb', 198, 5, 'area',
+     'Uvexil is a Glitch and Cosmic type from Xrencha. It jumps between screens and scrambles nearby pixels.',
+     [('Data Rush', 42, 'Glitch'),
+      ('Byte Crash', 46, 'Glitch'),
+      ('Star Dust', 40, 'Cosmic'),
+      ('Quick Dash', 32, 'Normal')]),
+    (590, 'Dornakai', 'Fighting/Stone', 'quad', 288, 5, 'area',
+     'Dornakai is a Fighting and Stone type from Xrencha. It trains every morning by punching trees.',
+     [('Brawl Strike', 42, 'Fighting'),
+      ('Combo Blow', 46, 'Fighting'),
+      ('Granite Rend', 40, 'Stone'),
+      ('Quick Dash', 32, 'Normal')]),
+    (591, 'Myzelle', 'Dream/Fairy', 'ghost', 207, 3, 'area',
+     "Myzelle is a Dream and Fairy type from Xrencha. It drifts into people's dreams while they sleep.",
+     [('Dream Rend', 42, 'Dream'),
+      ('Dream Pulse', 46, 'Dream'),
+      ('Charm Burst', 40, 'Fairy'),
+      ('Quick Dash', 32, 'Normal')]),
+    (592, 'Zorvath', 'Blood/Steel', 'imp', 279, 5, 'area',
+     'Zorvath is a Blood and Steel type from Xrencha. It grows stronger the longer a battle lasts.',
+     [('Crimson Rend', 42, 'Blood'),
+      ('Crimson Pulse', 46, 'Blood'),
+      ('Metal Claw', 40, 'Steel'),
+      ('Quick Dash', 32, 'Normal')]),
+    (593, 'Elquorin', 'Light/Water', 'orb', 243, 4, 'area',
+     'Elquorin is a Light and Water type from Xrencha. It glows softly to light up dark paths.',
+     [('Gleam Rush', 42, 'Light'),
+      ('Radiant Flash', 46, 'Light'),
+      ('Tide Rush', 40, 'Water'),
+      ('Quick Dash', 32, 'Normal')]),
+    (594, 'Grenthox', 'Beast/Fire', 'quad', 279, 5, 'area',
+     'Grenthox is a Beast and Fire type from Xrencha. It hunts in packs across wild plains.',
+     [('Feral Rend', 42, 'Beast'),
+      ('Feral Pulse', 46, 'Beast'),
+      ('Ember Rush', 40, 'Fire'),
+      ('Quick Dash', 32, 'Normal')]),
+    (595, 'Vylmora', 'Void/Crystal', 'ghost', 243, 4, 'area',
+     'Vylmora is a Void and Crystal type from Xrencha. It flickers in and out of sight.',
+     [('Null Rush', 42, 'Void'),
+      ('Rift Bite', 46, 'Void'),
+      ('Crystal Rend', 40, 'Crystal'),
+      ('Quick Dash', 32, 'Normal')]),
+    (596, 'Xendral', 'Time', 'imp', 234, 4, 'area',
+     'Xendral is a Time type from Xrencha. It seems to blink a few seconds into the future.',
+     [('Chrono Rend', 42, 'Time'),
+      ('Chrono Pulse', 46, 'Time'),
+      ('Chrono Flick', 40, 'Time'),
+      ('Quick Dash', 32, 'Normal')]),
+    (597, 'Xalvorith', 'Cosmic/Void', 'orb', 261, 5, 'area',
+     'Xalvorith is a Cosmic and Void type from Xrencha. It watches the stars all night long.',
+     [('Star Dust', 42, 'Cosmic'),
+      ('Comet Tail', 46, 'Cosmic'),
+      ('Null Rush', 40, 'Void'),
+      ('Quick Dash', 32, 'Normal')]),
+    (598, 'Nymorax', 'Glitch/Dark', 'orb', 207, 5, 'area',
+     'Nymorax is a Glitch and Dark type from Xrencha. It jumps between screens and scrambles nearby pixels.',
+     [('Data Rush', 42, 'Glitch'),
+      ('Byte Crash', 46, 'Glitch'),
+      ('Night Slash', 40, 'Dark'),
+      ('Quick Dash', 32, 'Normal')]),
+    (599, 'Thalquor', 'Water/Gravity', 'fish', 297, 4, 'area',
+     'Thalquor is a Water and Gravity type from Xrencha. It splashes in streams and shallow pools.',
+     [('Tide Rush', 42, 'Water'),
+      ('Aqua Jet', 46, 'Water'),
+      ('Gravity Rend', 40, 'Gravity'),
+      ('Quick Dash', 32, 'Normal')]),
+    (600, 'Zyrkenth', 'Fire/Shadow', 'quad', 252, 5, 'area',
+     'Zyrkenth is a Fire and Shadow type from Xrencha. It warms its nest with a small flame.',
+     [('Ember Rush', 42, 'Fire'),
+      ('Blaze Wave', 46, 'Fire'),
+      ('Shade Rend', 40, 'Shadow'),
+      ('Quick Dash', 32, 'Normal')]),
+    (601, 'Othmira', 'Moon/Crystal', 'orb', 225, 3, 'area',
+     'Othmira is a Moon and Crystal type from Xrencha. It only wakes up when the moon rises.',
+     [('Lunar Rend', 42, 'Moon'),
+      ('Lunar Pulse', 46, 'Moon'),
+      ('Crystal Rend', 40, 'Crystal'),
+      ('Quick Dash', 32, 'Normal')]),
+    (602, 'Klyndrax', 'Dragon/Steel', 'dragon', 297, 6, 'area',
+     'Klyndrax is a Dragon and Steel type from Xrencha. It guards a hidden cave full of shiny stones.',
+     [('Dragon Rush', 42, 'Dragon'),
+      ('Wyrm Blast', 46, 'Dragon'),
+      ('Metal Claw', 40, 'Steel'),
+      ('Quick Dash', 32, 'Normal')]),
+    (603, 'Vornelle', 'Dream/Light', 'ghost', 216, 4, 'area',
+     "Vornelle is a Dream and Light type from Xrencha. It drifts into people's dreams while they sleep.",
+     [('Dream Rend', 42, 'Dream'),
+      ('Dream Pulse', 46, 'Dream'),
+      ('Gleam Rush', 40, 'Light'),
+      ('Quick Dash', 32, 'Normal')]),
+    (604, 'Qezmoth', 'Bug/Glitch', 'bug', 207, 5, 'area',
+     'Qezmoth is a Bug and Glitch type from Xrencha. It buzzes around flowers in swarms.',
+     [('Swarm Bite', 42, 'Bug'),
+      ('Hive Strike', 46, 'Bug'),
+      ('Data Rush', 40, 'Glitch'),
+      ('Quick Dash', 32, 'Normal')]),
+    (605, 'Arqenth', 'Cosmic/Time', 'orb', 243, 4, 'area',
+     'Arqenth is a Cosmic and Time type from Xrencha. It watches the stars all night long.',
+     [('Star Dust', 42, 'Cosmic'),
+      ('Comet Tail', 46, 'Cosmic'),
+      ('Chrono Rend', 40, 'Time'),
+      ('Quick Dash', 32, 'Normal')]),
+    (606, 'Dymvar', 'Shadow/Gravity', 'ghost', 279, 5, 'area',
+     'Dymvar is a Shadow and Gravity type from Xrencha. It moves silently from shadow to shadow.',
+     [('Shade Rend', 42, 'Shadow'),
+      ('Shade Pulse', 46, 'Shadow'),
+      ('Gravity Rend', 40, 'Gravity'),
+      ('Quick Dash', 32, 'Normal')]),
+    (607, 'Xorvelli', 'Fairy/Void', 'orb', 216, 4, 'area',
+     'Xorvelli is a Fairy and Void type from Xrencha. It scatters glitter when it is happy.',
+     [('Charm Burst', 42, 'Fairy'),
+      ('Moon Kiss', 46, 'Fairy'),
+      ('Null Rush', 40, 'Void'),
+      ('Quick Dash', 32, 'Normal')]),
+    (608, 'Gralvorn', 'Stone/Fire', 'golem', 306, 5, 'area',
+     'Gralvorn is a Stone and Fire type from Xrencha. It can stand still as a statue for a year.',
+     [('Granite Rend', 42, 'Stone'),
+      ('Granite Pulse', 46, 'Stone'),
+      ('Ember Rush', 40, 'Fire'),
+      ('Quick Dash', 32, 'Normal')]),
+    (609, 'Ulnyxis', 'Psychic/Glitch', 'imp', 198, 5, 'area',
+     'Ulnyxis is a Psychic and Glitch type from Xrencha. It hums quietly and seems to know what you are thinking.',
+     [('Mind Ripple', 42, 'Psychic'),
+      ('Psy Beam', 46, 'Psychic'),
+      ('Data Rush', 40, 'Glitch'),
+      ('Quick Dash', 32, 'Normal')]),
+    (610, 'Kethrune', 'Rune/Dragon', 'imp', 270, 5, 'area',
+     'Kethrune is a Rune and Dragon type from Xrencha. It is covered in glowing ancient symbols.',
+     [('Rune Rend', 42, 'Rune'),
+      ('Rune Pulse', 46, 'Rune'),
+      ('Dragon Rush', 40, 'Dragon'),
+      ('Quick Dash', 32, 'Normal')]),
+    (611, 'Zovmira', 'Plasma/Fairy', 'orb', 216, 4, 'area',
+     'Zovmira is a Plasma and Fairy type from Xrencha. It crackles with hot glowing energy.',
+     [('Plasma Rend', 42, 'Plasma'),
+      ('Plasma Pulse', 46, 'Plasma'),
+      ('Charm Burst', 40, 'Fairy'),
+      ('Quick Dash', 32, 'Normal')]),
+    (612, 'Vyrnox', 'Void/Steel', 'ghost', 288, 5, 'area',
+     'Vyrnox is a Void and Steel type from Xrencha. It flickers in and out of sight.',
+     [('Null Rush', 42, 'Void'),
+      ('Rift Bite', 46, 'Void'),
+      ('Metal Claw', 40, 'Steel'),
+      ('Quick Dash', 32, 'Normal')]),
+    (613, 'Oquanth', 'Sound/Dragon', 'bird', 261, 5, 'area',
+     'Oquanth is a Sound and Dragon type from Xrencha. It sings notes too high for people to hear.',
+     [('Echo Rend', 42, 'Sound'),
+      ('Echo Pulse', 46, 'Sound'),
+      ('Dragon Rush', 40, 'Dragon'),
+      ('Quick Dash', 32, 'Normal')]),
+    (614, 'Myrthalis', 'Nature/Light', 'plant', 243, 4, 'area',
+     'Myrthalis is a Nature and Light type from Xrencha. It makes flowers bloom wherever it walks.',
+     [('Verdant Rend', 42, 'Nature'),
+      ('Verdant Pulse', 46, 'Nature'),
+      ('Gleam Rush', 40, 'Light'),
+      ('Quick Dash', 32, 'Normal')]),
+    (615, 'Xendovar', 'Time/Void', 'imp', 261, 5, 'area',
+     'Xendovar is a Time and Void type from Xrencha. It seems to blink a few seconds into the future.',
+     [('Chrono Rend', 42, 'Time'),
+      ('Chrono Pulse', 46, 'Time'),
+      ('Null Rush', 40, 'Void'),
+      ('Quick Dash', 32, 'Normal')]),
+    (616, 'Qytheron', 'Cosmic/Dragon', 'orb', 288, 6, 'area',
+     'Qytheron is a Cosmic and Dragon type from Xrencha. It watches the stars all night long.',
+     [('Star Dust', 42, 'Cosmic'),
+      ('Comet Tail', 46, 'Cosmic'),
+      ('Dragon Rush', 40, 'Dragon'),
+      ('Quick Dash', 32, 'Normal')]),
+    (617, 'Noxavelle', 'Dark/Crystal', 'imp', 234, 5, 'area',
+     'Noxavelle is a Dark and Crystal type from Xrencha. It hunts in the shadows after sunset.',
+     [('Night Slash', 42, 'Dark'),
+      ('Shadow Pounce', 46, 'Dark'),
+      ('Crystal Rend', 40, 'Crystal'),
+      ('Quick Dash', 32, 'Normal')]),
+    (618, 'Zyrquon', 'Thunder/Gravity', 'orb', 279, 5, 'area',
+     'Zyrquon is a Thunder and Gravity type from Xrencha. It roars so loudly that storm clouds gather.',
+     [('Tempest Rend', 42, 'Thunder'),
+      ('Tempest Pulse', 46, 'Thunder'),
+      ('Gravity Rend', 40, 'Gravity'),
+      ('Quick Dash', 32, 'Normal')]),
+    (619, 'Velmorith', 'Ghost/Time', 'ghost', 243, 5, 'area',
+     'Velmorith is a Ghost and Time type from Xrencha. It drifts through old ruins at night.',
+     [('Shade Touch', 42, 'Ghost'),
+      ('Spirit Pull', 46, 'Ghost'),
+      ('Chrono Rend', 40, 'Time'),
+      ('Quick Dash', 32, 'Normal')]),
+    (620, 'Aethrune', 'Light/Rune', 'orb', 234, 4, 'area',
+     'Aethrune is a Light and Rune type from Xrencha. It glows softly to light up dark paths.',
+     [('Gleam Rush', 42, 'Light'),
+      ('Radiant Flash', 46, 'Light'),
+      ('Rune Rend', 40, 'Rune'),
+      ('Quick Dash', 32, 'Normal')]),
+    (621, 'Khorvaxis', 'Void/Dragon', 'ghost', 315, 6, 'area',
+     'Khorvaxis is a Void and Dragon type from Xrencha. It flickers in and out of sight.',
+     [('Null Rush', 42, 'Void'),
+      ('Rift Bite', 46, 'Void'),
+      ('Dragon Rush', 40, 'Dragon'),
+      ('Quick Dash', 32, 'Normal')]),
+    (622, 'Solvarion', 'Light/Cosmic', 'dragon', 430, 12, 'origin',
+     'The Celestial Origin. Legends say the first stars were sparks from its wings.',
+     [('Origin Flare', 62, 'Light'),
+      ('Starbirth', 60, 'Cosmic'),
+      ('Celestial Crown', 56, 'Light'),
+      ('Sunrise Nova', 68, 'Cosmic')]),
+    (623, 'Nulvexion', 'Void/Glitch', 'dragon', 420, 13, 'origin',
+     'The Void Origin. It is said to erase anything it cannot understand.',
+     [('Null Origin', 64, 'Void'),
+      ('System Crash', 62, 'Glitch'),
+      ('Erase Reality', 58, 'Void'),
+      ('Corrupt Pulse', 66, 'Glitch')]),
 ]
 
 NEW_INFO = {}
@@ -3014,9 +3498,11 @@ RARE_CHANCE = {}   # name -> chance per battle (very low)
 NEW_COMMON = []
 NEW_RARE = []
 
+AREA_ONLY = []      # Pokemon that only live in Xrencha (v18.5)
+
 for _row in NEW_SPECIES_DATA:
     _num, _name, _types, _shape, _hp, _bonus, _rarity, _entry, _moves = _row
-    _is_rare = _rarity != "common"
+    _is_rare = _rarity not in ("common", "area")
     NEW_INFO[_name] = {
         "number": _num, "types": _types, "shape": _shape,
         "hp": _hp, "bonus": _bonus, "rarity": _rarity,
@@ -3026,7 +3512,13 @@ for _row in NEW_SPECIES_DATA:
     }
     for _move_name, _power, _move_type in _moves:
         MOVE_TYPES[_move_name] = _move_type
-    if _is_rare:
+    if _rarity == "area":
+        AREA_ONLY.append((_num, _name, _types))
+    elif _rarity == "origin":
+        # Xrencha's legendaries: only appear in Xrencha, never anywhere else
+        NEW_RARE.append((_num, _name, _types))
+        RARE_KIND[_name] = "Legendary"
+    elif _is_rare:
         NEW_RARE.append((_num, _name, _types))
         RARE_KIND[_name] = _rarity.capitalize()
         RARE_CHANCE[_name] = 0.002 if _rarity == "legendary" else 0.001
@@ -3066,7 +3558,8 @@ NEW_RARE.append((346, "Aura Brawler", "Fighting/Steel"))
 RARE_KIND["Aura Brawler"] = "Event"   # not in RARE_CHANCE, so it never appears
 
 WILD_POKEMON += NEW_COMMON
-DEX_ALL = sorted(WILD_POKEMON + NEW_RARE)
+DEX_ALL = sorted(WILD_POKEMON + NEW_RARE + AREA_ONLY)
+AREA_NAMES = {name for _num, name, _types in AREA_ONLY}
 DEX_TOTAL = len(DEX_ALL)
 
 # Pokedex entries for the original 66 Pokemon
@@ -3349,6 +3842,27 @@ LEARNSET = {
     "Cosmic":   ["Star Dust", "Comet Tail", "Nebula Beam", "Supernova", "Big Bang"],
     "Void":     ["Null Touch", "Void Rend", "Rift Collapse", "Event Horizon", "Oblivion"],
     "Glitch":   ["Bit Flip", "Data Corrupt", "Pixel Crash", "Buffer Overflow", "Fatal Error"],
+    # Xrencha types (v18.5)
+    "Crystal": ["Crystal Shot", "Crystal Lance", "Crystal Surge", "Crystal Nova", "Crystal Cataclysm"],
+    "Moon": ["Lunar Shot", "Lunar Lance", "Lunar Surge", "Lunar Nova", "Lunar Cataclysm"],
+    "Wind": ["Gust Shot", "Gust Lance", "Gust Surge", "Gust Nova", "Gust Cataclysm"],
+    "Thunder": ["Tempest Shot", "Tempest Lance", "Tempest Surge", "Tempest Nova", "Tempest Cataclysm"],
+    "Rune": ["Rune Shot", "Rune Lance", "Rune Surge", "Rune Nova", "Rune Cataclysm"],
+    "Magma": ["Magma Shot", "Magma Lance", "Magma Surge", "Magma Nova", "Magma Cataclysm"],
+    "Earth": ["Terra Shot", "Terra Lance", "Terra Surge", "Terra Nova", "Terra Cataclysm"],
+    "Eclipse": ["Eclipse Shot", "Eclipse Lance", "Eclipse Surge", "Eclipse Nova", "Eclipse Cataclysm"],
+    "Dream": ["Dream Shot", "Dream Lance", "Dream Surge", "Dream Nova", "Dream Cataclysm"],
+    "Swamp": ["Bog Shot", "Bog Lance", "Bog Surge", "Bog Nova", "Bog Cataclysm"],
+    "Shadow": ["Shade Shot", "Shade Lance", "Shade Surge", "Shade Nova", "Shade Cataclysm"],
+    "Nature": ["Verdant Shot", "Verdant Lance", "Verdant Surge", "Verdant Nova", "Verdant Cataclysm"],
+    "Gravity": ["Gravity Shot", "Gravity Lance", "Gravity Surge", "Gravity Nova", "Gravity Cataclysm"],
+    "Metal": ["Metal Shot", "Metal Lance", "Metal Surge", "Metal Nova", "Metal Cataclysm"],
+    "Sound": ["Echo Shot", "Echo Lance", "Echo Surge", "Echo Nova", "Echo Cataclysm"],
+    "Plasma": ["Plasma Shot", "Plasma Lance", "Plasma Surge", "Plasma Nova", "Plasma Cataclysm"],
+    "Stone": ["Granite Shot", "Granite Lance", "Granite Surge", "Granite Nova", "Granite Cataclysm"],
+    "Blood": ["Crimson Shot", "Crimson Lance", "Crimson Surge", "Crimson Nova", "Crimson Cataclysm"],
+    "Beast": ["Feral Shot", "Feral Lance", "Feral Surge", "Feral Nova", "Feral Cataclysm"],
+    "Time": ["Chrono Shot", "Chrono Lance", "Chrono Surge", "Chrono Nova", "Chrono Cataclysm"],
 }
 for _type, _moves in LEARNSET.items():
     for _move in _moves:
@@ -3481,6 +3995,8 @@ REGION_CHANCE = 0.7   # chance that a wild Pokemon is one of the region's types
 
 def region_pool(region):
     """Wild Pokemon that live in this region."""
+    if region in SECRET_AREAS and SECRET_AREAS[region].get("only_area"):
+        return AREA_ONLY   # Xrencha has its own Pokemon that live nowhere else
     common = [row for row in WILD_POKEMON if row[1] != "NYSTRIA"]
     favourite = REGIONS.get(region, ((),))[0]
     chance = 1.0 if region in SECRET_AREAS else REGION_CHANCE
@@ -3503,6 +4019,27 @@ TYPE_WORD = {
     "Fighting": "Fist", "Fairy": "Pixie", "Light": "Light", "Dark": "Shadow",
     "Dragon": "Dragon", "Bug": "Swarm", "Cosmic": "Cosmic", "Void": "Void",
     "Glitch": "Glitch", "Normal": "Wild",
+    # Xrencha types (v18.5)
+    "Crystal": "Crystal",
+    "Moon": "Lunar",
+    "Wind": "Gust",
+    "Thunder": "Tempest",
+    "Rune": "Rune",
+    "Magma": "Magma",
+    "Earth": "Terra",
+    "Eclipse": "Eclipse",
+    "Dream": "Dream",
+    "Swamp": "Bog",
+    "Shadow": "Shade",
+    "Nature": "Verdant",
+    "Gravity": "Gravity",
+    "Metal": "Metal",
+    "Sound": "Echo",
+    "Plasma": "Plasma",
+    "Stone": "Granite",
+    "Blood": "Crimson",
+    "Beast": "Feral",
+    "Time": "Chrono",
 }
 
 # Bond: each Pokemon gets bond points for winning battles.
@@ -3608,21 +4145,30 @@ SECRET_AREAS = {
     "Hidden Cave": {
         "types": ("Rock", "Ground", "Dark", "Ghost", "Bug"),
         "sky": (30, 26, 40), "ground": (75, 62, 55),
-        "need": ("wins", 15), "hint": "Win 15 battles to find it",
+        "need": ("wins", 15), "hint": "Win 15 battles",
         "legend": "Terravion", "puzzle": None,
     },
     "Abandoned Lab": {
         "types": ("Steel", "Electric", "Poison", "Psychic"),
         "sky": (38, 46, 52), "ground": (88, 98, 104),
-        "need": ("caught", 25), "hint": "Catch 25 kinds of Pokemon",
+        "need": ("caught", 25), "hint": "Catch 25 kinds",
         "legend": "Chronolux", "puzzle": "lab",
     },
     "Mysterious Dimension": {
         "types": ("Void", "Cosmic", "Psychic", "Dragon", "Ghost"),
         "sky": (45, 18, 75), "ground": (28, 10, 48),
-        "need": ("trophies", 1), "hint": "Win the Battle Tournament",
+        "need": ("trophies", 1), "hint": "Win the Tournament",
         "legend": "Voidragon", "puzzle": "rift",
         "duo": ("Aetherion", "Varkrion"),
+    },
+    # Unlocked only by the XRENCHA event code (v18.5)
+    "Xrencha": {
+        "types": ("Cosmic", "Void", "Crystal", "Time", "Rune"),
+        "sky": (22, 40, 70), "ground": (40, 30, 70),
+        "need": ("event", "xrencha"), "hint": "Secret event code",
+        "legend": ("Solvarion", "Nulvexion"), "puzzle": None,
+        "duo": ("Solvarion", "Nulvexion"),
+        "only_area": True,
     },
 }
 for _name, _area in SECRET_AREAS.items():
@@ -3647,6 +4193,10 @@ LEGEND_INTROS = {
                   "Rocks crash down as TERRAVION rises from the earth!"],
     "Chronolux": ["Every clock in the lab stops at once...",
                   "CHRONOLUX steps out of a frozen moment!"],
+    "Solvarion": ["The sky splits open into blinding starlight...",
+                  "SOLVARION, the Celestial Origin, descends!"],
+    "Nulvexion": ["Reality flickers and breaks apart...",
+                  "NULVEXION, the Void Origin, crashes through!"],
     "Voidragon": ["The stars go out one by one...",
                   "VOIDRAGON tears through the dimension!"],
     "NYSTRIA": ["The air tears open...",
@@ -3682,10 +4232,14 @@ def empower_partner(partner, fallen):
 # SHINY Pokemon of that type.
 # ==========================================
 
+XRENCHA_TYPES = {"Crystal", "Moon", "Wind", "Thunder", "Rune", "Magma", "Earth", "Eclipse", "Dream", "Swamp", "Shadow", "Nature", "Gravity", "Metal", "Sound", "Plasma", "Stone", "Blood", "Beast", "Time"}
+
 TYPE_CHALLENGES = {}
 for _type, _word in TYPE_WORD.items():
+    if _type in XRENCHA_TYPES:
+        continue
     _pool = sorted(n for _num, n, ty in DEX_ALL
-                   if _type in ty.split("/")
+                   if _type in ty.split("/") and n not in AREA_NAMES
                    and n not in RARE_KIND and n != "NYSTRIA")
     if len(_pool) < 6:
         continue
@@ -3703,7 +4257,8 @@ for _type, _word in TYPE_WORD.items():
 def challenge_prize(types):
     """A random non-legendary Pokemon of this type, for the reward."""
     pool = [n for _num, n, ty in DEX_ALL
-            if types in ty.split("/") and n not in RARE_KIND and n != "NYSTRIA"]
+            if types in ty.split("/") and n not in RARE_KIND
+            and n not in AREA_NAMES and n != "NYSTRIA"]
     return random.choice(pool)
 
 
@@ -3964,15 +4519,24 @@ CODE_FILE = "pokemon_save_code.txt"
 CODE_PREFIX = "PNW1:"
 
 
-GIFT_CHECK = 1822383   # the secret gift code is not written in the code
+# Secret event codes. Only a check number is stored, never the code itself.
+EVENT_CHECKS = {
+    1822383: "aura_brawler",
+    2572208: "xrencha",       # unlocks the Xrencha fly location (v18.5)
+}
 
 
-def is_gift_code(code):
+def code_event(code):
+    """Which event a code unlocks, or None if it isn't a real code."""
     text = "".join(code.split()).upper()
     total = 7
     for ch in text:
         total = (total * 31 + ord(ch)) % 9999991
-    return total == GIFT_CHECK
+    return EVENT_CHECKS.get(total)
+
+
+def is_gift_code(code):
+    return code_event(code) is not None
 
 
 def make_save_code(text):
@@ -4369,8 +4933,12 @@ def shape_oval(s, fill, rect, edge):
     pygame.draw.ellipse(s, edge, rect, 2)
 
 
+ACCENT_LOOKALIKE = {"Crystal": "Ice", "Moon": "Cosmic", "Wind": "Flying", "Thunder": "Electric", "Rune": "Psychic", "Magma": "Fire", "Earth": "Ground", "Eclipse": "Dark", "Dream": "Fairy", "Swamp": "Poison", "Shadow": "Dark", "Nature": "Grass", "Gravity": "Cosmic", "Metal": "Steel", "Sound": "Flying", "Plasma": "Electric", "Stone": "Rock", "Blood": "Dark", "Beast": "Fighting", "Time": "Cosmic"}
+
+
 def type_accent(s, kind, x, y):
     """Small type symbol (flame, bolt, leaf...) at a point."""
+    kind = ACCENT_LOOKALIKE.get(kind, kind)
     if kind == "Fire":
         pygame.draw.polygon(s, (255, 90, 20), [
             (x - 7, y + 6), (x - 8, y - 4), (x - 3, y), (x, y - 12),
@@ -5364,7 +5932,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v18.4!"
+        self.message = "Welcome to Pokemon: The New World v18.5!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -5549,7 +6117,7 @@ class Game:
             self.message = "Import cancelled."
             return
         if is_gift_code(code):
-            self.claim_gift()
+            self.redeem_event(code_event(code))
             return
         try:
             text = read_save_code(code)
@@ -5565,11 +6133,26 @@ class Game:
             self.message = "Type a code first!"
             return
         if is_gift_code(self.code_text):
-            self.claim_gift()
+            self.redeem_event(code_event(self.code_text))
             self.mode = "menu"
         else:
             self.message = "That code doesn't work. Check the spelling!"
         self.code_text = ""
+
+    def redeem_event(self, event):
+        if event == "xrencha":
+            self.unlock_xrencha()
+        else:
+            self.claim_gift()
+
+    def unlock_xrencha(self):
+        """The XRENCHA code opens a new place on the FLY screen."""
+        if "xrencha" in self.events:
+            self.message = "Xrencha is already unlocked! Find it on the FLY screen."
+            return
+        self.events.add("xrencha")
+        storage_write(self.save_text())
+        self.message = "EVENT! A new world opened up: XRENCHA! Find it on the FLY screen."
 
     def claim_gift(self):
         """Gives the event-only Aura Brawler, once per save."""
@@ -5818,7 +6401,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 18.4 - HIGH QUALITY SPRITES", 150)
+        self.centred("VERSION 18.5 - XRENCHA", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -5911,16 +6494,20 @@ class Game:
         self.centred("SECRET AREAS", 478, FONT, GOLD)
         for i, name in enumerate(SECRET_AREAS):
             area = SECRET_AREAS[name]
-            x, y = 80 + i * 285, 505
+            x, y = 72 + i * 216, 505
             if self.area_unlocked(name):
                 colour = (45, 115, 75) if name == self.region else (95, 55, 135)
-                self.button(name, (x, y, 270, 44), ("fly_to", name), colour)
+                if area.get("only_area") and name != self.region:
+                    colour = (30, 90, 140)
+                self.button(name, (x, y, 206, 44), ("fly_to", name), colour)
                 info = ", ".join(area["types"][:3])
             else:
-                self.button("???", (x, y, 270, 44), ("locked", area["hint"]),
+                self.button("???", (x, y, 206, 44), ("locked", area["hint"]),
                             (60, 60, 75))
                 info = area["hint"]
-            self.text(info, x + 6, y + 50, SMALL, GOLD)
+            while SMALL.size(info)[0] > 204 and " " in info:
+                info = info.rsplit(" ", 1)[0]
+            self.text(info, x + 4, y + 50, SMALL, GOLD)
 
         self.centred(self.message, 625, SMALL, GOLD)
         self.button("BACK", (420, 645, 160, 42), "back")
@@ -6686,6 +7273,8 @@ class Game:
 
     def area_unlocked(self, name):
         kind, amount = SECRET_AREAS[name]["need"]
+        if kind == "event":
+            return amount in self.events
         have = {"wins": self.wins, "caught": len(self.caught),
                 "trophies": self.trophies}[kind]
         return have >= amount
@@ -6700,12 +7289,17 @@ class Game:
             return None
         if area.get("duo") and random.random() < DUO_CHANCE:
             first, second = area["duo"]
+            if random.random() < 0.5:
+                first, second = second, first
             lines = ["Two shadows circle overhead...",
                      f"{first.upper()} and {second.upper()} appear TOGETHER!",
                      "Defeat one and the other takes its power!"]
             return make_species(first), make_species(second), lines
         if random.random() < AREA_LEGEND_CHANCE:
-            enemy = make_species(area["legend"])
+            legend = area["legend"]
+            if isinstance(legend, tuple):
+                legend = random.choice(legend)
+            enemy = make_species(legend)
             return enemy, None, legend_intro(enemy)
         return None
 
