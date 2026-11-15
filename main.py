@@ -6401,7 +6401,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 95, BIG, GOLD)
-        self.centred("VERSION 18.5 - XRENCHA", 150)
+        self.centred("VERSION 18.5 - A NEW LOCATION ONLY TO THE WORTHY", 150)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
