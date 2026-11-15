@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v18.6")
+pygame.display.set_caption("Pokemon: The New World v18.7")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -3490,6 +3490,19 @@ NEW_SPECIES_DATA = [
       ('System Crash', 62, 'Glitch'),
       ('Erase Reality', 58, 'Void'),
       ('Corrupt Pulse', 66, 'Glitch')]),
+    # ---- story Pokemon (v18.7) ----
+    (624, 'Nuxillon', 'Dark/Dragon', 'dragon', 320, 9, 'story',
+     'A pesky Dark/Dragon Pokemon that shares the same genes as the legendary Nulvexion, though it is not part of its evolution line. Scientists in a hidden lab are studying it.',
+     [('Pesky Claw', 50, 'Dark'),
+      ('Gene Roar', 52, 'Dragon'),
+      ('Unstable Pulse', 48, 'Void'),
+      ('Gene Break', 55, 'Dark')]),
+    (625, 'Xlovon', 'Steel/Electric', 'golem', 330, 8, 'story',
+     'Unknown Pokemon.',
+     [('Rust Cannon', 52, 'Steel'),
+      ('Arena Bolt', 54, 'Electric'),
+      ('Metal Storm', 50, 'Steel'),
+      ('Lightning Grid', 56, 'Electric')]),
 ]
 
 NEW_INFO = {}
@@ -3514,6 +3527,10 @@ for _row in NEW_SPECIES_DATA:
         MOVE_TYPES[_move_name] = _move_type
     if _rarity == "area":
         AREA_ONLY.append((_num, _name, _types))
+    elif _rarity == "story":
+        # Only met in story mode, never in the wild (v18.7)
+        NEW_RARE.append((_num, _name, _types))
+        RARE_KIND[_name] = "Story"
     elif _rarity == "origin":
         # Xrencha's legendaries: only appear in Xrencha, never anywhere else
         NEW_RARE.append((_num, _name, _types))
@@ -4271,6 +4288,58 @@ def challenge_prize(types):
 # ==========================================
 # v18.0: BOSS REMATCHES
 # ==========================================
+
+# ==========================================
+# STORY MODE (v18.7)
+# Each step is ("page", speaker, text, sprite) or ("battle", Pokemon, level).
+# ==========================================
+
+STORY = [
+    ("page", "", "CHAPTER 1: THE SUNGOLIA TEMPLE", None),
+    ("page", "", "The afternoon sun shines through the enormous golden windows "
+                 "of the Sungolia Temple.", None),
+    ("page", "", "You and Eusine walk through the ancient entrance hall.", None),
+    ("page", "Eusine", "Remarkable! This temple appears to have been built to "
+                       "honour the legendary Sun Pokemon. I wonder if Solgaleo "
+                       "once visited this place.", None),
+    ("page", "", "Suddenly... BOOOOOOM! The temple shakes.", None),
+    ("page", "", "A strange purple distortion appears between the pillars. "
+                 "Its body flickers with strange energy. Its eyes lock onto you.",
+     "Nuxillon"),
+    ("page", "Eusine", "What on earth is THAT?! I've never encountered a "
+                       "Pokemon like it!", "Nuxillon"),
+    ("page", "", "Wild Nuxillon appeared! Nuxillon roars and charges towards you!",
+     "Nuxillon"),
+    ("page", "Eusine", "Trainer! Watch out! It's attacking!", "Nuxillon"),
+    ("battle", "Nuxillon", 40),
+    ("page", "", "Nuxillon escapes back through the distortion.", None),
+    ("page", "Eusine", "Look at this! A rusted steel fossil. We should take it "
+                       "to the museum!", None),
+    ("page", "", "Suddenly the temple walls turn into metal. Lightning spreads "
+                 "across the hall, and it becomes an arena!", None),
+    ("page", "", "A giant unknown mech Pokemon rises up in front of you!", "Xlovon"),
+    ("page", "Eusine", "Here, take these 5 XL Poke Balls. This one's yours!",
+     "Xlovon"),
+    ("battle", "Xlovon", 35),
+    ("page", "", "You caught Xlovon! Eusine packs the rusted steel fossil to take "
+                 "to the museum.", "Xlovon"),
+    ("page", "", "CHAPTER 1 COMPLETE. To be continued...", None),
+]
+STORY_CATCH = "Xlovon"      # the story Pokemon you are meant to catch
+STORY_NO_CATCH = "Nuxillon" # dodges every ball
+HIDDEN_NAME = "???"         # Xlovon's name stays secret until you catch it
+
+
+def make_story_pokemon(name, level):
+    """A story Pokemon, as strong as a trained Pokemon of that level."""
+    mon = make_species(name, level)
+    grown = level - 5
+    mon.max_hp = int((NEW_INFO[name]["hp"] + 8 * grown) * 1.2)
+    mon.hp = mon.max_hp
+    mon.bonus = NEW_INFO[name]["bonus"] + 2 * grown
+    mon.moves = [(m, p + 10) for m, p in mon.moves]
+    return mon
+
 
 def make_trial_legend(name):
     """Aetherion or Varkrion at Lv 100, as strong as a fully trained Pokemon."""
@@ -5670,6 +5739,8 @@ def load_picture(name, size):
 
 
 def make_sprite(name, types="Unknown", size=160):
+    if name == HIDDEN_NAME:
+        name = STORY_CATCH
     if name in SPRITE_FILES:
         picture = load_picture(name, size)
         if picture is not None:
@@ -5949,12 +6020,13 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v18.6!"
+        self.message = "Welcome to Pokemon: The New World v18.7!"
 
         self.balls = {
             "Poke Ball": 10,
             "Great Ball": 5,
-            "Ultra Ball": 2
+            "Ultra Ball": 2,
+            "XL Poke Ball": 0      # story only, from Eusine (v18.7)
         }
 
         self.avatar_turns = 0
@@ -5987,6 +6059,9 @@ class Game:
         self.intro_lines = []
         self.puzzle = None
         self.trial = False          # True during the Trial of the Deep (v18.6)
+        self.story_step = 0         # where you are in story mode (v18.7)
+        self.story_battle = False
+        self.story_pending = False  # show CONTINUE STORY after a story win
 
         self.buttons = []
         self.popup = ""
@@ -6030,6 +6105,7 @@ class Game:
             "rematch_wins": self.rematch_wins,
             "type_badges": sorted(self.master_badges),
             "puzzles": sorted(self.puzzles_solved),
+            "story_step": self.story_step,
         }
         return json.dumps(data)
 
@@ -6088,6 +6164,9 @@ class Game:
         self.rematch_wins = dict(data.get("rematch_wins", {}))
         self.master_badges = set(data.get("type_badges", []))
         self.puzzles_solved = set(data.get("puzzles", []))
+        self.story_step = min(int(data.get("story_step", 0)), len(STORY) - 1)
+        self.story_battle = False
+        self.story_pending = False
         self.rematch = None
         self.duo_partner = None
         region = data.get("region", "The New World")
@@ -6419,7 +6498,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 18.6 - TRIAL OF THE DEEP", 165)
+        self.centred("VERSION 18.7 - STORY MODE", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -6440,11 +6519,13 @@ class Game:
         # Xrencha only has three options (v18.6)
         if self.region == "Xrencha":
             self.button("CONTINUE" if self.enemy else "BATTLE",
-                        (215, 420, 160, 56), "battle")
+                        (122, 420, 150, 56), "battle")
+            self.button("STORY MODE", (287, 420, 170, 56), "story",
+                        (150, 90, 30))
             label = ("CONTINUE TRIAL" if self.trial and self.enemy
                      else "TRIAL OF THE DEEP")
-            self.button(label, (390, 420, 220, 56), "trial", (40, 60, 130))
-            self.button("FLY", (625, 420, 160, 56), "fly", (50, 130, 160))
+            self.button(label, (472, 420, 230, 56), "trial", (40, 60, 130))
+            self.button("FLY", (717, 420, 160, 56), "fly", (50, 130, 160))
             if "trial_deep" in self.events:
                 self.centred("Trial of the Deep: COMPLETE", 500, SMALL, GOLD)
             else:
@@ -6546,6 +6627,32 @@ class Game:
 
         self.centred(self.message, 625, SMALL, GOLD)
         self.button("BACK", (420, 645, 160, 42), "back")
+
+    def draw_story(self):
+        self.background()
+        shade_layer = pygame.Surface((1000, 700), pygame.SRCALPHA)
+        shade_layer.fill((0, 0, 0, 120))
+        screen.blit(shade_layer, (0, 0))
+        _kind, speaker, text, sprite = STORY[self.story_step]
+
+        if sprite:
+            screen.blit(get_sprite(sprite, NEW_INFO[sprite]["types"], 200),
+                        (400, 120))
+
+        self.panel((60, 380, 880, 190))
+        y = 400
+        if speaker:
+            self.text(speaker, 90, y, FONT, GOLD)
+            y += 38
+        for line in wrap_text(text, FONT, 820):
+            self.text(line, 90, y, FONT)
+            y += 32
+
+        nxt = STORY[self.story_step + 1] if self.story_step + 1 < len(STORY) else None
+        label = "BATTLE!" if nxt and nxt[0] == "battle" else ("NEXT" if nxt else "FINISH")
+        colour = (160, 50, 60) if label == "BATTLE!" else (40, 60, 130)
+        self.button(label, (700, 590, 200, 55), "story_next", colour)
+        self.button("LEAVE", (100, 590, 160, 55), "story_leave", (80, 80, 95))
 
     def draw_intro(self):
         """A dramatic introduction before a legendary battle."""
@@ -6842,7 +6949,7 @@ class Game:
         self.panel((250, 150, 500, 370))
 
         for i, (name, amount) in enumerate(self.balls.items()):
-            y = 210 + i * 85
+            y = 200 + i * 70
             self.text(f"{name}: {amount}", 310, y, FONT)
 
             if amount > 0:
@@ -6851,10 +6958,10 @@ class Game:
 
         if self.enemy:
             self.text("Opponent: " + self.enemy.name,
-                      310, 460, SMALL, GOLD)
+                      310, 480, SMALL, GOLD)
         else:
             self.text("Start a battle to catch Pokemon!",
-                      310, 460, SMALL)
+                      310, 480, SMALL)
 
         self.button("BACK", (420, 555, 160, 45), "back")
 
@@ -7006,6 +7113,10 @@ class Game:
         self.panel((150, 425, 700, 70))
         self.centred(self.message, 460, SMALL, GOLD)
 
+        if self.story_pending:
+            self.button("CONTINUE STORY", (350, 510, 300, 55), "story_go",
+                        (40, 60, 130))
+            return
         self.button("NEXT BATTLE", (350, 510, 300, 55), "battle")
         self.button("MAIN MENU", (350, 580, 300, 50), "menu")
 
@@ -7041,6 +7152,7 @@ class Game:
             pokemon.heal(pokemon.max_hp)
         failed_trial = self.trial
         self.trial = False
+        self.story_battle = False
 
         if self.tournament:
             round_number = self.tournament["round"] + 1
@@ -7289,6 +7401,76 @@ class Game:
         self.message = f"REMATCH {number}! {name} is stronger than ever!"
 
     # ======================================
+    # STORY MODE (v18.7)
+    # ======================================
+
+    def open_story(self):
+        if self.enemy:
+            if self.story_battle:
+                self.mode = "battle"
+            else:
+                self.message = "Finish your current battle first!"
+            return
+        step = STORY[self.story_step]
+        if step[0] == "battle":
+            self.start_story_battle()
+        else:
+            self.mode = "story"
+
+    def story_next(self):
+        if self.story_step >= len(STORY) - 1:
+            self.mode = "menu"
+            self.message = "Chapter 1 complete! More chapters are coming soon."
+            return
+        self.story_step += 1
+        step = STORY[self.story_step]
+        if step[0] == "battle":
+            self.start_story_battle()
+
+    def start_story_battle(self):
+        _kind, name, level = STORY[self.story_step]
+        for pokemon in self.team:
+            pokemon.heal(pokemon.max_hp)
+        self.send_out_healthy()
+        if name == STORY_CATCH:
+            # Eusine makes sure you have 5 XL Poke Balls for the fight
+            self.balls["XL Poke Ball"] = max(5, self.balls["XL Poke Ball"])
+        self.enemy = make_story_pokemon(name, level)
+        if name == STORY_CATCH:
+            self.enemy.name = HIDDEN_NAME   # revealed when caught
+        else:
+            self.seen.add(self.enemy.pokedex_number)
+        self.duo_partner = None
+        self.rematch = None
+        self.story_battle = True
+        self.avatar_turns = 0
+        self.avatar_used = False
+        self.animation = None
+        self.pending_enemy_turn = False
+        self.mode = "battle"
+        self.message = f"Wild {self.enemy.name} appeared! Your team was healed."
+
+    def story_won(self, beaten):
+        """After beating a story Pokemon. Returns extra message text."""
+        self.story_battle = False
+        if beaten.name in (STORY_CATCH, HIDDEN_NAME):
+            return f" {beaten.name} powered down before you could catch it. Try again in STORY MODE!"
+        self.story_step += 1
+        self.story_pending = True
+        storage_write(self.save_text())
+        return " Continue the story!"
+
+    def story_caught(self):
+        for mon in self.team + self.pc:
+            if mon.name == HIDDEN_NAME:
+                mon.name = STORY_CATCH          # the name is revealed!
+                self.seen.add(mon.pokedex_number)
+        self.story_battle = False
+        self.story_step += 1
+        self.mode = "story"
+        storage_write(self.save_text())
+
+    # ======================================
     # TRIAL OF THE DEEP (v18.6)
     # ======================================
 
@@ -7522,6 +7704,8 @@ class Game:
                 return
 
             extra = ""
+            if self.story_battle:
+                extra = self.story_won(e)
             if self.trial:
                 extra = self.trial_reward()
             if self.rematch:
@@ -7673,6 +7857,11 @@ class Game:
             self.mode = "battle"
             return
 
+        if self.enemy.name == STORY_NO_CATCH:
+            self.message = f"{self.enemy.name} dodged the ball!"
+            self.mode = "battle"
+            return
+
         if self.enemy.types == "Boss":
             self.message = "You cannot catch this boss!"
             return
@@ -7690,7 +7879,8 @@ class Game:
         chances = {
             "Poke Ball": 0.35,
             "Great Ball": 0.60,
-            "Ultra Ball": 0.85
+            "Ultra Ball": 0.85,
+            "XL Poke Ball": 0.95
         }
 
         chance = chances[ball_name]
@@ -7723,6 +7913,9 @@ class Game:
             self.message = f"You caught {shiny}{caught.name}! Sent to {place}!"
             if self.duo_partner:
                 self.duo_continue(caught, self.message)
+                return
+            if self.story_battle:
+                self.story_caught()
                 return
             self.mode = "menu"
             self.animation = None
@@ -7925,6 +8118,20 @@ class Game:
         elif action == "code_enter":
             self.enter_event_code()
 
+        elif action == "story" and self.mode == "menu":
+            self.open_story()
+
+        elif action == "story_next" and self.mode == "story":
+            self.story_next()
+
+        elif action == "story_leave" and self.mode == "story":
+            self.mode = "menu"
+            self.message = "You can carry on with STORY MODE any time."
+
+        elif action == "story_go" and self.mode == "victory":
+            self.story_pending = False
+            self.mode = "story"
+
         elif action == "trial" and self.mode == "menu":
             if self.trial and self.enemy:
                 self.mode = "battle"
@@ -8053,6 +8260,7 @@ class Game:
 
             was_trial = self.trial
             self.trial = False
+            self.story_battle = False
             self.enemy = None
             self.duo_partner = None
             self.rematch = None
@@ -8136,6 +8344,7 @@ class Game:
             "balls": self.draw_balls,
             "pc": self.draw_pc,
             "victory": self.draw_victory,
+            "story": self.draw_story,
             "shop": self.draw_shop,
             "pokedex": self.draw_pokedex,
             "tournament": self.draw_tournament,
