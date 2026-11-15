@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v19.1")
+pygame.display.set_caption("Pokemon: The New World v19.2")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -6425,7 +6425,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v19.1!"
+        self.message = "Welcome to Pokemon: The New World v19.2!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -6750,6 +6750,51 @@ class Game:
             x += w + 6
         return x
 
+    def text_box(self, rect):
+        """A retro message box with a double white border."""
+        r = pygame.Rect(rect)
+        pygame.draw.rect(screen, (24, 30, 52), r, border_radius=12)
+        pygame.draw.rect(screen, (235, 238, 250), r, 4, border_radius=12)
+        pygame.draw.rect(screen, (120, 130, 160), r.inflate(-12, -12), 2,
+                         border_radius=9)
+
+    def action_panel(self, rect):
+        r = pygame.Rect(rect)
+        pygame.draw.rect(screen, (60, 66, 90), r, border_radius=12)
+        pygame.draw.rect(screen, (235, 238, 250), r, 4, border_radius=12)
+
+    def big_button(self, label, rect, action, colour, arrow=False):
+        """A big chunky battle button, like the old handheld games."""
+        r = pygame.Rect(rect)
+        pygame.draw.rect(screen, shade(colour, -45), r.move(0, 4),
+                         border_radius=10)
+        pygame.draw.rect(screen, colour, r, border_radius=10)
+        pygame.draw.rect(screen, shade(colour, 45),
+                         (r.x + 6, r.y + 5, r.w - 12, 6), border_radius=3)
+        pygame.draw.rect(screen, (235, 238, 250), r, 3, border_radius=10)
+        image = BIG.render(label, True, WHITE)
+        rect_text = image.get_rect(center=r.center)
+        if arrow:
+            rect_text.x += 10
+            ax, ay = rect_text.x - 22, r.centery
+            pygame.draw.polygon(screen, WHITE, [(ax, ay - 11), (ax, ay + 11),
+                                                (ax + 14, ay)])
+        screen.blit(image, rect_text)
+        self.buttons.append((r, action))
+
+    def draw_bag(self):
+        """Bag: choose Poke Balls or items."""
+        self.draw_battle()
+        if not self.enemy:
+            return
+        self.buttons.clear()
+        self.text_box((300, 190, 400, 290))
+        self.centred("BAG", 226, BIG, GOLD)
+        self.big_button("Poke Balls", (340, 270, 320, 66), "balls",
+                        (196, 46, 52))
+        self.big_button("Items", (340, 350, 320, 66), "items", (45, 115, 75))
+        self.button("BACK", (440, 426, 120, 38), "back", (40, 44, 70))
+
     def button(self, label, rect, action, colour=BLUE):
         r = pygame.Rect(rect)
         pygame.draw.rect(screen, colour, r, border_radius=9)
@@ -6924,7 +6969,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 19.1 - MUSIC", 165)
+        self.centred("VERSION 19.2 - NEW BATTLE BUTTONS", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -7351,24 +7396,27 @@ class Game:
 
         self.draw_animation()
 
-        self.panel((20, 490, 960, 190))
-        lines = wrap_text(self.message, SMALL, 920)
-        if len(lines) > 2:
-            lines = lines[:2]
-            lines[1] += " ..."
+        # Message box (left) and action buttons (right), v19.2
+        self.text_box((14, 494, 572, 196))
+        lines = wrap_text(self.message, SMALL, 400)
+        if len(lines) > 3:
+            lines = lines[:3]
+            lines[2] += " ..."
         for i, line in enumerate(lines):
-            self.text(line, 40, 498 + i * 22, SMALL, GOLD)
+            self.text(line, 36, 512 + i * 24, SMALL, GOLD)
+        self.text(f"What will {p.name} do?", 36, 630, BIG)
 
-        self.button("ATTACKS", (40, 550, 160, 45), "moves")
-        self.button("SWITCH TEAM", (215, 550, 160, 45), "team")
-        self.button("SUN AVATAR", (390, 550, 160, 45),
-                    "avatar", (145, 90, 35))
-        self.button("POKE BALLS", (565, 550, 150, 45), "balls")
-        self.button("FORFEIT" if self.tournament else "RUN",
-                    (730, 550, 100, 45), "run", (130, 55, 60))
-        self.button("MENU", (845, 550, 110, 45), "menu")
-        self.button("ITEMS", (40, 610, 160, 45), "items", (45, 115, 75))
-        self.text(f"Region: {self.region}", 230, 622, SMALL)
+        self.action_panel((598, 494, 388, 196))
+        self.big_button("Attack", (612, 508, 176, 78), "moves",
+                        (196, 46, 52), arrow=True)
+        self.big_button("Switch", (796, 508, 176, 78), "team", (36, 78, 170))
+        self.big_button("Bag", (612, 598, 176, 78), "bag", (36, 78, 170))
+        self.big_button("Forfeit" if self.tournament else "Run",
+                        (796, 598, 176, 78), "run", (36, 78, 170))
+
+        # Small extra buttons above the box
+        self.button("MENU", (448, 508, 124, 32), "menu", (40, 44, 70))
+        self.button("SUN AVATAR", (448, 546, 124, 32), "avatar", (145, 90, 35))
 
     def draw_moves(self):
         self.draw_battle()
@@ -7918,7 +7966,7 @@ class Game:
             return "victory"
         if self.mode == "explore":
             return "town"
-        if self.enemy and self.mode in ("battle", "moves", "balls", "items",
+        if self.enemy and self.mode in ("battle", "moves", "balls", "items", "bag",
                                         "intro", "team"):
             e = self.enemy
             if (self.trial or self.duo_partner or self.story_battle
@@ -8841,9 +8889,15 @@ class Game:
                 self.return_mode = self.mode
                 self.mode = "team"
 
+        elif action == "bag" and self.mode == "battle":
+            if self.animation:
+                self.message = "Wait until the attack finishes!"
+                return
+            self.mode = "bag"
+
         elif action == "balls":
-            if self.mode in ("menu", "battle"):
-                self.return_mode = self.mode
+            if self.mode in ("menu", "battle", "bag"):
+                self.return_mode = "battle" if self.mode == "bag" else self.mode
                 self.mode = "balls"
 
         elif action == "pc":
@@ -8946,6 +9000,9 @@ class Game:
             self.mode = "menu"
             self.message = ""
 
+        elif action == "back" and self.mode == "bag":
+            self.mode = "battle"
+
         elif action == "back":
             if self.mode == "typechart":
                 self.mode = self.chart_return
@@ -8953,7 +9010,7 @@ class Game:
                                "items", "fly"):
                 self.mode = self.return_mode
 
-        elif action == "items" and self.mode == "battle":
+        elif action == "items" and self.mode in ("battle", "bag"):
             if self.animation:
                 self.message = "Wait until the attack finishes!"
                 return
@@ -9141,7 +9198,8 @@ class Game:
             "challenges": self.draw_challenges,
             "typemasters": self.draw_typemasters,
             "rematches": self.draw_rematches,
-            "explore": self.draw_explore
+            "explore": self.draw_explore,
+            "bag": self.draw_bag
         }
 
         while True:

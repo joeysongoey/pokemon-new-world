@@ -1,4 +1,4 @@
-# Pokemon: The New World v19.1
+# Pokemon: The New World v19.2
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,12 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v19.2
+
+- **New battle layout:** a retro message box ("What will Flame do?") and four big
+  buttons, Attack, Switch, Bag and Run. Bag holds Poke Balls and Items.
+- **Smoother music:** all tracks remade without the buzzy and crackly sounds.
 
 ## What's new in v19.1
 
