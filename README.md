@@ -1,4 +1,4 @@
-# Pokemon: The New World v19.0
+# Pokemon: The New World v19.1
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,14 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v19.1
+
+- **Music:** 5 original chiptune tracks (in `music/`). There's a title theme, a
+  town and exploring theme, a wild battle theme, a legendary battle theme (for
+  legendaries, bosses, the Trial of the Deep and story battles) and a victory jingle.
+- **Mute button** in the top-right corner of every screen. The setting is saved
+  with your game.
 
 ## What's new in v19.0
 

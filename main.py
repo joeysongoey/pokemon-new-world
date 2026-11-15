@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v19.0")
+pygame.display.set_caption("Pokemon: The New World v19.1")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -4738,6 +4738,36 @@ def world_tile(world, x, y):
 
 
 # ==========================================
+# MUSIC (v19.1)
+# Original chiptune tracks in the music/ folder.
+# ==========================================
+
+MUSIC_FILES = {
+    "title": "title.ogg", "town": "town.ogg", "battle": "battle.ogg",
+    "legend": "legend.ogg", "victory": "victory.ogg",
+}
+MUSIC_VOLUME = 0.55
+
+try:
+    pygame.mixer.init()
+except Exception:
+    pass     # no sound device: the game still runs, just quietly
+
+
+def play_music(track):
+    """Starts a track (or stops the music when track is None)."""
+    try:
+        if track is None:
+            pygame.mixer.music.stop()
+            return
+        pygame.mixer.music.load(os.path.join("music", MUSIC_FILES[track]))
+        pygame.mixer.music.set_volume(MUSIC_VOLUME)
+        pygame.mixer.music.play(0 if track == "victory" else -1)
+    except Exception:
+        pass
+
+
+# ==========================================
 # SHINY POKEMON (new in v16.1)
 # ==========================================
 
@@ -6395,7 +6425,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v19.0!"
+        self.message = "Welcome to Pokemon: The New World v19.1!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -6434,6 +6464,10 @@ class Game:
         self.intro_lines = []
         self.puzzle = None
         self.trial = False          # True during the Trial of the Deep (v18.6)
+
+        # Music (v19.1)
+        self.muted = False
+        self.track = "none"
 
         # Explore mode (v19.0)
         self.exploring = False
@@ -6485,6 +6519,7 @@ class Game:
             "elite_trophies": self.elite_trophies,
             "region": self.region,
             "items": self.items,
+            "muted": self.muted,
             "events": sorted(self.events),
             "wins": self.wins,
             "bosses_beaten": self.bosses_beaten,
@@ -6545,6 +6580,7 @@ class Game:
         self.shiny_caught = _int_set(dex.get("shiny", []))
         self.elite_trophies = int(data.get("elite_trophies", 0))
         self.events = set(data.get("events", []))
+        self.muted = bool(data.get("muted", self.muted))
         self.wins = int(data.get("wins", 0))
         self.bosses_beaten = dict(data.get("bosses_beaten", {}))
         self.rematch_wins = dict(data.get("rematch_wins", {}))
@@ -6888,7 +6924,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 19.0 - EXPLORE THE WORLD", 165)
+        self.centred("VERSION 19.1 - MUSIC", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -6899,9 +6935,9 @@ class Game:
                   38, 55, SMALL, GOLD)
 
         # Current region
-        self.panel((750, 20, 230, 70))
-        self.text("Region:", 768, 30, SMALL, GOLD)
-        self.text(self.region, 768, 55, SMALL)
+        self.panel((716, 20, 230, 70))
+        self.text("Region:", 734, 30, SMALL, GOLD)
+        self.text(self.region, 734, 55, SMALL)
 
         # Show Flame on the main menu
         screen.blit(get_sprite("Flame", "Fire", 170), (415, 225))
@@ -7083,7 +7119,7 @@ class Game:
         self.text("B", 828, 613, FONT)
         self.buttons.append((pygame.Rect(879, 524, 72, 72), "world_a"))
         self.buttons.append((pygame.Rect(803, 593, 64, 64), "world_b"))
-        self.button("MENU", (870, 14, 110, 40), "world_menu", (40, 44, 70))
+        self.button("MENU", (830, 14, 110, 40), "world_menu", (40, 44, 70))
 
     def draw_story(self):
         self.background()
@@ -7869,6 +7905,52 @@ class Game:
         self.pending_enemy_turn = False
         self.mode = "battle"
         self.message = f"REMATCH {number}! {name} is stronger than ever!"
+
+    # ======================================
+    # MUSIC (v19.1)
+    # ======================================
+
+    def wanted_track(self):
+        """Which music fits the current screen."""
+        if self.muted or self.mode == "defeat":
+            return None
+        if self.mode == "victory":
+            return "victory"
+        if self.mode == "explore":
+            return "town"
+        if self.enemy and self.mode in ("battle", "moves", "balls", "items",
+                                        "intro", "team"):
+            e = self.enemy
+            if (self.trial or self.duo_partner or self.story_battle
+                    or e.name == "NYSTRIA" or e.name in RARE_KIND
+                    or e.types == "Boss"):
+                return "legend"
+            return "battle"
+        return "title"
+
+    def update_music(self):
+        want = self.wanted_track()
+        if want != self.track:
+            self.track = want
+            play_music(want)
+
+    def draw_mute_button(self):
+        """Speaker button in the top-right corner of every screen."""
+        rect = pygame.Rect(954, 4, 42, 34)
+        pygame.draw.rect(screen, (20, 24, 40), rect, border_radius=8)
+        pygame.draw.rect(screen, BORDER, rect, 2, border_radius=8)
+        x, y = rect.x + 9, rect.y + 17
+        pygame.draw.rect(screen, WHITE, (x, y - 5, 6, 10))
+        pygame.draw.polygon(screen, WHITE, [(x + 5, y - 5), (x + 13, y - 11),
+                                            (x + 13, y + 11), (x + 5, y + 5)])
+        if self.muted:
+            pygame.draw.line(screen, RED, (x + 17, y - 6), (x + 27, y + 6), 3)
+            pygame.draw.line(screen, RED, (x + 27, y - 6), (x + 17, y + 6), 3)
+        else:
+            pygame.draw.arc(screen, WHITE, (x + 11, y - 8, 12, 16), -1.0, 1.0, 2)
+            pygame.draw.arc(screen, WHITE, (x + 13, y - 12, 16, 24), -1.0, 1.0, 2)
+        # Checked before any other button
+        self.buttons.insert(0, (rect, "mute"))
 
     # ======================================
     # EXPLORE MODE (v19.0)
@@ -8785,6 +8867,9 @@ class Game:
         elif action == "code_enter":
             self.enter_event_code()
 
+        elif action == "mute":
+            self.muted = not self.muted
+
         elif action == "explore" and self.mode == "menu":
             self.start_exploring()
 
@@ -9092,6 +9177,8 @@ class Game:
 
             self.buttons = []
             screens[self.mode]()
+            self.draw_mute_button()
+            self.update_music()
 
             pygame.transform.scale(
                 screen,
