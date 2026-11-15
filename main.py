@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v18.8")
+pygame.display.set_caption("Pokemon: The New World v18.9")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -3503,6 +3503,30 @@ NEW_SPECIES_DATA = [
       ('Arena Bolt', 54, 'Electric'),
       ('Metal Storm', 50, 'Steel'),
       ('Lightning Grid', 56, 'Electric')]),
+    (626, 'Sentrix', 'Steel/Electric', 'golem', 300, 8, 'story',
+     'A security robot Pokemon built by Genesis Lab to guard its secrets.',
+     [('Alarm Beam', 50, 'Electric'),
+      ('Lockdown Bolt', 54, 'Electric'),
+      ('Laser Grid', 52, 'Electric'),
+      ('Steel Sweep', 48, 'Steel')]),
+    (627, 'Solguard', 'Rock/Light', 'golem', 330, 8, 'story',
+     'The stone guardian of the Sun Shrine. It only lets the worthy pass.',
+     [('Sunstone Slam', 54, 'Rock'),
+      ('Shrine Flash', 52, 'Light'),
+      ('Ancient Guard', 48, 'Rock'),
+      ('Dawn Quake', 56, 'Light')]),
+    (628, 'Rustarion', 'Steel/Rock', 'quad', 340, 9, 'story',
+     'An ancient Pokemon revived from the rusted steel fossil. Xlovon guarded it for thousands of years.',
+     [('Rust Roar', 56, 'Steel'),
+      ('Fossil Crush', 58, 'Rock'),
+      ('Ancient Edge', 54, 'Rock'),
+      ('Iron Age', 60, 'Steel')]),
+    (629, 'Genexion', 'Void/Steel', 'dragon', 340, 8, 'story',
+     'An artificial legendary created by Genesis Lab from the genes of Nulvexion. After the Origins calmed it, it chose a trainer of its own.',
+     [('Steel Genesis', 70, 'Steel'),
+      ('Null Engine', 72, 'Void'),
+      ('Forged Origin', 66, 'Steel'),
+      ('Void Overload', 72, 'Void')]),
 ]
 
 NEW_INFO = {}
@@ -4320,10 +4344,10 @@ STORY = [
     ("page", "", "A giant unknown mech Pokemon rises up in front of you!", "Xlovon"),
     ("page", "Eusine", "Here, take these 5 XL Poke Balls. This one's yours!",
      "Xlovon"),
-    ("battle", "Xlovon", 35),
+    ("battle", "Xlovon", 35, "catch"),
     ("page", "", "You caught ???! Eusine packs the rusted steel fossil to take "
                  "to the museum.", "Xlovon"),
-    ("page", "", "CHAPTER 1 COMPLETE. To be continued...", None),
+    ("page", "", "CHAPTER 1 COMPLETE! +300 coins", None, "chapter"),
 
     # ---- Chapter 2 (v18.8) ----
     ("page", "", "CHAPTER 2: THE RUSTED SECRET", None),
@@ -4355,11 +4379,216 @@ STORY = [
     ("page", "Eusine", "I think ??? wants to protect the fossil, not give it "
                        "away. We should find that lab before they do something "
                        "terrible.", "Xlovon"),
-    ("page", "", "CHAPTER 2 COMPLETE. To be continued...", None),
+    ("page", "", "CHAPTER 2 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 3 (v18.9) ----
+    ("page", "", "CHAPTER 3: TRACKS IN THE STORM", None),
+    ("page", "", "Rain lashes the cliffs of Xrencha. Purple sparks flicker in the "
+                 "puddles, the same energy as Nuxillon's distortion.", None),
+    ("page", "Eusine", "It left a trail! If we follow it, we'll find where those "
+                       "scientists went.", None),
+    ("page", "", "The trail leads into the Hidden Cave. Deep inside, ??? stops and "
+                 "points at something glinting in the mud: a metal badge stamped "
+                 "GENESIS LAB.", "Xlovon"),
+    ("page", "", "Two scientists step out of the shadows.", None),
+    ("page", "Grunt", "Give us that badge, kid!", None),
+    ("trainer", "Lab Grunt", 50, ["Trezmuk", "Varnyx"]),
+    ("page", "", "The second grunt steps forward, furious.", None),
+    ("trainer", "Lab Grunt", 50, ["Gromnix", "Qezmoth"]),
+    ("page", "Eusine", "Genesis Lab... I've heard rumours about them. Scientists "
+                       "who think they can build their own legendary.", None),
+    ("page", "", "CHAPTER 3 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 4 ----
+    ("page", "", "CHAPTER 4: THE ABANDONED LAB", None),
+    ("page", "", "The badge has a map etched on the back. It points to an old "
+                 "building swallowed by vines: the Abandoned Lab.", None),
+    ("page", "", "A steel door blocks the entrance, with a riddle glowing on its "
+                 "keypad. You solve it, and the door slides open with a hiss.", None),
+    ("page", "", "Inside, broken machines spark. Suddenly red lights flash and an "
+                 "alarm wails. SECURITY SYSTEM ACTIVATED.", None),
+    ("page", "", "A security mech Pokemon drops from the ceiling!", "Sentrix"),
+    ("trainer", "Security System", 55, ["Sentrix"]),
+    ("page", "", "Behind it, a dusty computer screen still glows. Its last file "
+                 "reads: PROJECT ORIGIN.", None),
+    ("page", "", "CHAPTER 4 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 5 ----
+    ("page", "", "CHAPTER 5: PROJECT ORIGIN", None),
+    ("page", "Eusine", "'Subject Nuxillon shares the same genes as the legendary "
+                       "Nulvexion. If we can unlock those genes, we can create a "
+                       "legendary of our own.'", None),
+    ("page", "", "The next file shows an old photo of ??? standing beside the "
+                 "rusted fossil, thousands of years ago.", "Xlovon"),
+    ("page", "Eusine", "???... you've been guarding this fossil since ancient times!",
+     "Xlovon"),
+    ("page", "", "??? hums softly, as if it remembers. Then the screen cracks, and "
+                 "the distortion tears open inside the lab.", None),
+    ("page", "", "Nuxillon crashes through, hunting for the logs!", "Nuxillon"),
+    ("battle", "Nuxillon", 55),
+    ("page", "", "Nuxillon smashes the computer and escapes, but you've already "
+                 "seen enough.", None),
+    ("page", "", "CHAPTER 5 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 6 ----
+    ("page", "", "CHAPTER 6: THE MUSEUM CURATOR", None),
+    ("page", "", "You finally bring the fossil to the Xrencha Museum. The curator "
+                 "smiles warmly.", None),
+    ("page", "Curator", "My, what a magnificent fossil. I'll take very good care of "
+                        "it.", None),
+    ("page", "", "??? growls. Its plates crackle with electricity.", "Xlovon"),
+    ("page", "", "The curator's smile disappears. On his coat, hidden under the "
+                 "collar, is a GENESIS LAB badge.", None),
+    ("page", "Curator", "Clever Pokemon. Pity. I'll take that fossil by force!", None),
+    ("trainer", "Curator", 60, ["Klyndrax", "Rynthos", "Keldrith"]),
+    ("page", "Eusine", "He was one of them all along! We can't trust anyone with "
+                       "this fossil.", None),
+    ("page", "", "CHAPTER 6 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 7 ----
+    ("page", "", "CHAPTER 7: THE NAME REVEALED", None),
+    ("page", "", "As the curator flees, he hurls a device that explodes into a cage "
+                 "of energy around you and Eusine.", None),
+    ("page", "", "??? steps in front of you. Its whole body starts to glow "
+                 "white-hot. With a mighty roar, it shatters the cage!", "Xlovon"),
+    ("page", "", "Golden letters appear in the air, like an ancient seal breaking: "
+                 "X-L-O-V-O-N.", "Xlovon", "reveal"),
+    ("page", "Eusine", "Xlovon... that's its true name! The ancient guardian of the "
+                       "fossil!", "Xlovon"),
+    ("page", "", "Xlovon stands taller than ever before. Xlovon learned its "
+                 "signature move, Guardian Surge!", "Xlovon"),
+    ("page", "", "CHAPTER 7 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 8 ----
+    ("page", "", "CHAPTER 8: STORM OVER XRENCHA", None),
+    ("page", "", "That night the sky over Xrencha splits open. Distortions rip "
+                 "apart the clouds, one after another.", None),
+    ("page", "", "Wild Pokemon pour through, confused and angry, attacking "
+                 "everything in sight.", None),
+    ("page", "Eusine", "Genesis Lab must be testing something huge! We have to calm "
+                       "these Pokemon down!", None),
+    ("battle", "Vexmora", 62, "nocatch"),
+    ("battle", "Drelmora", 62, "nocatch"),
+    ("battle", "Zolthari", 64, "nocatch"),
+    ("page", "", "When the last distortion closes, a single golden feather drifts "
+                 "down from the sky. It's warm, like sunlight.", None),
+    ("page", "Eusine", "This feather... it came from the Sungolia Temple's "
+                       "direction.", None),
+    ("page", "", "CHAPTER 8 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 9 ----
+    ("page", "", "CHAPTER 9: THE SUN SHRINE", None),
+    ("page", "", "You return to the Sungolia Temple. The golden feather glows and "
+                 "reveals a hidden staircase under the altar.", None),
+    ("page", "", "Far below is a shrine bathed in sunlight, and at its centre "
+                 "stands a giant statue of Solvarion, the Celestial Origin.",
+     "Solvarion"),
+    ("page", "", "A stone guardian Pokemon awakens to test you.", "Solguard"),
+    ("page", "Guardian", "Only the worthy may hear the Origin's message.",
+     "Solguard"),
+    ("battle", "Solguard", 66, "nocatch"),
+    ("page", "", "The statue's eyes light up, and a voice fills the room.",
+     "Solvarion"),
+    ("page", "Solvarion", "The Void grows restless. My twin, Nulvexion, is being "
+                          "disturbed. Stop them... before both worlds break.",
+     "Solvarion"),
+    ("page", "", "CHAPTER 9 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 10 ----
+    ("page", "", "CHAPTER 10: THE VOID RIFT", None),
+    ("page", "", "The feather guides you to the biggest distortion yet, swirling "
+                 "above Xrencha's ruins.", None),
+    ("page", "Eusine", "That rift... Nuxillon goes in and out of it. It must be its "
+                       "home!", None),
+    ("page", "", "You step through. The world turns upside down, purple and "
+                 "silent, with stars floating everywhere.", None),
+    ("page", "", "Nuxillon waits for you, but this time it doesn't run.",
+     "Nuxillon"),
+    ("page", "Eusine", "It looks tired of fighting... Trainer, I think you can "
+                       "catch it this time!", "Nuxillon"),
+    ("battle", "Nuxillon", 70, "catch"),
+    ("page", "", "You caught Nuxillon! It isn't angry anymore. Just tired.",
+     "Nuxillon"),
+    ("page", "", "CHAPTER 10 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 11 ----
+    ("page", "", "CHAPTER 11: FOSSIL REVIVAL", None),
+    ("page", "", "Back with Eusine, Xlovon places its claw on the rusted fossil. "
+                 "Lightning arcs between them, and the rust peels away.", "Xlovon"),
+    ("page", "", "The fossil cracks open... and an ancient Pokemon rises: "
+                 "Rustarion!", "Rustarion"),
+    ("page", "", "Xlovon and Rustarion touch heads, like old friends meeting after "
+                 "a thousand years.", "Rustarion"),
+    ("page", "Eusine", "Xlovon was protecting Rustarion this whole time! Genesis Lab "
+                       "wanted its ancient genes to finish their legendary.",
+     "Rustarion"),
+    ("page", "", "Rustarion joined your team!", "Rustarion", "rustarion"),
+    ("page", "", "CHAPTER 11 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 12 ----
+    ("page", "", "CHAPTER 12: RAID ON THE GENESIS LAB", None),
+    ("page", "", "Rustarion's ancient senses lead you to the real Genesis Lab, "
+                 "hidden inside a mountain behind a waterfall.", "Rustarion"),
+    ("page", "", "Inside, rows of glowing tanks line the walls. Scientists rush "
+                 "around in panic.", None),
+    ("page", "Admin", "You're too late! The project is complete!", None),
+    ("trainer", "Lab Admin", 75, ["Vyrnox", "Xalvorith", "Nymorax"]),
+    ("page", "", "The second admin steps up.", None),
+    ("trainer", "Lab Admin", 75, ["Klyndrax", "Khorvaxis", "Sentrix"]),
+    ("page", "", "Past them, a huge door rumbles open...", None),
+    ("page", "", "CHAPTER 12 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 13 ----
+    ("page", "", "CHAPTER 13: THE CREATED LEGEND", None),
+    ("page", "", "A woman in a long black coat waits in the centre of the room: "
+                 "Dr. Vexa, leader of Genesis Lab.", None),
+    ("page", "Dr. Vexa", "Thousands of years of legends... and I've done better in "
+                         "ten. Behold, my creation!", None),
+    ("page", "", "The biggest tank shatters. Out steps Genexion, a towering "
+                 "legendary built from Nulvexion's genes.", "Genexion"),
+    ("page", "Dr. Vexa", "Genexion! Destroy them!", "Genexion"),
+    ("trainer", "Dr. Vexa", 85, ["Genexion"]),
+    ("page", "", "Genexion falls, but instead of stopping, it starts to glow "
+                 "uncontrollably. Cracks of void energy spread across the lab.",
+     "Genexion"),
+    ("page", "Dr. Vexa", "No... it wasn't supposed to do that!", "Genexion"),
+    ("page", "", "CHAPTER 13 COMPLETE! +300 coins", None, "chapter"),
+
+    # ---- Chapter 14 ----
+    ("page", "", "CHAPTER 14: ORIGINS", None),
+    ("page", "", "The lab begins to collapse as Genexion's power spirals out of "
+                 "control. The sky above tears in two.", "Genexion"),
+    ("page", "", "Through one side descends Solvarion, blazing with starlight.",
+     "Solvarion"),
+    ("page", "", "Through the other comes Nulvexion, crackling with void energy.",
+     "Nulvexion"),
+    ("page", "Eusine", "The two Origins... together!", None),
+    ("page", "", "They hold Genexion's power back, but only just.", "Genexion"),
+    ("page", "Solvarion", "Trainer. Calm its heart. Only you can.", "Solvarion"),
+    ("battle", "Genexion", 90, "final"),
+    ("page", "", "At last Genexion stops glowing. It drops to the ground, peaceful "
+                 "for the first time since it was made.", "Genexion"),
+    ("page", "", "Dr. Vexa is taken away, and the Origins vanish back into the sky.",
+     None),
+    ("page", "Eusine", "You did it, trainer. Xrencha is safe... and I think Genexion "
+                       "wants to come with you.", "Genexion"),
+    ("page", "", "THE END! Genexion joined your team! Your team are now Heroes of "
+                 "Xrencha. +Story Trophy, +5000 coins, +10 XL Poke Balls.",
+     "Genexion", "final_prize"),
 ]
 STORY_CATCH = "Xlovon"      # the story Pokemon you are meant to catch
 STORY_NO_CATCH = "Nuxillon" # dodges every ball
 HIDDEN_NAME = "???"         # Xlovon's name stays secret until you catch it
+
+
+STORY_CHAPTER_COINS = 300
+STORY_SIGNATURE = ("Guardian Surge", 75)   # Xlovon's signature move
+STORY_PRIZE = "Genexion"
+
+
+def story_flag(step):
+    """The extra word on a battle step: "catch", "nocatch", "final" or None."""
+    return step[3] if step[0] == "battle" and len(step) > 3 else None
 
 
 def make_story_pokemon(name, level):
@@ -4370,6 +4599,13 @@ def make_story_pokemon(name, level):
     mon.hp = mon.max_hp
     mon.bonus = NEW_INFO[name]["bonus"] + 2 * grown
     mon.moves = [(m, p + 10) for m, p in mon.moves]
+    return mon
+
+
+def make_grown(name, level):
+    """A species raised from Lv 30 to this level, with its learned moves."""
+    mon = make_species(name, 30)
+    gain_xp(mon, sum(xp_needed(lv) for lv in range(30, level)))
     return mon
 
 
@@ -6052,7 +6288,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v18.8!"
+        self.message = "Welcome to Pokemon: The New World v18.9!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -6536,7 +6772,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 18.8 - THE RUSTED SECRET", 165)
+        self.centred("VERSION 18.9 - THE FULL STORY", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -6677,7 +6913,7 @@ class Game:
         shade_layer = pygame.Surface((1000, 700), pygame.SRCALPHA)
         shade_layer.fill((0, 0, 0, 120))
         screen.blit(shade_layer, (0, 0))
-        _kind, speaker, text, sprite = STORY[self.story_step]
+        speaker, text, sprite = STORY[self.story_step][1:4]
 
         if sprite:
             screen.blit(get_sprite(sprite, NEW_INFO[sprite]["types"], 200),
@@ -6693,7 +6929,8 @@ class Game:
             y += 32
 
         nxt = STORY[self.story_step + 1] if self.story_step + 1 < len(STORY) else None
-        label = "BATTLE!" if nxt and nxt[0] == "battle" else ("NEXT" if nxt else "FINISH")
+        label = ("BATTLE!" if nxt and nxt[0] in ("battle", "trainer")
+                 else ("NEXT" if nxt else "FINISH"))
         colour = (160, 50, 60) if label == "BATTLE!" else (40, 60, 130)
         self.button(label, (700, 590, 200, 55), "story_next", colour)
         self.button("LEAVE", (100, 590, 160, 55), "story_leave", (80, 80, 95))
@@ -7461,12 +7698,54 @@ class Game:
         else:
             self.mode = "story"
 
+    def story_advance(self):
+        """Moves to the next story step and gives any reward on it."""
+        self.story_step += 1
+        step = STORY[self.story_step]
+        if step[0] == "page" and len(step) > 4:
+            key = f"story_fx_{self.story_step}"
+            if key not in self.events:
+                self.events.add(key)
+                self.story_effect(step[4])
+        storage_write(self.save_text())
+
+    def story_effect(self, effect):
+        if effect == "chapter":
+            self.coins += STORY_CHAPTER_COINS
+        elif effect == "reveal":
+            self.events.add("xlovon_named")
+            for mon in self.team + self.pc:
+                if mon.name in (HIDDEN_NAME, STORY_CATCH):
+                    mon.name = STORY_CATCH
+                    self.seen.add(mon.pokedex_number)
+                    if not any(m == STORY_SIGNATURE[0] for m, _p in mon.moves):
+                        teach_move(mon, *STORY_SIGNATURE)
+        elif effect == "rustarion":
+            self.give_story_pokemon(make_grown("Rustarion", 60))
+        elif effect == "final_prize":
+            # As strong as the Lv 100 Aetherion from the Trial of the Deep
+            self.give_story_pokemon(make_trial_legend(STORY_PRIZE))
+            for mon in self.team + self.pc:
+                give_title(mon, "Hero of Xrencha")
+            self.events.add("story_trophy")
+            self.coins += 5000
+            self.balls["XL Poke Ball"] += 10
+
+    def give_story_pokemon(self, mon):
+        mon.hp = mon.max_hp
+        self.seen.add(mon.pokedex_number)
+        self.caught.add(mon.pokedex_number)
+        if len(self.team) < PARTY_LIMIT:
+            self.team.append(mon)
+        else:
+            self.pc.append(mon)
+
     def story_next(self):
         if self.story_step >= len(STORY) - 1:
             self.mode = "menu"
-            self.message = "Story complete so far! More chapters are coming soon."
+            self.message = "You finished the whole story! You are a Hero of Xrencha."
             return
-        self.story_step += 1
+        self.story_advance()
         step = STORY[self.story_step]
         if step[0] in ("battle", "trainer"):
             self.start_story_battle()
@@ -7484,12 +7763,17 @@ class Game:
             self.story_queue = [(n, level) for n in names[1:]]
             name = names[0]
         else:
-            _kind, name, level = step
-        if name == STORY_CATCH:
+            name, level = step[1], step[2]
+        if story_flag(step) == "catch":
             # Eusine makes sure you have 5 XL Poke Balls for the fight
             self.balls["XL Poke Ball"] = max(5, self.balls["XL Poke Ball"])
         self.enemy = make_story_pokemon(name, level)
-        if name == STORY_CATCH:
+        if story_flag(step) == "final":
+            # The Origins' power makes the final battle extra tough
+            self.enemy.max_hp = int(self.enemy.max_hp * 1.5)
+            self.enemy.hp = self.enemy.max_hp
+            self.enemy.bonus += 15
+        if name == STORY_CATCH and "xlovon_named" not in self.events:
             self.enemy.name = HIDDEN_NAME   # its name is a secret
         else:
             self.seen.add(self.enemy.pokedex_number)
@@ -7522,19 +7806,18 @@ class Game:
     def story_won(self, beaten):
         """After beating a story Pokemon. Returns extra message text."""
         self.story_battle = False
-        if beaten.name in (STORY_CATCH, HIDDEN_NAME):
-            return f" {beaten.name} powered down before you could catch it. Try again in STORY MODE!"
-        self.story_step += 1
+        if story_flag(STORY[self.story_step]) == "catch":
+            return (f" {beaten.name} got away before you could catch it. "
+                    "Try again in STORY MODE!")
+        self.story_advance()
         self.story_pending = True
-        storage_write(self.save_text())
         return " Continue the story!"
 
     def story_caught(self):
         # Its name stays ??? until the story reveals it
         self.story_battle = False
-        self.story_step += 1
+        self.story_advance()
         self.mode = "story"
-        storage_write(self.save_text())
 
     # ======================================
     # TRIAL OF THE DEEP (v18.6)
@@ -7751,6 +8034,10 @@ class Game:
         effect = effectiveness_text(multiplier)
 
         self.start_animation(move, True)
+        if (self.story_battle
+                and story_flag(STORY[self.story_step]) == "catch"):
+            # A Pokemon you must catch always hangs on with 1 HP
+            damage = max(0, min(damage, e.hp - 1))
         e.take_damage(damage)
         self.show_hit(damage, GOLD)
 
@@ -7796,6 +8083,9 @@ class Game:
                             f"{damage} damage!")
             if mastered:
                 self.message = "MASTERED! " + self.message
+            if (self.story_battle and e.hp == 1
+                    and story_flag(STORY[self.story_step]) == "catch"):
+                self.message += f" {e.name} is barely standing. Throw a ball!"
             if mastery_note:
                 self.message += " " + mastery_note
             self.pending_enemy_turn = True
@@ -7932,7 +8222,9 @@ class Game:
             self.mode = "battle"
             return
 
-        if self.enemy.name == STORY_NO_CATCH:
+        flag = story_flag(STORY[self.story_step]) if self.story_battle else None
+        if flag in ("nocatch", "final") or (
+                self.enemy.name == STORY_NO_CATCH and flag != "catch"):
             self.message = f"{self.enemy.name} dodged the ball!"
             self.mode = "battle"
             return
@@ -8205,7 +8497,10 @@ class Game:
 
         elif action == "story_go" and self.mode == "victory":
             self.story_pending = False
-            self.mode = "story"
+            if STORY[self.story_step][0] in ("battle", "trainer"):
+                self.start_story_battle()
+            else:
+                self.mode = "story"
 
         elif action == "trial" and self.mode == "menu":
             if self.trial and self.enemy:

@@ -1,4 +1,4 @@
-# Pokemon: The New World v18.8
+# Pokemon: The New World v18.9
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,19 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v18.9
+
+- **The full Story Mode, 14 chapters,** played from the STORY MODE button in Xrencha:
+  hunt Genesis Lab, uncover Project Origin, learn ???'s true name (Xlovon), revive
+  Rustarion, catch Nuxillon, and stop Dr. Vexa's created legendary, Genexion.
+- Every chapter gives 300 coins.
+- **Final prize:** Genexion joins your team at Lv 100, as strong as the Trial of the
+  Deep Aetherion. You also get the "Hero of Xrencha" title for your team, a Story
+  Trophy, 5000 coins and 10 XL Poke Balls.
+- New story Pokemon: Sentrix (#626), Solguard (#627), Rustarion (#628) and
+  Genexion (#629).
+- Pokemon you have to catch in the story always hang on with 1 HP.
 
 ## What's new in v18.8
 
