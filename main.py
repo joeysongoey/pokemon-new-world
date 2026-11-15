@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v18.7")
+pygame.display.set_caption("Pokemon: The New World v18.8")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -4321,9 +4321,41 @@ STORY = [
     ("page", "Eusine", "Here, take these 5 XL Poke Balls. This one's yours!",
      "Xlovon"),
     ("battle", "Xlovon", 35),
-    ("page", "", "You caught Xlovon! Eusine packs the rusted steel fossil to take "
+    ("page", "", "You caught ???! Eusine packs the rusted steel fossil to take "
                  "to the museum.", "Xlovon"),
     ("page", "", "CHAPTER 1 COMPLETE. To be continued...", None),
+
+    # ---- Chapter 2 (v18.8) ----
+    ("page", "", "CHAPTER 2: THE RUSTED SECRET", None),
+    ("page", "", "You and Eusine head toward the museum with the rusted steel fossil.",
+     None),
+    ("page", "", "Suddenly ??? refuses to move. It plants its feet and its eyes "
+                 "flicker with electricity.", "Xlovon"),
+    ("page", "Eusine", "Hmm? Your Pokemon doesn't want to go to the museum... "
+                       "I wonder why.", "Xlovon"),
+    ("page", "", "The fossil starts to glow. ??? lets out a low, sad hum.", "Xlovon"),
+    ("page", "Eusine", "Wait... the markings on the fossil match the plates on "
+                       "???'s body! They must be connected somehow.", "Xlovon"),
+    ("page", "", "Before you can look closer, footsteps echo behind you. Three "
+                 "people in white lab coats block the path.", None),
+    ("page", "Scientist", "That fossil belongs to us. Hand it over, and the "
+                          "Pokemon too.", None),
+    ("page", "Eusine", "Scientists? Out here? Trainer, I don't trust them!", None),
+    ("trainer", "Scientist", 45, ["Gromnix", "Trezmuk", "Varnyx"]),
+    ("page", "Scientist", "Tch... You're stronger than you look. It doesn't "
+                          "matter. Nuxillon is already on its way.", None),
+    ("page", "", "The purple distortion tears open again. Nuxillon bursts "
+                 "through, angrier than before!", "Nuxillon"),
+    ("battle", "Nuxillon", 50),
+    ("page", "", "Nuxillon grabs one of the scientists' crates and vanishes back "
+                 "into the distortion. The scientists run after it.", None),
+    ("page", "Eusine", "They're following it... back to wherever their lab is.",
+     None),
+    ("page", "", "??? steps forward and holds the fossil tightly.", "Xlovon"),
+    ("page", "Eusine", "I think ??? wants to protect the fossil, not give it "
+                       "away. We should find that lab before they do something "
+                       "terrible.", "Xlovon"),
+    ("page", "", "CHAPTER 2 COMPLETE. To be continued...", None),
 ]
 STORY_CATCH = "Xlovon"      # the story Pokemon you are meant to catch
 STORY_NO_CATCH = "Nuxillon" # dodges every ball
@@ -6020,7 +6052,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v18.7!"
+        self.message = "Welcome to Pokemon: The New World v18.8!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -6062,6 +6094,8 @@ class Game:
         self.story_step = 0         # where you are in story mode (v18.7)
         self.story_battle = False
         self.story_pending = False  # show CONTINUE STORY after a story win
+        self.story_queue = []       # a story trainer's remaining Pokemon
+        self.story_trainer = None
 
         self.buttons = []
         self.popup = ""
@@ -6165,6 +6199,10 @@ class Game:
         self.master_badges = set(data.get("type_badges", []))
         self.puzzles_solved = set(data.get("puzzles", []))
         self.story_step = min(int(data.get("story_step", 0)), len(STORY) - 1)
+        if "xlovon_named" not in self.events:
+            for mon in self.team + self.pc:
+                if mon.name == STORY_CATCH:
+                    mon.name = HIDDEN_NAME
         self.story_battle = False
         self.story_pending = False
         self.rematch = None
@@ -6498,7 +6536,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 18.7 - STORY MODE", 165)
+        self.centred("VERSION 18.8 - THE RUSTED SECRET", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -6627,6 +6665,12 @@ class Game:
 
         self.centred(self.message, 625, SMALL, GOLD)
         self.button("BACK", (420, 645, 160, 42), "back")
+
+    def dex_name(self, name):
+        """Xlovon shows as ??? until the story reveals its name."""
+        if name == STORY_CATCH and "xlovon_named" not in self.events:
+            return HIDDEN_NAME
+        return name
 
     def draw_story(self):
         self.background()
@@ -7065,9 +7109,9 @@ class Game:
             col, row = divmod(i, 8)
             x, y = 60 + col * 470, 110 + row * 46
             if number in self.caught:
-                label, colour = f"#{number:03} {name}  -  {types}", (45, 115, 75)
+                label, colour = f"#{number:03} {self.dex_name(name)}  -  {types}", (45, 115, 75)
             elif number in self.seen:
-                label, colour = f"#{number:03} {name}  -  {types}", BLUE
+                label, colour = f"#{number:03} {self.dex_name(name)}  -  {types}", BLUE
             else:
                 label, colour = f"#{number:03} ???", (60, 60, 75)
             self.button(label, (x, y, 440, 38), ("dex", number), colour)
@@ -7082,7 +7126,7 @@ class Game:
             number, name, types = chosen
             if number in self.seen:
                 screen.blit(get_sprite(name, types, 100), (72, 512))
-                self.text(f"#{number:03} {name}  ({types})", 185, 512, FONT, GOLD)
+                self.text(f"#{number:03} {self.dex_name(name)}  ({types})", 185, 512, FONT, GOLD)
                 y = 545
                 for line in wrap_text(dex_entry(name, types), SMALL, 690):
                     self.text(line, 185, y, SMALL)
@@ -7412,7 +7456,7 @@ class Game:
                 self.message = "Finish your current battle first!"
             return
         step = STORY[self.story_step]
-        if step[0] == "battle":
+        if step[0] in ("battle", "trainer"):
             self.start_story_battle()
         else:
             self.mode = "story"
@@ -7420,24 +7464,33 @@ class Game:
     def story_next(self):
         if self.story_step >= len(STORY) - 1:
             self.mode = "menu"
-            self.message = "Chapter 1 complete! More chapters are coming soon."
+            self.message = "Story complete so far! More chapters are coming soon."
             return
         self.story_step += 1
         step = STORY[self.story_step]
-        if step[0] == "battle":
+        if step[0] in ("battle", "trainer"):
             self.start_story_battle()
 
     def start_story_battle(self):
-        _kind, name, level = STORY[self.story_step]
+        step = STORY[self.story_step]
         for pokemon in self.team:
             pokemon.heal(pokemon.max_hp)
         self.send_out_healthy()
+        self.story_queue = []
+        self.story_trainer = None
+        if step[0] == "trainer":
+            _kind, trainer, level, names = step
+            self.story_trainer = trainer
+            self.story_queue = [(n, level) for n in names[1:]]
+            name = names[0]
+        else:
+            _kind, name, level = step
         if name == STORY_CATCH:
             # Eusine makes sure you have 5 XL Poke Balls for the fight
             self.balls["XL Poke Ball"] = max(5, self.balls["XL Poke Ball"])
         self.enemy = make_story_pokemon(name, level)
         if name == STORY_CATCH:
-            self.enemy.name = HIDDEN_NAME   # revealed when caught
+            self.enemy.name = HIDDEN_NAME   # its name is a secret
         else:
             self.seen.add(self.enemy.pokedex_number)
         self.duo_partner = None
@@ -7448,7 +7501,23 @@ class Game:
         self.animation = None
         self.pending_enemy_turn = False
         self.mode = "battle"
-        self.message = f"Wild {self.enemy.name} appeared! Your team was healed."
+        if self.story_trainer:
+            self.message = (f"{self.story_trainer} sent out {self.enemy.name}! "
+                            "Your team was healed.")
+        else:
+            self.message = f"Wild {self.enemy.name} appeared! Your team was healed."
+
+    def story_send_next(self, beaten, reward_text):
+        """A story trainer sends out their next Pokemon."""
+        name, level = self.story_queue.pop(0)
+        self.enemy = make_story_pokemon(name, level)
+        self.seen.add(self.enemy.pokedex_number)
+        self.avatar_turns = 0
+        self.animation = None
+        self.pending_enemy_turn = False
+        self.mode = "battle"
+        self.message = (f"{beaten.name} was defeated! {reward_text}. "
+                        f"{self.story_trainer} sent out {name}!")
 
     def story_won(self, beaten):
         """After beating a story Pokemon. Returns extra message text."""
@@ -7461,10 +7530,7 @@ class Game:
         return " Continue the story!"
 
     def story_caught(self):
-        for mon in self.team + self.pc:
-            if mon.name == HIDDEN_NAME:
-                mon.name = STORY_CATCH          # the name is revealed!
-                self.seen.add(mon.pokedex_number)
+        # Its name stays ??? until the story reveals it
         self.story_battle = False
         self.story_step += 1
         self.mode = "story"
@@ -7703,6 +7769,10 @@ class Game:
                 self.duo_continue(e, join_text(f"{e.name} fell! {reward_text}", ""))
                 return
 
+            if self.story_battle and self.story_queue:
+                self.story_send_next(e, reward_text)
+                return
+
             extra = ""
             if self.story_battle:
                 extra = self.story_won(e)
@@ -7854,6 +7924,11 @@ class Game:
 
         if self.trial:
             self.message = "The trial legendaries can't be caught. Defeat them both!"
+            self.mode = "battle"
+            return
+
+        if self.story_battle and self.story_trainer:
+            self.message = f"You can't catch the {self.story_trainer}'s Pokemon!"
             self.mode = "battle"
             return
 

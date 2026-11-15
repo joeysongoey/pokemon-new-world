@@ -1,4 +1,4 @@
-# Pokemon: The New World v18.7
+# Pokemon: The New World v18.8
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -59,11 +59,19 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
 
+## What's new in v18.8
+
+- **Story Mode Chapter 2: The Rusted Secret.** ??? won't go to the museum, the
+  fossil starts to glow, and scientists show up wanting the fossil. Beat the
+  Scientist (3 Pokemon, Lv 45) and a stronger Nuxillon (Lv 50).
+- The mech from Chapter 1 now keeps its secret name, ???, everywhere, including
+  the Pokedex, until the story reveals it.
+
 ## What's new in v18.7
 
 - **STORY MODE** in Xrencha. Chapter 1, The Sungolia Temple: explore the temple
   with Eusine, fight off the pesky Nuxillon (it dodges every Poke Ball), then catch
-  the unknown mech Pokemon with 5 XL Poke Balls. Its name is revealed when you catch it.
+  the unknown mech Pokemon with 5 XL Poke Balls.
 - New story Pokemon: Nuxillon (Dark/Dragon, #624) and Xlovon (Steel/Electric, #625).
   Neither appears in the wild.
 - XL Poke Balls: the strongest ball, story only.
