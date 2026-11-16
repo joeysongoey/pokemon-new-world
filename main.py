@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v19.3")
+pygame.display.set_caption("Pokemon: The New World v19.4")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -6554,7 +6554,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v19.3!"
+        self.message = "Welcome to Pokemon: The New World v19.4!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -7098,7 +7098,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 19.3 - NEW AREAS", 165)
+        self.centred("VERSION 19.4 - NEW TRAINER", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies

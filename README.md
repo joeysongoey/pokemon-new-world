@@ -1,4 +1,4 @@
-# Pokemon: The New World v19.3
+# Pokemon: The New World v19.4
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,11 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v19.4
+
+- **New trainer:** the explore trainer is now the orange-headband hero, with a
+  green jacket and brown bag, walking in all four directions.
 
 ## What's new in v19.3
 
