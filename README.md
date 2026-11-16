@@ -1,4 +1,4 @@
-# Pokemon: The New World v19.2
+# Pokemon: The New World v19.3
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,18 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v19.3
+
+- **Inside the Sungolia Temple:** walk through the temple doors into a golden
+  hall with pillars, pools, fire braziers and a sun altar. The altar opens Story
+  Mode once Xrencha is unlocked.
+- **Whisperwood Forest** (north of Hometown): a dark forest with an old shrine.
+  Grass, Bug, Ghost and Poison Pokemon live here.
+- **Coral Beach** (south of Hometown): palm trees, a SURF shop, a lighthouse and
+  a pier. Water, Flying and Ice Pokemon hide in the dune grass.
+- **Ember Cave** (east end of the beach boardwalk): lava pools, glowing crystals
+  and a sealed door. Fire, Rock, Ground and Dragon Pokemon live here.
 
 ## What's new in v19.2
 

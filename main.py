@@ -22,7 +22,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v19.2")
+pygame.display.set_caption("Pokemon: The New World v19.3")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -4048,6 +4048,8 @@ def region_pool(region):
     common = [row for row in WILD_POKEMON if row[1] != "NYSTRIA"]
     favourite = REGIONS.get(region, ((),))[0]
     chance = 1.0 if region in SECRET_AREAS else REGION_CHANCE
+    if EXPLORE_TYPES:       # explore areas have their own Pokemon
+        favourite, chance = EXPLORE_TYPES, 0.85
     if not favourite or random.random() > chance:
         return common
     local = [row for row in common
@@ -4640,9 +4642,10 @@ def make_rematch_boss(name, number):
 WORLD = {
     "town": {
         "name": "Hometown",
+        "types": (),
         "grid": [
-            "################################",
-            "#..............................#",
+            "#########^^#####################",
+            "#..........i...................#",
             "#.....................,,,,,,,,.#",
             "#.#####.....####....#.,,,,,,,,.#",
             "#.#####.....####......,,,,,,,,.#",
@@ -4662,12 +4665,13 @@ WORLD = {
             "#.######............#,,,,,,,,..#",
             "#.######...########..,,,,,,,,..#",
             "#.................#............#",
-            "################################",
+            "#########vv#####################",
         ],
-        "signs": {"20,13": "East: Route to the Sungolia Temple"},
+        "signs": {"20,13": "East: Route to the Sungolia Temple", "11,1": "North: Whisperwood Forest. South: Coral Beach"},
     },
     "temple": {
         "name": "Route to the Sungolia Temple",
+        "types": (),
         "grid": [
             "################################",
             "#.........############.........#",
@@ -4694,12 +4698,137 @@ WORLD = {
         ],
         "signs": {"13,9": "The Sungolia Temple, built to honour the Sun Pokemon"},
     },
+    "inside": {
+        "name": "Inside the Sungolia Temple",
+        "types": (),
+        "grid": [
+            "################################",
+            "################################",
+            "################################",
+            "##............#AA#............##",
+            "##...#......#......#......#...##",
+            "##............................##",
+            "##............................##",
+            "##......#...#......#...#......##",
+            "##.####..................####.##",
+            "##.####..................####.##",
+            "##.####..................####.##",
+            "##.####.#...#......#...#.####.##",
+            "##.####..................####.##",
+            "##.####..................####.##",
+            "##.####..................####.##",
+            "##......#..............#......##",
+            "##............................##",
+            "##............................##",
+            "##..........#......#..........##",
+            "##............................##",
+            "##............................##",
+            "###############vv###############",
+        ],
+        "signs": {},
+    },
+    "forest": {
+        "name": "Whisperwood Forest",
+        "types": ('Grass', 'Bug', 'Ghost', 'Poison'),
+        "grid": [
+            "################################",
+            "########.#################.#####",
+            "#.,,,,,,,.......###....####....#",
+            "#.,,,,,,,#......###....####....#",
+            "#.,,,,,,,#......#F#....####....#",
+            "#.,,,#,,,..............####....#",
+            "#.,,,#,,,...#.............#....#",
+            "#.,,,,,,,...#..................#",
+            "#.,,,,,#,..............#,,,,,,.#",
+            "#....................#.#,,,,,,.#",
+            "#..#..............#....,,,,,,,.#",
+            "#..#...#..........#....,,,,,,,.#",
+            "#.,,,,,,,..............,,,,,,,.#",
+            "#.,,,#,,,..............,,#,,,,.#",
+            "#.,,,,,,,......#..,,,,,,,,,,,,.#",
+            "#.,#,,,,,.......#.,,#,,,,,,,...#",
+            "#.,#,,,,,.......#.,,,,.,,,,,.#.#",
+            "#.,,,,,,,...i.....,,,,,,,,,,##.#",
+            "#.,,,,,,,.........,,,,,,,,,,...#",
+            "#.,,,,,,,.....#...,,,,,,,,,,...#",
+            "#........#............#....#...#",
+            "###############vv###############",
+        ],
+        "signs": {"12,17": "Whisperwood Forest. South: Hometown"},
+    },
+    "beach": {
+        "name": "Coral Beach",
+        "types": ('Water', 'Flying', 'Ice'),
+        "grid": [
+            "###############^^###############",
+            "#..,,,,,,,,.........,,,,,,,,,..#",
+            "#..,,,,,,,,.........,,,,,,,,,..#",
+            "#..,,,,,,,,.........,,,,,,,,,..#",
+            "#..............................>",
+            "#..............................>",
+            "#................i.............#",
+            "#..............................#",
+            "#####.......,,,,,,,,####.......#",
+            "#####..#....,,,,,,,,####.....###",
+            "#####.......,,,,,,,#####.....###",
+            "###S#.......#,,,,,,,##b#.....###",
+            "#.......##.......##..........###",
+            "#...#........................###",
+            "#.........#..............#.....#",
+            "#######################..#######",
+            "#######################..#######",
+            "#######################..#######",
+            "#######################..#######",
+            "#######################..#######",
+            "################################",
+            "################################",
+        ],
+        "signs": {"17,6": "Coral Beach. North: Hometown. East: Ember Cave"},
+    },
+    "cave": {
+        "name": "Ember Cave",
+        "types": ('Fire', 'Rock', 'Ground', 'Dragon'),
+        "grid": [
+            "################################",
+            "###........##..##..............#",
+            "#############..##.#.........####",
+            "###.#########......#........####",
+            "###.#######.................####",
+            "###.#######.................####",
+            "###.#######.................####",
+            "###.#######.....,,,,,,,......#.#",
+            "###...#.........,,,,,,,....#####",
+            "#.....#.........,,,,,,,....#####",
+            "<...............,,,,,,,....#####",
+            "<.....................#....#####",
+            "#........#..#..........#...#####",
+            "###,,,,,,,,,.....######........#",
+            "###,,,,,,,,,.....######........#",
+            "###,,,,,,,,,.....######......#.#",
+            "###,,,,,,,,,.....######........#",
+            "###,,,,,,,,,.....######.#CC#####",
+            "####,,,,,,,,.....######.########",
+            "###....................####.####",
+            "###....................####.####",
+            "################################",
+        ],
+        "signs": {},
+    },
 }
-WORLD_EXITS = {("town", ">"): ("temple", 1), ("temple", "<"): ("town", 30)}
+
+# (area, exit square) -> (new area, x, y); None keeps the same x or y
+WORLD_EXITS = {
+    ("town", ">"): ("temple", 1, None), ("temple", "<"): ("town", 30, None),
+    ("town", "^"): ("forest", 15, 20), ("forest", "v"): ("town", 9, 1),
+    ("town", "v"): ("beach", 15, 1), ("beach", "^"): ("town", 9, 20),
+    ("beach", ">"): ("cave", 1, 10), ("cave", "<"): ("beach", 30, 4),
+    ("inside", "v"): ("temple", 15, 6),
+}
 WORLD_TILE = 32             # each map square on screen
 WORLD_STEP_FRAMES = 9       # frames to walk one square
 WORLD_ENCOUNTER = 0.12      # chance of a wild Pokemon per step in tall grass
-WORLD_WALKABLE = ".,<>"
+WORLD_WALKABLE = ".,<>^v"
+EXPLORE_TYPES = ()          # types of wild Pokemon in the area being explored
 DIRECTIONS = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
 
 _world_pictures = {}
@@ -6425,7 +6554,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v19.2!"
+        self.message = "Welcome to Pokemon: The New World v19.3!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -6969,7 +7098,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 19.2 - NEW BATTLE BUTTONS", 165)
+        self.centred("VERSION 19.3 - NEW AREAS", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -8065,19 +8194,29 @@ class Game:
         if tile in WORLD_WALKABLE:
             self.step = (dx, dy, 0)
             self.world_msg = ""
-        elif tile in "HShT":
+        elif tile and tile in "HShTAbFC":
             self.use_door(tile)
 
     def arrive(self):
         """Things that happen when the player steps onto a square."""
         tile = world_tile(self.world, self.wx, self.wy)
         if (self.world, tile) in WORLD_EXITS:
-            self.world, self.wx = WORLD_EXITS[(self.world, tile)]
+            area, x, y = WORLD_EXITS[(self.world, tile)]
+            self.world = area
+            if x is not None:
+                self.wx = x
+            if y is not None:
+                self.wy = y
             self.world_msg = WORLD[self.world]["name"]
             return
         if tile == "," and random.random() < WORLD_ENCOUNTER:
+            global EXPLORE_TYPES
             self.message = ""
-            self.start_battle()
+            EXPLORE_TYPES = WORLD[self.world].get("types", ())
+            try:
+                self.start_battle()
+            finally:
+                EXPLORE_TYPES = ()
             if not self.enemy:
                 self.world_msg = self.message
 
@@ -8093,11 +8232,24 @@ class Game:
             self.world_msg = ("Nobody's home. A note on the door says: "
                               "'Gone to explore the Sungolia Temple!'")
         elif door == "T":
+            self.world, self.wx, self.wy, self.facing = "inside", 15, 20, "up"
+            self.world_msg = ("Inside the Sungolia Temple. A golden altar glows "
+                              "at the end of the hall.")
+        elif door == "A":
             if "xrencha" in self.events:
                 self.open_story()
             else:
-                self.world_msg = ("The temple doors are sealed shut... Maybe a "
-                                  "secret event code will open them.")
+                self.world_msg = ("A golden altar carved with the sun. It feels "
+                                  "asleep... Maybe a secret event code will wake it.")
+        elif door == "b":
+            self.world_msg = ("A sign on the beach house says: 'Gone fishing "
+                              "at the end of the pier!'")
+        elif door == "F":
+            self.world_msg = ("An old forest shrine. A purple stone hums softly. "
+                              "Something ancient sleeps here...")
+        elif door == "C":
+            self.world_msg = ("A sealed door glowing with ember light. It is "
+                              "far too hot to touch... for now.")
 
     def world_press_a(self):
         """Talk to or use whatever is in front of the player."""
@@ -8108,7 +8260,7 @@ class Game:
         tile = world_tile(self.world, x, y)
         if tile == "i":
             self.world_msg = WORLD[self.world]["signs"].get(f"{x},{y}", "")
-        elif tile in "HShT":
+        elif tile and tile in "HShTAbFC":
             self.use_door(tile)
 
     # ======================================
