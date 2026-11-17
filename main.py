@@ -4,6 +4,7 @@ import json
 import os
 import pygame
 import random
+import time
 import sys
 import math
 
@@ -22,7 +23,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v19.4")
+pygame.display.set_caption("Pokemon: The New World v19.5")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -3827,6 +3828,7 @@ class Creature:
         self.title = ""
         self.mastery = {}    # move name -> times used
         self.defeats = {}    # type -> Pokemon of that type defeated
+        self.inn_boost = 0   # extra HP from the Harbour Inn (v19.5)
 
     @property
     def fainted(self):
@@ -4049,7 +4051,7 @@ def region_pool(region):
     favourite = REGIONS.get(region, ((),))[0]
     chance = 1.0 if region in SECRET_AREAS else REGION_CHANCE
     if EXPLORE_TYPES:       # explore areas have their own Pokemon
-        favourite, chance = EXPLORE_TYPES, 0.85
+        favourite, chance = EXPLORE_TYPES, EXPLORE_CHANCE
     if not favourite or random.random() > chance:
         return common
     local = [row for row in common
@@ -4761,10 +4763,10 @@ WORLD = {
         "types": ('Water', 'Flying', 'Ice'),
         "grid": [
             "###############^^###############",
-            "#..,,,,,,,,.........,,,,,,,,,..#",
-            "#..,,,,,,,,.........,,,,,,,,,..#",
-            "#..,,,,,,,,.........,,,,,,,,,..#",
-            "#..............................>",
+            "#####.,,,,,,,.......,,,,,,,,,..#",
+            "#####.,,,,,,,.......,,,,,,,,,..#",
+            "#####.,,,,,,,.......,,,,,,,,,..#",
+            "###n#..........................>",
             "#..............................>",
             "#................i.............#",
             "#..............................#",
@@ -4773,17 +4775,17 @@ WORLD = {
             "#####.......,,,,,,,#####.....###",
             "###S#.......#,,,,,,,##b#.....###",
             "#.......##.......##..........###",
-            "#...#........................###",
+            "#...#......u.................###",
             "#.........#..............#.....#",
             "#######################..#######",
             "#######################..#######",
             "#######################..#######",
             "#######################..#######",
             "#######################..#######",
-            "################################",
+            "#######################ff#######",
             "################################",
         ],
-        "signs": {"17,6": "Coral Beach. North: Hometown. East: Ember Cave"},
+        "signs": {"17,6": "Coral Beach. North: Hometown. East: Ember Cave. West: Harbour Inn"},
     },
     "cave": {
         "name": "Ember Cave",
@@ -4816,6 +4818,318 @@ WORLD = {
     },
 }
 
+
+# ==========================================
+# REGION EXPLORE AREAS (v19.5)
+# One area to walk around in each region.
+# ==========================================
+
+REGION_AREAS = {
+    "Kanto": "r_kanto",
+    "Johto": "r_johto",
+    "Hoenn": "r_hoenn",
+    "Sinnoh": "r_sinnoh",
+    "Unova": "r_unova",
+    "Kalos": "r_kalos",
+    "Alola": "r_alola",
+    "Galar": "r_galar",
+    "Paldea": "r_paldea",
+}
+
+
+def _add_area(key, name, types, grid, spawn, sign, landmark):
+    WORLD[key] = {"name": name, "types": types, "grid": grid,
+                  "signs": {sign: f"Welcome to {name}! Heal your team at the red-roofed house."},
+                  "spawn": spawn, "landmark": landmark}
+
+
+_add_area("r_kanto", "Sunflower Fields", REGIONS["Kanto"][0], [
+    "################################",
+    "###.###.##.###.###.##.###.###.##",
+    "#..#####.............######....#",
+    "#..#####,,,,,,.......######....#",
+    "#..#####,,,,,,.......######....#",
+    "#..##H##,,,,,,..#....######....#",
+    "#.......,,,,,,.....#.###LL#....#",
+    "#.......,,,,,,..............#..#",
+    "#.......,,,,,,#.......#........#",
+    "#............i.................#",
+    "#..............................#",
+    "#..............................#",
+    "#..............................#",
+    "#.,,,,,,,..#......,,,,,,,,,,#..#",
+    "#.,,,,,,,.#####...,,,,,,,,,,#..#",
+    "#.,,,,,,,.####....,,,,,,,,,,...#",
+    "#.,,,,,,,.####....,,,,,,,,,,...#",
+    "#.,,,,,,,.####..#.,,,,,,,,,,...#",
+    "#.,,,,,,,.####..#.,,,,,,,,,,.#.#",
+    "#..........#............#......#",
+    "#.......................#......#",
+    "################################",
+], (5, 7), "13,9",
+    'An old windmill turns in the breeze. The miller says the fields are full of Grass and Poison Pokemon.')
+
+_add_area("r_johto", "Lantern Hollow", REGIONS["Johto"][0], [
+    "################################",
+    "#.....,,,,,,,,,,,,,,,,,,,......#",
+    "#.#..#,,,,,,,,,,,,,,,,,,,.#..#.#",
+    "#..............................#",
+    "#..............................#",
+    "#..............................#",
+    "#..........i...................#",
+    "#.....#####..######.,,,,,,.....#",
+    "#.....#####..######.,,,,,,.....#",
+    "#.....#####..######.,,,,,,.....#",
+    "#.....##H##..######.,,,,,,.....#",
+    "#............##LL##.#...#......#",
+    "#.....,,..,,,.......######.....#",
+    "#.....,,..,,,.......######.....#",
+    "#.....,,..,,,.......######.....#",
+    "#.....,,..,,,#....#.######.....#",
+    "#..............................#",
+    "#..............................#",
+    "#..............................#",
+    "#..............................#",
+    "#..............................#",
+    "################################",
+], (8, 11), "11,6",
+    'A tall tower glows with lanterns. Ghost Pokemon are said to gather here at night.')
+
+_add_area("r_hoenn", "Ashfall Dunes", REGIONS["Hoenn"][0], [
+    "################################",
+    "#..............................#",
+    "#.....#...#....................#",
+    "#.,,,,,,,,.........#..#.######.#",
+    "#.,,,,,,,,.....#........######.#",
+    "#.,,,,,,,,..............######.#",
+    "#.,,,,,,,,..............######.#",
+    "#.,,,,,,,,..............##LL##.#",
+    "#.,,,,,,,,.....................#",
+    "#.............,,,,,,...........#",
+    "#..#####......,,,,,,...........#",
+    "#..#####......,,,,,,...........#",
+    "#..#####......,,,,,,...........#",
+    "#..##H##......,,,,,,.........#.#",
+    "#.............,,,,,,...........#",
+    "#............i,,,,,,...........#",
+    "#...............#..............#",
+    "#..#...................#######.#",
+    "#.............,,,,,,,...######.#",
+    "#.....#..#...#,,,,,,,...######.#",
+    "#.............,,,,,,,...######.#",
+    "################################",
+], (5, 14), "13,15",
+    'A smoking volcano. The ground here is warm, and Fire Pokemon love it.')
+
+_add_area("r_sinnoh", "Frostpeak Pass", REGIONS["Sinnoh"][0], [
+    "################################",
+    "#..............................#",
+    "#.#..######...#..#......#####..#",
+    "#....######.......,,,,,,#####..#",
+    "#....######.......,,,,,,#####..#",
+    "#....######.......,,,,,,##H##..#",
+    "#....#LL###.#.....,,,,,,.......#",
+    "#.................,,,,,,.......#",
+    "#........#........,,,,,,.......#",
+    "#.................i............#",
+    "#..............................#",
+    "#............................#.#",
+    "#..............................#",
+    "#...,,,,,,,,,,.........,,,,,,,.#",
+    "#...,,,,,,,,,,....####.,,,,,,,.#",
+    "#..#,,,,,,,,,,....####.,,,,,,,.#",
+    "#...,,,,,,,,,,....####.,,,,,,,.#",
+    "#...,,,,,,,,,,.#..####.,,,,,,,.#",
+    "#...,,,,,,,,,,....####.,,,,,,,.#",
+    "#......#...#.........#.....#...#",
+    "#..............................#",
+    "################################",
+], (26, 7), "18,9",
+    'A spire of ice that never melts. Ice and Steel Pokemon roam the pass.')
+
+_add_area("r_unova", "Voltage City", REGIONS["Unova"][0], [
+    "################################",
+    "#......,,,,,,,,,,,,,,,,,,,.....#",
+    "#.#..#.,,,,,,,,,,,,,,,,,,,#..#.#",
+    "#..............................#",
+    "#..............................#",
+    "#..............................#",
+    "#...................i..........#",
+    "#.....,,,,,,.######..#####.....#",
+    "#.....,,,,,,.######..#####.....#",
+    "#.....,,,,,,.######..#####.....#",
+    "#.....,,,,,,.######..##H##.....#",
+    "#.....#....#.##LL##............#",
+    "#.....######.......,,,..,,.....#",
+    "#.....######.......,,,..,,.....#",
+    "#.....######.#.....,,,..,,.....#",
+    "#.....######......#,,,..,,.....#",
+    "#..............................#",
+    "#..............................#",
+    "#..............................#",
+    "#..............................#",
+    "#..............................#",
+    "################################",
+], (23, 11), "20,6",
+    'A buzzing power plant. Sparks fly everywhere, and Electric Pokemon gather to charge up.')
+
+_add_area("r_kalos", "Bloom Gardens", REGIONS["Kalos"][0], [
+    "################################",
+    "##.............................#",
+    "##.......#................#....#",
+    "#.######....##......#.,,,,,,,,.#",
+    "########........#.....,,,,,,,,.#",
+    "########........#.....,,,,,,,,.#",
+    "#.######..............,,,,,,,,.#",
+    "####LL##..............,,,,,,,,.#",
+    "##....................,,,,,,,,.#",
+    "##..........,,,,,,.............#",
+    "#...........,,,,,,......#####..#",
+    "##..........,,,,,,....#.#####..#",
+    "##..........,,,,,,....#.#####..#",
+    "##..........,,,,,,......##H##..#",
+    "#...........,,,,,,.............#",
+    "##..........,,,,,,i..........#.#",
+    "##..........#..................#",
+    "#.######.......#...............#",
+    "########...,,,,,,,.............#",
+    "########...,,,,,,,.##...##..#..#",
+    "#.######...,,,,,,,.............#",
+    "################################",
+], (26, 14), "18,15",
+    'A beautiful palace surrounded by flowers. Fairy Pokemon dance in its gardens.')
+
+_add_area("r_alola", "Palm Lagoon", REGIONS["Alola"][0], [
+    "################################",
+    "###.###.##.###.###.##.###.###.##",
+    "#..#####.............######....#",
+    "#..#####,,,,,,.......######....#",
+    "#..#####,,,,,,.......######.#..#",
+    "#..##H##,,,,,,....#..######....#",
+    "#.......,,,,,,....#..###LL#....#",
+    "#.......,,,,,,.................#",
+    "#..#....,,,,,,..#..............#",
+    "#............i..#..............#",
+    "#..............................#",
+    "#.#............................#",
+    "#...........................#..#",
+    "#.,,,,,,,.........,,,,,,,,,,#..#",
+    "#.,,,,,,,.####....,,,,,,,,,,...#",
+    "#.,,,,,,,#####....,,,,,,,,,,...#",
+    "#.,,,,,,,.####....,,,,,,,,,,.#.#",
+    "#.,,,,,,,.####..#.,,,,,,,,,,...#",
+    "#.,,,,,,,.####....,,,,,,,,,,...#",
+    "#.#..........#.......#.........#",
+    "#....................#.........#",
+    "################################",
+], (5, 7), "13,9",
+    'A cosy island hut. Islanders say Water and Flying Pokemon play in the lagoon.')
+
+_add_area("r_galar", "Stonemoor Ruins", REGIONS["Galar"][0], [
+    "################################",
+    "##....,,,,,,,,,,,,,,,,,,,......#",
+    "##...#,,,,,,,,,,,,,,,,,,,#...#.#",
+    "#....#.........................#",
+    "##.............................#",
+    "##.............................#",
+    "#..........i...................#",
+    "##....#####..######.,,,,,,.....#",
+    "##....#####..######.,,,,,,.....#",
+    "##....#####..######.,,,,,,.....#",
+    "#.....##H##..######.,,,,,,.....#",
+    "##...........##LL##...#..#.....#",
+    "##....,,..,,,.......######.....#",
+    "##....,,..,,,#......######.....#",
+    "#.....,,..,,,#.....#######.....#",
+    "##....,,..,,,.......######.....#",
+    "##.............................#",
+    "#..............................#",
+    "##.............................#",
+    "##.............................#",
+    "#..............................#",
+    "################################",
+], (8, 11), "11,6",
+    'Crumbling castle ruins. Fighting and Steel Pokemon train among the old stones.')
+
+_add_area("r_paldea", "Starfall Crater", REGIONS["Paldea"][0], [
+    "################################",
+    "##.............................#",
+    "##...#.........................#",
+    "#.,,,,,,,,........#.....######.#",
+    "##,,,,,,,,...#..........######.#",
+    "##,,,,,,,,..............######.#",
+    "#.,,,,,,,,..............######.#",
+    "##,,,,,,,,..............##LL##.#",
+    "##,,,,,,,,.....................#",
+    "##............,,,,,,....#......#",
+    "#..#####......,,,,,,...........#",
+    "##.#####......,,,,,,.........#.#",
+    "##.#####......,,,,,,....#......#",
+    "##.##H##......,,,,,,...........#",
+    "#.............,,,,,,.........#.#",
+    "##...........i,,,,,,...........#",
+    "##.............................#",
+    "#...............#.......######.#",
+    "##............,,,,,,,..#######.#",
+    "##..#.....#..#,,,,,,,...######.#",
+    "#.............,,,,,,,...######.#",
+    "################################",
+], (5, 14), "13,15",
+    'A crater where a star fell long ago. Cosmic Pokemon are drawn to its glow.')
+
+_add_area("island", "Hidden Isle", ("Dragon", "Psychic", "Fairy", "Light", "Cosmic", "Ghost", "Steel"), [
+    "################################",
+    "################################",
+    "##...######.....#.......#####.##",
+    "##...######.....#.,,,,,,#####.##",
+    "##...######.......,,,,,,#####.##",
+    "##...######.......,,,,,,##H##.##",
+    "##...#LL###.......,,,,,,......##",
+    "##...........#..#.,,,,,,......##",
+    "##...........#....,,,,,,....u.##",
+    "##..#.............i...........##",
+    "##..#.........................##",
+    "##............................##",
+    "###...........................##",
+    "###.,,,,,,,,,,.......#.,,,,,,,##",
+    "##..,,,,,,,,,,....####.,,,,,,,##",
+    "###.,,,,,,,,,,.#..####.,,,,,,,##",
+    "###.,,,,,,,,,,.#..####.,,,,,,,##",
+    "##..,,,,,,,,,,....####.,,,,,,,##",
+    "##.#,,,,,,,,,,....####.,,,,,,,##",
+    "##.#.............#....#......###",
+    "################################",
+    "################################",
+], (26, 7), "18,9",
+    'Ancient ruins with a glowing stone face. Rare Pokemon from every type gather on this hidden island.')
+WORLD["island"]["signs"]['18,9'] = "Hidden Isle. Only surfers can reach this place!"
+
+# ==========================================
+# BEACH SHOP, INN AND KEY ITEMS (v19.5)
+# ==========================================
+
+SURF_PRICES = {"Wave Ball": 60, "Fishing Rod": 300, "Tide Charm": 800,
+               "Surfboard": 2500}
+KEY_ITEMS = ("Fishing Rod", "Tide Charm", "Surfboard")
+KEY_ITEM_INFO = {
+    "Wave Ball": "Great for catching Water Pokemon",
+    "Fishing Rod": "Fish at the end of the Coral Beach pier",
+    "Tide Charm": "Your Water moves do 20% more damage",
+    "Surfboard": "Surf from Coral Beach to a secret island",
+}
+SURF_HINTS = [
+    "Dude, the end of the pier is the best fishing spot around!",
+    "Wave Balls are awesome for Water Pokemon. Not so much for others.",
+    "They say there's a hidden island past the waves... you'd need a board.",
+    "The Harbour Inn massage makes your whole team tougher for 3 battles!",
+    "Every region has its own place to explore. Fly somewhere new and check it out!",
+    "Ember Cave's glowing door is locked tight. Someday, maybe...",
+    "Come back tomorrow, I'll have another gift for you!",
+]
+INN_PRICE = 1000
+INN_BOOST = 100
+INN_BATTLES = 3
+
 # (area, exit square) -> (new area, x, y); None keeps the same x or y
 WORLD_EXITS = {
     ("town", ">"): ("temple", 1, None), ("temple", "<"): ("town", 30, None),
@@ -4829,6 +5143,7 @@ WORLD_STEP_FRAMES = 9       # frames to walk one square
 WORLD_ENCOUNTER = 0.12      # chance of a wild Pokemon per step in tall grass
 WORLD_WALKABLE = ".,<>^v"
 EXPLORE_TYPES = ()          # types of wild Pokemon in the area being explored
+EXPLORE_CHANCE = 0.85       # how often a wild Pokemon is one of those types
 DIRECTIONS = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
 
 _world_pictures = {}
@@ -4850,10 +5165,13 @@ def trainer_frames():
         sheet = pygame.image.load(os.path.join("sprites", "trainer.png"))
         sheet = sheet.convert_alpha()
         frames = {}
+        cw, ch = sheet.get_width() // 3, sheet.get_height() // 4
+        scale = 2 if ch <= 20 else 1.5
+        size = (int(cw * scale), int(ch * scale))
         for row, direction in enumerate(("down", "up", "left", "right")):
             frames[direction] = [
-                pygame.transform.scale(sheet.subsurface((col * 16, row * 20, 16, 20)),
-                                       (32, 40))
+                pygame.transform.scale(sheet.subsurface((col * cw, row * ch, cw, ch)),
+                                       size)
                 for col in range(3)]
         _world_pictures["trainer"] = frames
     return _world_pictures["trainer"]
@@ -5201,7 +5519,8 @@ def creature_to_dict(c):
         "level": c.level, "bonus": c.bonus, "xp": c.xp,
         "types": c.types, "pokedex_number": c.pokedex_number,
         "shiny": c.shiny, "bond": c.bond, "titles": c.titles,
-        "title": c.title, "mastery": c.mastery, "defeats": c.defeats
+        "title": c.title, "mastery": c.mastery, "defeats": c.defeats,
+        "inn_boost": c.inn_boost
     }
 
 
@@ -5219,6 +5538,7 @@ def creature_from_dict(d):
     c.title = d.get("title", "")
     c.mastery = dict(d.get("mastery", {}))
     c.defeats = dict(d.get("defeats", {}))
+    c.inn_boost = int(d.get("inn_boost", 0))
     return c
 
 
@@ -6554,14 +6874,19 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v19.4!"
+        self.message = "Welcome to Pokemon: The New World v19.5!"
 
         self.balls = {
             "Poke Ball": 10,
             "Great Ball": 5,
             "Ultra Ball": 2,
-            "XL Poke Ball": 0      # story only, from Eusine (v18.7)
+            "XL Poke Ball": 0,     # story only, from Eusine (v18.7)
+            "Wave Ball": 0         # Coral Beach SURF shop (v19.5)
         }
+        self.key_items = set()
+        self.surf_gift_day = ""
+        self.surf_hint = 0
+        self.inn_battles = 0
 
         self.avatar_turns = 0
         self.avatar_used = False
@@ -6649,6 +6974,9 @@ class Game:
             "region": self.region,
             "items": self.items,
             "muted": self.muted,
+            "key_items": sorted(self.key_items),
+            "surf_gift_day": self.surf_gift_day,
+            "inn_battles": self.inn_battles,
             "events": sorted(self.events),
             "wins": self.wins,
             "bosses_beaten": self.bosses_beaten,
@@ -6710,6 +7038,9 @@ class Game:
         self.elite_trophies = int(data.get("elite_trophies", 0))
         self.events = set(data.get("events", []))
         self.muted = bool(data.get("muted", self.muted))
+        self.key_items = set(data.get("key_items", []))
+        self.surf_gift_day = str(data.get("surf_gift_day", ""))
+        self.inn_battles = int(data.get("inn_battles", 0))
         self.wins = int(data.get("wins", 0))
         self.bosses_beaten = dict(data.get("bosses_beaten", {}))
         self.rematch_wins = dict(data.get("rematch_wins", {}))
@@ -7098,7 +7429,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 19.4 - NEW TRAINER", 165)
+        self.centred("VERSION 19.5 - EXPLORE EVERY REGION", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -7260,7 +7591,9 @@ class Game:
 
         sx, sy = px - cam_x, py - cam_y
         pygame.draw.ellipse(screen, (30, 50, 30), (sx + 5, sy + 24, 22, 9))
-        screen.blit(trainer_frames()[self.facing][frame], (sx, sy - 10))
+        picture = trainer_frames()[self.facing][frame]
+        screen.blit(picture, (sx + (32 - picture.get_width()) // 2,
+                              sy + 30 - picture.get_height()))
 
         # Area name
         name = WORLD[self.world]["name"]
@@ -7620,7 +7953,7 @@ class Game:
         self.panel((250, 150, 500, 370))
 
         for i, (name, amount) in enumerate(self.balls.items()):
-            y = 200 + i * 70
+            y = 180 + i * 58
             self.text(f"{name}: {amount}", 310, y, FONT)
 
             if amount > 0:
@@ -7803,7 +8136,11 @@ class Game:
         self.centred(self.message, 300, SMALL, GOLD)
         if self.exploring:
             # Wake up outside the healing centre
-            self.world, self.wx, self.wy, self.facing = "town", 4, 7, "down"
+            if "spawn" in WORLD[self.world]:
+                self.wx, self.wy = WORLD[self.world]["spawn"]
+                self.facing = "down"
+            else:
+                self.world, self.wx, self.wy, self.facing = "town", 4, 7, "down"
             self.button("KEEP EXPLORING", (350, 400, 300, 55), "explore_back",
                         (45, 115, 75))
             self.button("MAIN MENU", (350, 470, 300, 50), "leave_explore")
@@ -8093,7 +8430,7 @@ class Game:
             return None
         if self.mode == "victory":
             return "victory"
-        if self.mode == "explore":
+        if self.mode in ("explore", "inn", "surf"):
             return "town"
         if self.enemy and self.mode in ("battle", "moves", "balls", "items", "bag",
                                         "intro", "team"):
@@ -8130,6 +8467,137 @@ class Game:
         self.buttons.insert(0, (rect, "mute"))
 
     # ======================================
+    # HARBOUR INN AND SURF SHOP (v19.5)
+    # ======================================
+
+    def inn_tick(self):
+        """The massage lasts for INN_BATTLES battles, then wears off."""
+        if self.inn_battles > 0:
+            self.inn_battles -= 1
+            return
+        for mon in self.team + self.pc:
+            if mon.inn_boost:
+                mon.max_hp -= mon.inn_boost
+                mon.hp = min(mon.hp, mon.max_hp)
+                mon.inn_boost = 0
+
+    def massage(self):
+        if self.inn_battles > 0 or any(m.inn_boost for m in self.team):
+            self.message = "Your team is still super relaxed! Come back later."
+            return
+        if self.coins < INN_PRICE:
+            self.message = f"A massage costs {INN_PRICE} coins. You have {self.coins}."
+            return
+        self.coins -= INN_PRICE
+        for mon in self.team:
+            mon.inn_boost = INN_BOOST
+            mon.max_hp += INN_BOOST
+            mon.hp = mon.max_hp
+        self.inn_battles = INN_BATTLES
+        self.message = (f"Ahhh... so comfy! Your team has +{INN_BOOST} HP for the "
+                        f"next {INN_BATTLES} battles!")
+
+    def go_fishing(self):
+        global EXPLORE_TYPES, EXPLORE_CHANCE
+        if "Fishing Rod" not in self.key_items:
+            self.world_msg = ("The water is full of Pokemon! A Fishing Rod "
+                              "from the SURF shop would help.")
+            return
+        self.message = ""
+        EXPLORE_TYPES, EXPLORE_CHANCE = ("Water",), 1.0
+        try:
+            self.start_battle()
+        finally:
+            EXPLORE_TYPES, EXPLORE_CHANCE = (), 0.85
+        if self.enemy:
+            self.message = f"You reeled in a wild {self.enemy.name}!"
+
+    def draw_inn(self):
+        self.background()
+        self.centred("HARBOUR INN", 60, BIG, GOLD)
+        self.panel((170, 110, 660, 430))
+        self.text(f"Your coins: {self.coins}", 210, 130, FONT, GOLD)
+        self.text("Comfy Massage", 210, 190, BIG)
+        self.text(f"{INN_PRICE} coins", 210, 235, FONT, GOLD)
+        for i, line in enumerate(wrap_text(
+                f"Your whole team relaxes, gets fully healed and has +{INN_BOOST} "
+                f"HP for the next {INN_BATTLES} battles.", SMALL, 580)):
+            self.text(line, 210, 280 + i * 24, SMALL)
+        if self.inn_battles > 0 or any(m.inn_boost for m in self.team):
+            self.text(f"Your team is relaxed: {max(1, self.inn_battles)} more "
+                      f"battle(s).", 210, 360, SMALL, GREEN)
+        self.button("GET A MASSAGE", (330, 410, 340, 60), "massage",
+                    (130, 80, 170))
+        for i, line in enumerate(wrap_text(self.message, SMALL, 620)[:2]):
+            self.centred(line, 555 + i * 24, SMALL, GOLD)
+        self.button("BACK", (420, 620, 160, 45), "back_explore")
+
+    def surf_buy(self, name, amount):
+        price = SURF_PRICES[name] * amount
+        if name in KEY_ITEMS and name in self.key_items:
+            self.message = f"You already have the {name}, dude!"
+            return
+        if self.coins < price:
+            self.message = f"Not enough coins! You need {price}."
+            return
+        self.coins -= price
+        if name in KEY_ITEMS:
+            self.key_items.add(name)
+            self.message = f"You got the {name}! {KEY_ITEM_INFO[name]}."
+        else:
+            self.balls[name] += amount
+            self.message = f"You bought {amount} {name}{'s' if amount > 1 else ''}!"
+
+    def surf_gift(self):
+        today = time.strftime("%Y-%m-%d")
+        if self.surf_gift_day == today:
+            self.message = "Already got your gift today, dude. Come back tomorrow!"
+            return
+        self.surf_gift_day = today
+        gift = random.choice(("balls", "potions", "coins"))
+        if gift == "balls":
+            self.balls["Wave Ball"] += 5
+            self.message = "Kai gives you 5 Wave Balls! Hang loose!"
+        elif gift == "potions":
+            self.items["Super Potion"] += 2
+            self.message = "Kai gives you 2 Super Potions! Stay rad!"
+        else:
+            self.coins += 200
+            self.message = "Kai gives you 200 coins he found in the sand!"
+
+    def draw_surf(self):
+        self.background()
+        self.centred("SURF SHOP", 40, BIG, GOLD)
+        self.panel((120, 80, 760, 540))
+        self.text(f"Your coins: {self.coins}", 150, 95, FONT, GOLD)
+        self.text("Kai the surfer says:", 150, 135, SMALL, GOLD)
+        for i, line in enumerate(wrap_text(self.message, SMALL, 690)[:2]):
+            self.text(line, 150, 160 + i * 22, SMALL)
+        for i, (name, price) in enumerate(SURF_PRICES.items()):
+            y = 220 + i * 74
+            self.text(name, 150, y, FONT)
+            self.text(KEY_ITEM_INFO[name], 150, y + 30, SMALL)
+            if name in KEY_ITEMS:
+                if name in self.key_items:
+                    self.text("OWNED", 700, y + 10, FONT, GREEN)
+                else:
+                    self.text(f"{price} coins", 560, y + 12, SMALL, GOLD)
+                    self.button("BUY", (700, y + 2, 140, 42),
+                                ("surf_buy", (name, 1)), (45, 115, 75))
+            else:
+                self.text(f"{price} each - you have {self.balls[name]}", 440,
+                          y + 12, SMALL, GOLD)
+                self.button("BUY 1", (680, y + 2, 80, 42),
+                            ("surf_buy", (name, 1)), (45, 115, 75))
+                self.button("BUY 5", (768, y + 2, 80, 42),
+                            ("surf_buy", (name, 5)), (45, 115, 75))
+        self.button("DAILY GIFT", (150, 530, 220, 50), "surf_gift",
+                    (200, 140, 40))
+        self.button("ASK FOR A HINT", (390, 530, 260, 50), "surf_hint",
+                    (40, 120, 180))
+        self.button("BACK", (420, 630, 160, 45), "back_explore")
+
+    # ======================================
     # EXPLORE MODE (v19.0)
     # ======================================
 
@@ -8140,6 +8608,15 @@ class Game:
         self.exploring = True
         self.mode = "explore"
         self.world_msg = "Walk with the arrows. Tall grass hides wild Pokemon!"
+        area = REGION_AREAS.get(self.region)
+        if area and self.world != area:
+            self.world = area
+            self.wx, self.wy = WORLD[area]["spawn"]
+            self.facing = "down"
+            self.world_msg = f"Welcome to {WORLD[area]['name']}!"
+        elif not area and self.world.startswith("r_"):
+            self.world, self.wx, self.wy, self.facing = "town", 9, 10, "down"
+            self.world_msg = "Back in Hometown!"
 
     def stop_exploring(self):
         self.exploring = False
@@ -8194,7 +8671,7 @@ class Game:
         if tile in WORLD_WALKABLE:
             self.step = (dx, dy, 0)
             self.world_msg = ""
-        elif tile and tile in "HShTAbFC":
+        elif tile and tile in "HShTAbFCn":
             self.use_door(tile)
 
     def arrive(self):
@@ -8224,6 +8701,9 @@ class Game:
         if door == "H":
             self.heal_team()
             self.world_msg = "Your Pokemon were fully healed! Come again!"
+        elif door == "S" and self.world == "beach":
+            self.mode = "surf"
+            self.message = SURF_HINTS[self.surf_hint % len(SURF_HINTS)]
         elif door == "S":
             self.return_mode = "explore"
             self.message = ""
@@ -8235,6 +8715,27 @@ class Game:
             self.world, self.wx, self.wy, self.facing = "inside", 15, 20, "up"
             self.world_msg = ("Inside the Sungolia Temple. A golden altar glows "
                               "at the end of the hall.")
+        elif door == "L":
+            self.world_msg = WORLD[self.world].get("landmark", "")
+        elif door == "n":
+            self.mode = "inn"
+            self.message = ("Welcome to the Harbour Inn! Our comfy massage makes "
+                            "your whole team tougher.")
+        elif door == "u":
+            if self.world == "island":
+                self.world, self.wx, self.wy, self.facing = "beach", 11, 14, "down"
+                self.world_msg = "You surf back to Coral Beach. Cowabunga!"
+            elif "Surfboard" in self.key_items:
+                self.world = "island"
+                self.wx, self.wy = WORLD["island"]["spawn"]
+                self.facing = "down"
+                self.world_msg = ("You ride the waves to the Hidden Isle! Rare "
+                                  "Pokemon live here.")
+            else:
+                self.world_msg = ("Huge waves roll in here... perfect for surfing, "
+                                  "if you had a Surfboard.")
+        elif door == "f":
+            self.go_fishing()
         elif door == "A":
             if "xrencha" in self.events:
                 self.open_story()
@@ -8260,7 +8761,7 @@ class Game:
         tile = world_tile(self.world, x, y)
         if tile == "i":
             self.world_msg = WORLD[self.world]["signs"].get(f"{x},{y}", "")
-        elif tile and tile in "HShTAbFC":
+        elif tile and tile in "HShTAbFCnLuf":
             self.use_door(tile)
 
     # ======================================
@@ -8532,6 +9033,7 @@ class Game:
             self.mode = "battle"
             self.message = f"The battle with {self.enemy.name} continues!"
             return
+        self.inn_tick()
 
         if not self.team or all(p.fainted for p in self.team):
             self.message = "Your team needs to recover!"
@@ -8613,6 +9115,8 @@ class Game:
         move_type = get_move_type(move)
         multiplier = type_multiplier(move_type, e.types)
         damage = int(damage * multiplier)
+        if move_type == "Water" and "Tide Charm" in self.key_items:
+            damage = int(damage * 1.2)
         effect = effectiveness_text(multiplier)
 
         self.start_animation(move, True)
@@ -8829,10 +9333,13 @@ class Game:
             "Poke Ball": 0.35,
             "Great Ball": 0.60,
             "Ultra Ball": 0.85,
-            "XL Poke Ball": 0.95
+            "XL Poke Ball": 0.95,
+            "Wave Ball": 0.85
         }
 
         chance = chances[ball_name]
+        if ball_name == "Wave Ball" and "Water" not in str(self.enemy.types):
+            chance = 0.40
 
         if self.enemy.hp < self.enemy.max_hp * 0.5:
             chance += 0.15
@@ -8989,6 +9496,8 @@ class Game:
                 self.withdraw(index)
             elif kind == "buy":
                 self.buy(*index)
+            elif kind == "surf_buy":
+                self.surf_buy(*index)
             elif kind == "dex":
                 self.dex_selected = index
             elif kind == "code_key":
@@ -9072,6 +9581,20 @@ class Game:
 
         elif action == "code_enter":
             self.enter_event_code()
+
+        elif action == "massage" and self.mode == "inn":
+            self.massage()
+
+        elif action == "surf_gift" and self.mode == "surf":
+            self.surf_gift()
+
+        elif action == "surf_hint" and self.mode == "surf":
+            self.surf_hint += 1
+            self.message = SURF_HINTS[self.surf_hint % len(SURF_HINTS)]
+
+        elif action == "back_explore":
+            self.mode = "explore" if self.exploring else "menu"
+            self.message = ""
 
         elif action == "mute":
             self.muted = not self.muted
@@ -9351,7 +9874,9 @@ class Game:
             "typemasters": self.draw_typemasters,
             "rematches": self.draw_rematches,
             "explore": self.draw_explore,
-            "bag": self.draw_bag
+            "bag": self.draw_bag,
+            "inn": self.draw_inn,
+            "surf": self.draw_surf
         }
 
         while True:

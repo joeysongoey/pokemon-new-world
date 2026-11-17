@@ -1,4 +1,4 @@
-# Pokemon: The New World v19.4
+# Pokemon: The New World v19.5
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,30 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v19.5
+
+- **An explore area in every region:** fly to a region and tap EXPLORE.
+  - Kanto: Sunflower Fields, with a windmill.
+  - Johto: Lantern Hollow, with a lantern tower.
+  - Hoenn: Ashfall Dunes, with a volcano.
+  - Sinnoh: Frostpeak Pass, with an ice spire.
+  - Unova: Voltage City, with a power plant.
+  - Kalos: Bloom Gardens, with a palace.
+  - Alola: Palm Lagoon, with a tiki hut.
+  - Galar: Stonemoor Ruins, with a castle.
+  - Paldea: Starfall Crater, with a fallen star.
+
+  Each area has a heal house, and its wild Pokemon match the region's types.
+- **Harbour Inn** (west end of the Coral Beach boardwalk): pay 1000 coins for a
+  comfy massage that heals your team and gives it +100 HP for 3 battles.
+- **SURF shop:** Kai the surfer gives hints and a free gift once a day. He sells
+  Wave Balls (great for Water Pokemon), a Fishing Rod, a Tide Charm (Water moves
+  +20%) and a Surfboard.
+- **Fishing:** with the Fishing Rod, press A at the end of the pier.
+- **Hidden Isle:** with the Surfboard, press A at the surfboard on the sand to
+  surf to a secret island with ancient ruins and rare Pokemon.
+- **Slimmer, more detailed trainer sprite.**
 
 ## What's new in v19.4
 
