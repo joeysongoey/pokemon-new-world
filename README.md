@@ -1,4 +1,4 @@
-# Pokemon: The New World v19.5
+# Pokemon: The New World v19.6
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,20 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v19.6
+
+- **Pagoda Training** (Johto, Lantern Hollow): pick a Pokemon and pay 7000 coins
+  to walk a path. Training masters all of its moves, and the path is forever.
+  - **Sun Path:** the Pokemon can use Sun Avatar.
+  - **Moon Path:** the Pokemon gets Super Sonic, which hits 3-5 times for
+    30-100 damage each, once per battle.
+- **Ninja Prestige:** every training raises your rank.
+  - Rank 1: Shadow Step and Dawn Strike TMs.
+  - Rank 2: Solshin (#630).
+  - Rank 3: Sunfire Kunai and Moonshadow Kunai TMs, plus Lunashin (#631).
+  - Rank 5: Eclipse Edge TM and the Grandmaster title.
+- **TM Case:** teach TM moves. The new move replaces the Pokemon's weakest move.
 
 ## What's new in v19.5
 

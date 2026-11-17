@@ -23,7 +23,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v19.5")
+pygame.display.set_caption("Pokemon: The New World v19.6")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -3528,6 +3528,18 @@ NEW_SPECIES_DATA = [
       ('Null Engine', 72, 'Void'),
       ('Forged Origin', 66, 'Steel'),
       ('Void Overload', 72, 'Void')]),
+    (630, 'Solshin', 'Fire/Fighting', 'imp', 320, 9, 'story',
+     'A ninja of the Sun Path. It trains at dawn on the pagoda roof and strikes as fast as a sunbeam.',
+     [('Sun Blade Rush', 62, 'Fire'),
+      ('Solar Palm', 60, 'Fighting'),
+      ('Dawn Strike', 64, 'Light'),
+      ('Sunfire Kunai', 66, 'Fire')]),
+    (631, 'Lunashin', 'Dark/Ghost', 'imp', 310, 10, 'story',
+     'A ninja of the Moon Path. It vanishes into moonlight and appears behind its foe before it can blink.',
+     [('Shade Kunai', 62, 'Dark'),
+      ('Shadow Step', 60, 'Ghost'),
+      ('Twin Moon Slash', 64, 'Dark'),
+      ('Moonshadow Kunai', 66, 'Ghost')]),
 ]
 
 NEW_INFO = {}
@@ -3829,6 +3841,7 @@ class Creature:
         self.mastery = {}    # move name -> times used
         self.defeats = {}    # type -> Pokemon of that type defeated
         self.inn_boost = 0   # extra HP from the Harbour Inn (v19.5)
+        self.path = ""       # "sun" or "moon" from pagoda training (v19.6)
 
     @property
     def fainted(self):
@@ -5130,6 +5143,47 @@ INN_PRICE = 1000
 INN_BOOST = 100
 INN_BATTLES = 3
 
+# ==========================================
+# PAGODA TRAINING: SUN PATH AND MOON PATH (v19.6)
+# Found in the Johto explore area (Lantern Hollow).
+# ==========================================
+
+TRAINING_PRICE = 7000
+SONIC_HITS = (3, 5)        # Super Sonic hits this many times...
+SONIC_DAMAGE = (30, 100)   # ...for this much damage each time
+
+TMS = {   # name: (power, type)
+    "Shadow Step": (88, "Ghost"),
+    "Dawn Strike": (88, "Light"),
+    "Sunfire Kunai": (100, "Fire"),
+    "Moonshadow Kunai": (100, "Dark"),
+    "Eclipse Edge": (120, "Void"),
+}
+for _tm, (_power, _type) in TMS.items():
+    MOVE_TYPES.setdefault(_tm, _type)
+
+# rank: (title, TMs, Pokemon)
+PRESTIGE = {
+    1: ("Ninja Initiate", ["Shadow Step", "Dawn Strike"], None),
+    2: ("Ninja Adept", [], "Solshin"),
+    3: ("Ninja Master", ["Sunfire Kunai", "Moonshadow Kunai"], "Lunashin"),
+    5: ("Ninja Grandmaster", ["Eclipse Edge"], None),
+}
+NINJA_LEVEL = 50
+
+
+def prestige_title(rank):
+    title = "No rank yet"
+    for need in sorted(PRESTIGE):
+        if rank >= need:
+            title = PRESTIGE[need][0]
+    return title
+
+
+def has_sun_path(creature):
+    return creature.name in SUN_TEAM or creature.path == "sun"
+
+
 # (area, exit square) -> (new area, x, y); None keeps the same x or y
 WORLD_EXITS = {
     ("town", ">"): ("temple", 1, None), ("temple", "<"): ("town", 30, None),
@@ -5520,7 +5574,7 @@ def creature_to_dict(c):
         "types": c.types, "pokedex_number": c.pokedex_number,
         "shiny": c.shiny, "bond": c.bond, "titles": c.titles,
         "title": c.title, "mastery": c.mastery, "defeats": c.defeats,
-        "inn_boost": c.inn_boost
+        "inn_boost": c.inn_boost, "path": c.path
     }
 
 
@@ -5539,6 +5593,7 @@ def creature_from_dict(d):
     c.mastery = dict(d.get("mastery", {}))
     c.defeats = dict(d.get("defeats", {}))
     c.inn_boost = int(d.get("inn_boost", 0))
+    c.path = str(d.get("path", ""))
     return c
 
 
@@ -6874,7 +6929,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v19.5!"
+        self.message = "Welcome to Pokemon: The New World v19.6!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -6887,6 +6942,9 @@ class Game:
         self.surf_gift_day = ""
         self.surf_hint = 0
         self.inn_battles = 0
+        self.tms = {}
+        self.prestige = 0
+        self.dojo_pick = 0
 
         self.avatar_turns = 0
         self.avatar_used = False
@@ -6977,6 +7035,8 @@ class Game:
             "key_items": sorted(self.key_items),
             "surf_gift_day": self.surf_gift_day,
             "inn_battles": self.inn_battles,
+            "tms": self.tms,
+            "prestige": self.prestige,
             "events": sorted(self.events),
             "wins": self.wins,
             "bosses_beaten": self.bosses_beaten,
@@ -7041,6 +7101,8 @@ class Game:
         self.key_items = set(data.get("key_items", []))
         self.surf_gift_day = str(data.get("surf_gift_day", ""))
         self.inn_battles = int(data.get("inn_battles", 0))
+        self.tms = {k: int(v) for k, v in data.get("tms", {}).items() if k in TMS}
+        self.prestige = int(data.get("prestige", 0))
         self.wins = int(data.get("wins", 0))
         self.bosses_beaten = dict(data.get("bosses_beaten", {}))
         self.rematch_wins = dict(data.get("rematch_wins", {}))
@@ -7429,7 +7491,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 19.5 - EXPLORE EVERY REGION", 165)
+        self.centred("VERSION 19.6 - SUN PATH AND MOON PATH", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -7878,7 +7940,10 @@ class Game:
 
         # Small extra buttons above the box
         self.button("MENU", (448, 508, 124, 32), "menu", (40, 44, 70))
-        self.button("SUN AVATAR", (448, 546, 124, 32), "avatar", (145, 90, 35))
+        if p.path == "moon":
+            self.button("SUPER SONIC", (448, 546, 124, 32), "avatar", (80, 70, 150))
+        else:
+            self.button("SUN AVATAR", (448, 546, 124, 32), "avatar", (145, 90, 35))
 
     def draw_moves(self):
         self.draw_battle()
@@ -8430,7 +8495,7 @@ class Game:
             return None
         if self.mode == "victory":
             return "victory"
-        if self.mode in ("explore", "inn", "surf"):
+        if self.mode in ("explore", "inn", "surf", "pagoda", "tmcase"):
             return "town"
         if self.enemy and self.mode in ("battle", "moves", "balls", "items", "bag",
                                         "intro", "team"):
@@ -8598,6 +8663,128 @@ class Game:
         self.button("BACK", (420, 630, 160, 45), "back_explore")
 
     # ======================================
+    # PAGODA TRAINING (v19.6)
+    # ======================================
+
+    def dojo_pokemon(self):
+        self.dojo_pick %= len(self.team)
+        return self.team[self.dojo_pick]
+
+    def train_path(self, path):
+        mon = self.dojo_pokemon()
+        if mon.name in SUN_TEAM:
+            self.message = f"{mon.name} already walks the Sun Path as part of the Sun Team!"
+            return
+        if mon.path:
+            self.message = f"{mon.name} already walks the {mon.path.title()} Path. It's forever!"
+            return
+        if self.coins < TRAINING_PRICE:
+            self.message = f"Training costs {TRAINING_PRICE} coins. You have {self.coins}."
+            return
+        self.coins -= TRAINING_PRICE
+        mon.path = path
+        for move, _power in mon.moves:     # training masters every move
+            mon.mastery[move] = max(mon.mastery.get(move, 0), MASTERY_USES)
+        give_title(mon, "Sun Ninja" if path == "sun" else "Moon Ninja")
+        power = "SUN AVATAR" if path == "sun" else "SUPER SONIC"
+        text = f"{mon.name} walked the {path.title()} Path! It learned {power} and mastered all its moves."
+        self.prestige += 1
+        reward = PRESTIGE.get(self.prestige)
+        if reward:
+            title, tms, gift = reward
+            give_title(mon, title)
+            text += f" PRESTIGE RANK {self.prestige}: {title}!"
+            for tm in tms:
+                self.tms[tm] = self.tms.get(tm, 0) + 1
+            if tms:
+                text += " Got TMs: " + ", ".join(tms) + "."
+            if gift:
+                ninja = make_grown(gift, NINJA_LEVEL)
+                self.seen.add(ninja.pokedex_number)
+                self.caught.add(ninja.pokedex_number)
+                if len(self.team) < PARTY_LIMIT:
+                    self.team.append(ninja)
+                else:
+                    self.pc.append(ninja)
+                text += f" {gift} joined you!"
+        self.message = text
+
+    def teach_tm(self, tm):
+        mon = self.dojo_pokemon()
+        if self.tms.get(tm, 0) <= 0:
+            self.message = f"You don't have the {tm} TM."
+            return
+        if any(m == tm for m, _p in mon.moves):
+            self.message = f"{mon.name} already knows {tm}!"
+            return
+        power, _type = TMS[tm]
+        weakest = min(range(len(mon.moves)), key=lambda i: mon.moves[i][1])
+        old = mon.moves[weakest][0]
+        mon.moves[weakest] = (tm, power)
+        self.tms[tm] -= 1
+        self.message = f"{mon.name} forgot {old} and learned {tm}!"
+
+    def dojo_picker(self, y):
+        mon = self.dojo_pokemon()
+        self.button("<", (190, y, 60, 50), "dojo_prev", (40, 44, 70))
+        self.button(">", (750, y, 60, 50), "dojo_next", (40, 44, 70))
+        self.centred(f"{mon.name}  Lv {mon.level}", y + 2, FONT)
+        if mon.name in SUN_TEAM:
+            status = "Sun Team (Sun Avatar)"
+        elif mon.path:
+            status = f"{mon.path.title()} Path"
+        else:
+            status = "Not trained yet"
+        self.centred(f"{mon.types}  -  {status}", y + 32, SMALL, GOLD)
+
+    def draw_pagoda(self):
+        self.background()
+        self.centred("PAGODA TRAINING", 32, BIG, GOLD)
+        self.panel((150, 70, 700, 545))
+        self.text(f"Coins: {self.coins}", 180, 85, FONT, GOLD)
+        self.text(f"Ninja Prestige: Rank {self.prestige} - "
+                  f"{prestige_title(self.prestige)}", 180, 118, SMALL)
+        nxt = next((r for r in sorted(PRESTIGE) if r > self.prestige), None)
+        if nxt:
+            title, tms, gift = PRESTIGE[nxt]
+            prize = ", ".join(tms + ([gift] if gift else []))
+            self.text(f"Rank {nxt} ({title}): {prize}", 180, 142, SMALL, GOLD)
+        self.dojo_picker(175)
+        self.button("SUN PATH", (190, 250, 300, 60), ("train", "sun"), (200, 120, 30))
+        self.button("MOON PATH", (510, 250, 300, 60), ("train", "moon"), (80, 70, 150))
+        self.text("Gives Sun Avatar: +40 damage", 195, 318, SMALL)
+        self.text("and less damage taken, 3 turns.", 195, 340, SMALL)
+        self.text("Gives Super Sonic: hits 3-5", 515, 318, SMALL)
+        self.text("times for 30-100 damage each.", 515, 340, SMALL)
+        self.centred(f"{TRAINING_PRICE} coins each - masters all moves - "
+                     f"one path forever", 372, SMALL, GOLD)
+        for i, line in enumerate(wrap_text(self.message, SMALL, 640)[:4]):
+            self.centred(line, 410 + i * 24, SMALL)
+        self.button(f"TM CASE ({sum(self.tms.values())})", (330, 520, 340, 50),
+                    "tmcase", (45, 115, 75))
+        self.button("BACK", (420, 630, 160, 45), "back_explore")
+
+    def draw_tmcase(self):
+        self.background()
+        self.centred("TM CASE", 32, BIG, GOLD)
+        self.panel((150, 70, 700, 545))
+        self.text("Teach a move. It replaces the Pokemon's weakest move.", 180, 85,
+                  SMALL, GOLD)
+        self.dojo_picker(115)
+        owned = [(tm, n) for tm, n in self.tms.items() if n > 0]
+        if not owned:
+            self.centred("No TMs yet. Train at the pagoda to earn them!", 260, FONT)
+        for i, (tm, n) in enumerate(owned):
+            y = 190 + i * 62
+            power, kind = TMS[tm]
+            self.text(f"{tm} x{n}", 190, y, FONT)
+            self.text(f"{kind} - power {power}", 190, y + 28, SMALL, GOLD)
+            self.button("TEACH", (650, y, 140, 46), ("teach", tm), (45, 115, 75))
+        for i, line in enumerate(wrap_text(self.message, SMALL, 640)[:2]):
+            self.centred(line, 520 + i * 24, SMALL)
+        self.button("BACK", (420, 630, 160, 45), "pagoda_back")
+
+    # ======================================
     # EXPLORE MODE (v19.0)
     # ======================================
 
@@ -8715,6 +8902,11 @@ class Game:
             self.world, self.wx, self.wy, self.facing = "inside", 15, 20, "up"
             self.world_msg = ("Inside the Sungolia Temple. A golden altar glows "
                               "at the end of the hall.")
+        elif door == "L" and self.world == "r_johto":
+            self.mode = "pagoda"
+            self.dojo_pick = 0
+            self.message = ("Welcome to the pagoda. Choose a Pokemon and walk the "
+                            "Sun Path or the Moon Path.")
         elif door == "L":
             self.world_msg = WORLD[self.world].get("landmark", "")
         elif door == "n":
@@ -9084,7 +9276,15 @@ class Game:
     # PLAYER ATTACK
     # ======================================
 
-    def player_attack(self, index):
+    def super_sonic(self):
+        """Moon Path special: hits 3-5 times, once per battle."""
+        if self.avatar_used:
+            self.message = "Super Sonic was already used this battle!"
+            return
+        self.avatar_used = True
+        self.player_attack(0, sonic=True)
+
+    def player_attack(self, index, sonic=False):
         if not self.enemy:
             return
 
@@ -9101,23 +9301,30 @@ class Game:
             self.message = "Choose a healthy Pokemon!"
             return
 
-        move, power = p.moves[index]
-        damage = power + random.randint(5, 15) + p.bonus
-        mastered = is_mastered(p, move)
-        if mastered:
-            damage += MASTERY_BONUS
-            self.mastery_flash = 14
-        mastery_note = use_move(p, move)
+        if sonic:
+            move = "Super Sonic"
+            hits = random.randint(*SONIC_HITS)
+            damage = sum(random.randint(*SONIC_DAMAGE) for _ in range(hits))
+            mastered, mastery_note = False, None
+            effect = f"It hit {hits} times! "
+        else:
+            move, power = p.moves[index]
+            damage = power + random.randint(5, 15) + p.bonus
+            mastered = is_mastered(p, move)
+            if mastered:
+                damage += MASTERY_BONUS
+                self.mastery_flash = 14
+            mastery_note = use_move(p, move)
 
-        if self.avatar_turns and p.name in SUN_TEAM:
-            damage += 40
+            if self.avatar_turns and has_sun_path(p):
+                damage += 40
 
-        move_type = get_move_type(move)
-        multiplier = type_multiplier(move_type, e.types)
-        damage = int(damage * multiplier)
-        if move_type == "Water" and "Tide Charm" in self.key_items:
-            damage = int(damage * 1.2)
-        effect = effectiveness_text(multiplier)
+            move_type = get_move_type(move)
+            multiplier = type_multiplier(move_type, e.types)
+            damage = int(damage * multiplier)
+            if move_type == "Water" and "Tide Charm" in self.key_items:
+                damage = int(damage * 1.2)
+            effect = effectiveness_text(multiplier)
 
         self.start_animation(move, True)
         if (self.story_battle
@@ -9242,11 +9449,17 @@ class Game:
         p = self.pokemon
 
         if self.avatar_used:
-            self.message = "True Sun Avatar was already used!"
+            self.message = ("Super Sonic was already used this battle!"
+                            if p.path == "moon" else
+                            "True Sun Avatar was already used!")
         elif p.fainted:
             self.message = "A fainted Pokemon cannot activate it!"
-        elif p.name not in SUN_TEAM:
-            self.message = "Only the Sun Team can use this!"
+        elif p.path == "moon":
+            self.super_sonic()
+            return
+        elif not has_sun_path(p):
+            self.message = ("Only the Sun Team and Sun Path Pokemon can use this! "
+                            "Train at the Johto pagoda.")
         else:
             self.avatar_turns = AVATAR_TURNS
             self.avatar_used = True
@@ -9498,6 +9711,10 @@ class Game:
                 self.buy(*index)
             elif kind == "surf_buy":
                 self.surf_buy(*index)
+            elif kind == "train":
+                self.train_path(index)
+            elif kind == "teach":
+                self.teach_tm(index)
             elif kind == "dex":
                 self.dex_selected = index
             elif kind == "code_key":
@@ -9591,6 +9808,20 @@ class Game:
         elif action == "surf_hint" and self.mode == "surf":
             self.surf_hint += 1
             self.message = SURF_HINTS[self.surf_hint % len(SURF_HINTS)]
+
+        elif action == "dojo_prev":
+            self.dojo_pick = (self.dojo_pick - 1) % len(self.team)
+
+        elif action == "dojo_next":
+            self.dojo_pick = (self.dojo_pick + 1) % len(self.team)
+
+        elif action == "tmcase" and self.mode == "pagoda":
+            self.mode = "tmcase"
+            self.message = ""
+
+        elif action == "pagoda_back":
+            self.mode = "pagoda"
+            self.message = ""
 
         elif action == "back_explore":
             self.mode = "explore" if self.exploring else "menu"
@@ -9876,7 +10107,9 @@ class Game:
             "explore": self.draw_explore,
             "bag": self.draw_bag,
             "inn": self.draw_inn,
-            "surf": self.draw_surf
+            "surf": self.draw_surf,
+            "pagoda": self.draw_pagoda,
+            "tmcase": self.draw_tmcase
         }
 
         while True:
