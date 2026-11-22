@@ -1,4 +1,4 @@
-# Pokemon: The New World v19.6
+# Pokemon: The New World v19.7
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,18 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v19.7
+
+- **Ninja Trials:** battle the Sun Monk and the Moon Monk at the pagoda. They
+  start at Lv 45 and get 5 levels stronger every time. Each win gives +1
+  prestige and 500 coins.
+- **Ninja points:** every battle won by a Sun or Moon Path Pokemon earns a
+  point, and 10 points give +1 prestige.
+- **New ranks:**
+  - Rank 10, Shadow Shogun: Blazing Shuriken and Phantom Shuriken TMs.
+  - Rank 15, Eclipse Sensei: Eclipshin (#632).
+  - Rank 20, Legendary Ninja: Total Eclipse TM.
 
 ## What's new in v19.6
 

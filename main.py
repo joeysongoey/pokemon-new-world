@@ -23,7 +23,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v19.6")
+pygame.display.set_caption("Pokemon: The New World v19.7")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -3540,6 +3540,12 @@ NEW_SPECIES_DATA = [
       ('Shadow Step', 60, 'Ghost'),
       ('Twin Moon Slash', 64, 'Dark'),
       ('Moonshadow Kunai', 66, 'Ghost')]),
+    (632, 'Eclipshin', 'Light/Dark', 'imp', 340, 11, 'story',
+     'The grandmaster of both paths. Half of it shines like the sun and half hides in moonlight. Only the greatest ninjas ever meet it.',
+     [('Solar Eclipse Slash', 66, 'Light'),
+      ('Umbra Step', 64, 'Dark'),
+      ('Corona Shuriken', 68, 'Light'),
+      ('Twilight Kunai', 70, 'Dark')]),
 ]
 
 NEW_INFO = {}
@@ -5158,6 +5164,9 @@ TMS = {   # name: (power, type)
     "Sunfire Kunai": (100, "Fire"),
     "Moonshadow Kunai": (100, "Dark"),
     "Eclipse Edge": (120, "Void"),
+    "Blazing Shuriken": (110, "Fire"),
+    "Phantom Shuriken": (110, "Ghost"),
+    "Total Eclipse": (140, "Void"),
 }
 for _tm, (_power, _type) in TMS.items():
     MOVE_TYPES.setdefault(_tm, _type)
@@ -5168,8 +5177,27 @@ PRESTIGE = {
     2: ("Ninja Adept", [], "Solshin"),
     3: ("Ninja Master", ["Sunfire Kunai", "Moonshadow Kunai"], "Lunashin"),
     5: ("Ninja Grandmaster", ["Eclipse Edge"], None),
+    10: ("Shadow Shogun", ["Blazing Shuriken", "Phantom Shuriken"], None),
+    15: ("Eclipse Sensei", [], "Eclipshin"),
+    20: ("Legendary Ninja", ["Total Eclipse"], None),
 }
 NINJA_LEVEL = 50
+
+# More ways to raise your prestige (v19.7)
+NINJA_POINTS_PER_RANK = 10   # battle wins by a Sun/Moon Path Pokemon per rank
+NINJA_TRIAL_COINS = 500
+
+
+def ninja_trial_opponent(wins):
+    """Sun Monk and Moon Monk take turns, and get stronger every time."""
+    monk, name = (("Sun Monk", "Solshin") if wins % 2 == 0
+                  else ("Moon Monk", "Lunashin"))
+    level = min(100, 45 + 5 * wins)
+    mon = make_grown(name, level)
+    mon.max_hp = int(mon.max_hp * 1.3)
+    mon.hp = mon.max_hp
+    mon.bonus += 2 * wins
+    return monk, mon
 
 
 def prestige_title(rank):
@@ -6929,7 +6957,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v19.6!"
+        self.message = "Welcome to Pokemon: The New World v19.7!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -6945,6 +6973,9 @@ class Game:
         self.tms = {}
         self.prestige = 0
         self.dojo_pick = 0
+        self.ninja_points = 0
+        self.ninja_trials_won = 0
+        self.ninja_trial = False
 
         self.avatar_turns = 0
         self.avatar_used = False
@@ -7037,6 +7068,8 @@ class Game:
             "inn_battles": self.inn_battles,
             "tms": self.tms,
             "prestige": self.prestige,
+            "ninja_points": self.ninja_points,
+            "ninja_trials_won": self.ninja_trials_won,
             "events": sorted(self.events),
             "wins": self.wins,
             "bosses_beaten": self.bosses_beaten,
@@ -7103,6 +7136,8 @@ class Game:
         self.inn_battles = int(data.get("inn_battles", 0))
         self.tms = {k: int(v) for k, v in data.get("tms", {}).items() if k in TMS}
         self.prestige = int(data.get("prestige", 0))
+        self.ninja_points = int(data.get("ninja_points", 0))
+        self.ninja_trials_won = int(data.get("ninja_trials_won", 0))
         self.wins = int(data.get("wins", 0))
         self.bosses_beaten = dict(data.get("bosses_beaten", {}))
         self.rematch_wins = dict(data.get("rematch_wins", {}))
@@ -7116,6 +7151,7 @@ class Game:
         self.story_battle = False
         self.story_pending = False
         self.rematch = None
+        self.ninja_trial = False
         self.duo_partner = None
         region = data.get("region", "The New World")
         self.region = region if region in REGIONS else "The New World"
@@ -7491,7 +7527,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 19.6 - SUN PATH AND MOON PATH", 165)
+        self.centred("VERSION 19.7 - NINJA PRESTIGE", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -8252,6 +8288,7 @@ class Game:
         self.enemy = None
         self.duo_partner = None
         self.rematch = None
+        self.ninja_trial = False
         self.avatar_turns = 0
         self.pending_enemy_turn = False
         self.mode = "defeat"
@@ -8268,6 +8305,12 @@ class Game:
 
         level_ups = gain_xp(self.pokemon, xp)
         level_ups += self.battle_milestones(enemy)
+        if self.pokemon.path and not self.ninja_trial:
+            self.ninja_points += 1
+            if self.ninja_points >= NINJA_POINTS_PER_RANK:
+                self.ninja_points -= NINJA_POINTS_PER_RANK
+                level_ups += [f"Your ninjas' wins raised your prestige!"
+                              + self.prestige_up(self.pokemon)]
         if self.pokemon.pokedex_number:
             # An evolved Pokemon counts as seen and caught in the Pokedex
             self.seen.add(self.pokemon.pokedex_number)
@@ -8501,6 +8544,7 @@ class Game:
                                         "intro", "team"):
             e = self.enemy
             if (self.trial or self.duo_partner or self.story_battle
+                    or self.ninja_trial
                     or e.name == "NYSTRIA" or e.name in RARE_KIND
                     or e.types == "Boss"):
                 return "legend"
@@ -8688,12 +8732,19 @@ class Game:
         give_title(mon, "Sun Ninja" if path == "sun" else "Moon Ninja")
         power = "SUN AVATAR" if path == "sun" else "SUPER SONIC"
         text = f"{mon.name} walked the {path.title()} Path! It learned {power} and mastered all its moves."
+        text += self.prestige_up(mon)
+        self.message = text
+
+    def prestige_up(self, mon=None):
+        """+1 Ninja Prestige rank and its reward. Returns a message."""
         self.prestige += 1
+        text = f" PRESTIGE RANK {self.prestige}!"
         reward = PRESTIGE.get(self.prestige)
         if reward:
             title, tms, gift = reward
-            give_title(mon, title)
-            text += f" PRESTIGE RANK {self.prestige}: {title}!"
+            if mon:
+                give_title(mon, title)
+            text = f" PRESTIGE RANK {self.prestige}: {title}!"
             for tm in tms:
                 self.tms[tm] = self.tms.get(tm, 0) + 1
             if tms:
@@ -8707,7 +8758,36 @@ class Game:
                 else:
                     self.pc.append(ninja)
                 text += f" {gift} joined you!"
-        self.message = text
+        return text
+
+    def start_ninja_trial(self):
+        if self.prestige < 1:
+            self.message = "Train a Pokemon on the Sun or Moon Path first!"
+            return
+        if all(p.fainted for p in self.team):
+            self.message = "Your team needs to recover!"
+            return
+        self.send_out_healthy()
+        monk, mon = ninja_trial_opponent(self.ninja_trials_won)
+        self.seen.add(mon.pokedex_number)
+        self.enemy = mon
+        self.rematch = None
+        self.duo_partner = None
+        self.ninja_trial = True
+        self.avatar_turns = 0
+        self.avatar_used = False
+        self.animation = None
+        self.pending_enemy_turn = False
+        self.mode = "battle"
+        self.message = (f"NINJA TRIAL {self.ninja_trials_won + 1}! {monk} sends "
+                        f"out {mon.name} (Lv {mon.level})!")
+
+    def ninja_trial_won(self):
+        self.ninja_trial = False
+        self.ninja_trials_won += 1
+        self.coins += NINJA_TRIAL_COINS
+        return (f" NINJA TRIAL WON! +{NINJA_TRIAL_COINS} coins."
+                + self.prestige_up(self.pokemon))
 
     def teach_tm(self, tm):
         mon = self.dojo_pokemon()
@@ -8744,6 +8824,8 @@ class Game:
         self.text(f"Coins: {self.coins}", 180, 85, FONT, GOLD)
         self.text(f"Ninja Prestige: Rank {self.prestige} - "
                   f"{prestige_title(self.prestige)}", 180, 118, SMALL)
+        self.text(f"Ninja points: {self.ninja_points}/{NINJA_POINTS_PER_RANK}",
+                  620, 90, SMALL, GOLD)
         nxt = next((r for r in sorted(PRESTIGE) if r > self.prestige), None)
         if nxt:
             title, tms, gift = PRESTIGE[nxt]
@@ -8760,8 +8842,11 @@ class Game:
                      f"one path forever", 372, SMALL, GOLD)
         for i, line in enumerate(wrap_text(self.message, SMALL, 640)[:4]):
             self.centred(line, 410 + i * 24, SMALL)
-        self.button(f"TM CASE ({sum(self.tms.values())})", (330, 520, 340, 50),
+        self.button(f"TM CASE ({sum(self.tms.values())})", (190, 520, 300, 50),
                     "tmcase", (45, 115, 75))
+        monk = "Sun Monk" if self.ninja_trials_won % 2 == 0 else "Moon Monk"
+        self.button(f"NINJA TRIAL vs {monk}", (510, 520, 300, 50),
+                    "ninja_trial", (150, 40, 50))
         self.button("BACK", (420, 630, 160, 45), "back_explore")
 
     def draw_tmcase(self):
@@ -9054,6 +9139,7 @@ class Game:
             self.seen.add(self.enemy.pokedex_number)
         self.duo_partner = None
         self.rematch = None
+        self.ninja_trial = False
         self.story_battle = True
         self.avatar_turns = 0
         self.avatar_used = False
@@ -9115,6 +9201,7 @@ class Game:
             self.seen.add(mon.pokedex_number)
         self.trial = True
         self.rematch = None
+        self.ninja_trial = False
         self.avatar_turns = 0
         self.avatar_used = False
         self.animation = None
@@ -9233,6 +9320,7 @@ class Game:
 
         self.send_out_healthy()
         self.rematch = None
+        self.ninja_trial = False
         self.duo_partner = None
         special = self.area_encounter()
         if special:
@@ -9358,6 +9446,8 @@ class Game:
                 extra = self.story_won(e)
             if self.trial:
                 extra = self.trial_reward()
+            if self.ninja_trial:
+                extra = self.ninja_trial_won()
             if self.rematch:
                 won = self.rematch_wins.get(self.rematch, 0) + 1
                 self.rematch_wins[self.rematch] = won
@@ -9365,6 +9455,7 @@ class Game:
                 self.coins += bonus
                 extra = f" REMATCH WON! +{bonus} bonus coins."
                 self.rematch = None
+                self.ninja_trial = False
 
             self.message = f"{e.name} was defeated! {reward_text}{extra}"
             self.defeated_enemy = e
@@ -9508,6 +9599,11 @@ class Game:
 
         if self.tournament:
             self.message = "You can't catch another trainer's Pokemon!"
+            self.mode = "battle"
+            return
+
+        if self.ninja_trial:
+            self.message = "You can't catch a monk's Pokemon!"
             self.mode = "battle"
             return
 
@@ -9815,6 +9911,9 @@ class Game:
         elif action == "dojo_next":
             self.dojo_pick = (self.dojo_pick + 1) % len(self.team)
 
+        elif action == "ninja_trial" and self.mode == "pagoda":
+            self.start_ninja_trial()
+
         elif action == "tmcase" and self.mode == "pagoda":
             self.mode = "tmcase"
             self.message = ""
@@ -10001,6 +10100,7 @@ class Game:
             self.enemy = None
             self.duo_partner = None
             self.rematch = None
+            self.ninja_trial = False
             self.avatar_turns = 0
             self.animation = None
             self.pending_enemy_turn = False
