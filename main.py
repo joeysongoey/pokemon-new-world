@@ -23,7 +23,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v19.7")
+pygame.display.set_caption("Pokemon: The New World v19.8")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -6957,7 +6957,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v19.7!"
+        self.message = "Welcome to Pokemon: The New World v19.8!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -7007,6 +7007,11 @@ class Game:
         self.intro_lines = []
         self.puzzle = None
         self.trial = False          # True during the Trial of the Deep (v18.6)
+
+        # Simple menu and auto-save (v19.8)
+        self.menu_pop = None
+        self.save_sig = None
+        self.save_toast = 0
 
         # Music (v19.1)
         self.muted = False
@@ -7527,7 +7532,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 19.7 - NINJA PRESTIGE", 165)
+        self.centred("VERSION 19.8 - SIMPLE MENU", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -7564,43 +7569,109 @@ class Game:
                          530, SMALL)
             return
 
-        cols = (200, 350, 500, 650)
-        self.button("CONTINUE" if self.enemy else "BATTLE",
-                    (200, 400, 140, 50), "battle")
-        self.button("TOURNAMENT", (350, 400, 140, 50),
-                    "tournament", (120, 75, 160))
-        self.button("ELITE CUP", (500, 400, 140, 50), "elite",
-                    (150, 60, 120) if self.trophies else (70, 65, 85))
-        self.button("CHALLENGES", (650, 400, 140, 50), "challenges",
-                    (170, 90, 40))
+        # Simple menu (v19.8): five big buttons, each opens a pop-up
+        self.big_button("EXPLORE", (210, 400, 580, 74), "explore",
+                        (60, 150, 80), arrow=True)
+        self.big_button("CONTINUE" if self.enemy else "BATTLE",
+                        (210, 488, 284, 66), ("pop", "battle"), (196, 46, 52))
+        self.big_button("POKEMON", (506, 488, 284, 66), ("pop", "pokemon"),
+                        (36, 78, 170))
+        self.big_button("BAG & SHOP", (210, 566, 284, 66), ("pop", "bag"),
+                        (180, 120, 30))
+        self.big_button("FLY", (506, 566, 284, 66), "fly", (40, 130, 160))
+        self.button("OPTIONS", (840, 640, 140, 44), ("pop", "options"),
+                    (60, 64, 90))
+        if self.menu_pop:
+            self.draw_menu_pop()
 
-        row = [("TEAM", "team", BLUE), ("POKE BALLS", "balls", BLUE),
-               ("HEAL", "heal", (190, 70, 110)), ("FLY", "fly", (50, 130, 160))]
-        for x, (name, action, colour) in zip(cols, row):
-            self.button(name, (x, 458, 140, 44), action, colour)
+    def draw_menu_pop(self):
+        """The small pop-up menu opened by a big menu button."""
+        self.buttons.clear()
+        dim = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        dim.fill((0, 0, 0, 150))
+        screen.blit(dim, (0, 0))
+        options = {
+            "battle": ("BATTLE", [
+                ("Continue Battle" if self.enemy else "Wild Battle", "battle",
+                 (196, 46, 52)),
+                ("Tournament", "tournament", (120, 70, 160)),
+                ("Elite Cup", "elite",
+                 (150, 60, 120) if self.trophies else (70, 66, 90)),
+                ("Challenges", "challenges", (170, 90, 40))]),
+            "pokemon": ("POKEMON", [
+                ("Team", "team", (36, 78, 170)),
+                ("Pokemon PC", "pc", (36, 78, 170)),
+                ("Pokedex", "pokedex", (60, 90, 150)),
+                ("Heal Team", "heal", (190, 70, 110)),
+                ("Type Chart", "typechart", (60, 90, 150))]),
+            "bag": ("BAG & SHOP", [
+                ("Shop", "shop", (180, 120, 30)),
+                ("Poke Balls", "balls", (36, 78, 170)),
+                ("Event Code", "code", (150, 60, 120))]),
+            "options": ("OPTIONS", [
+                ("Save Now", "save", (45, 115, 75)),
+                ("Load Last Save", "load", (45, 115, 75)),
+                ("Export Code", "export", (60, 90, 150)),
+                ("Import Code", "import", (60, 90, 150))]
+                + ([] if WEB else [("Quit", "quit", (145, 50, 60))])),
+        }
+        title, rows = options[self.menu_pop]
+        height = len(rows) * 68 + 180
+        top = 350 - height // 2
+        self.text_box((250, top, 500, height))
+        self.centred(title, top + 30, BIG, GOLD)
+        for i, (label, action, colour) in enumerate(rows):
+            self.big_button(label, (290, top + 88 + i * 68, 420, 56),
+                            ("pop_do", action), colour)
+        bottom = top + 88 + len(rows) * 68
+        if self.menu_pop == "options":
+            self.centred("The game also saves by itself after important things.",
+                         bottom + 4, SMALL, GOLD)
+        self.button("BACK", (430, bottom + 34, 140, 38), ("pop", None),
+                    (40, 44, 70))
 
-        row = [("POKEMON PC", "pc", BLUE), ("SHOP", "shop", (170, 120, 30)),
-               ("POKEDEX", "pokedex", (60, 90, 150)),
-               ("TYPE CHART", "typechart", (60, 90, 150))]
-        for x, (name, action, colour) in zip(cols, row):
-            self.button(name, (x, 510, 140, 44), action, colour)
+    # ======================================
+    # AUTO-SAVE (v19.8)
+    # ======================================
 
-        row = [("SAVE", "save"), ("LOAD", "load"),
-               ("EXPORT CODE", "export"), ("IMPORT CODE", "import")]
-        for x, (name, action) in zip(cols, row):
-            self.button(name, (x, 562, 140, 44), action, (45, 115, 75))
+    def save_signature(self):
+        """Changes whenever something important happens."""
+        return (len(self.caught), len(self.team) + len(self.pc),
+                tuple(m.name for m in self.team), self.trophies,
+                self.elite_trophies, len(self.bosses_beaten),
+                sum(self.rematch_wins.values()), self.story_step,
+                len(self.events), self.prestige, len(self.key_items),
+                len(self.master_badges), len(self.puzzles_solved),
+                self.ninja_trials_won, tuple(m.path for m in self.team))
 
-        if WEB:
-            self.button("EXPLORE", (340, 614, 150, 40), "explore",
-                        (60, 150, 80))
-            self.button("EVENT CODE", (510, 614, 150, 40), "code",
-                        (150, 60, 120))
-        else:
-            self.button("EXPLORE", (255, 614, 150, 40), "explore",
-                        (60, 150, 80))
-            self.button("EVENT CODE", (425, 614, 150, 40), "code",
-                        (150, 60, 120))
-            self.button("QUIT", (595, 614, 150, 40), "quit", (145, 50, 60))
+    def check_autosave(self):
+        sig = self.save_signature()
+        if self.save_sig is None:
+            self.save_sig = sig
+            return
+        if sig == self.save_sig or self.enemy or self.tournament:
+            return
+        try:
+            storage_write(self.save_text())
+            self.save_sig = sig
+            self.save_toast = 90
+        except Exception:
+            self.save_sig = sig
+
+    def auto_load(self):
+        """Loads your save when the game starts, so auto-save never
+        overwrites it with a new game."""
+        text = storage_read()
+        if text and self.apply_save(text):
+            self.message = "Welcome back! Your game was loaded."
+        self.save_sig = None
+
+    def draw_save_toast(self):
+        if self.save_toast <= 0:
+            return
+        self.save_toast -= 1
+        self.panel((14, 650, 190, 40))
+        self.text("Game saved", 34, 658, SMALL, GREEN)
 
     def draw_code(self):
         """On-screen keyboard for event codes. Works on iPads and phones."""
@@ -9807,6 +9878,11 @@ class Game:
                 self.buy(*index)
             elif kind == "surf_buy":
                 self.surf_buy(*index)
+            elif kind == "pop":
+                self.menu_pop = index
+            elif kind == "pop_do":
+                self.menu_pop = None
+                self.do(index)
             elif kind == "train":
                 self.train_path(index)
             elif kind == "teach":
@@ -10131,6 +10207,8 @@ class Game:
 
         elif action == "save":
             self.save_game()
+            if self.message == "Game saved!" or self.message.startswith("Game saved"):
+                self.save_sig = self.save_signature()
 
         elif action == "load":
             self.load_game()
@@ -10182,6 +10260,7 @@ class Game:
     # ======================================
 
     async def run(self):
+        self.auto_load()
         screens = {
             "menu": self.draw_menu,
             "battle": self.draw_battle,
@@ -10244,9 +10323,13 @@ class Game:
                 self.mode = "explore"
 
             self.buttons = []
+            if self.mode != "menu":
+                self.menu_pop = None
             screens[self.mode]()
             self.draw_mute_button()
             self.update_music()
+            self.check_autosave()
+            self.draw_save_toast()
 
             pygame.transform.scale(
                 screen,

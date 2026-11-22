@@ -1,4 +1,4 @@
-# Pokemon: The New World v19.7
+# Pokemon: The New World v19.8
 
 A Pokemon-style battle game made with Python and pygame.
 
@@ -58,6 +58,17 @@ to turn `main.py` into a web version and publish it to the `gh-pages` branch.
 - **New sprites:** every wild Pokemon now has its own body shape (cats, fish,
   dragons, birds, golems, ghosts, bugs, plants, imps and star-orbs), and first
   forms are smaller than final forms.
+
+## What's new in v19.8
+
+- **Simple menu:** five big buttons, EXPLORE, BATTLE, POKEMON, BAG & SHOP and
+  FLY, plus OPTIONS. Each opens a small pop-up with the options grouped inside.
+- **Auto-save:** the game saves by itself after important things, such as
+  catching a Pokemon, winning a tournament or Elite Cup, beating a boss, story
+  chapters, event codes, evolving, training and prestige ranks. A "Game saved"
+  note pops up. It never saves in the middle of a battle or tournament.
+- **Auto-load:** your save loads by itself when you open the game.
+- **Manual save:** still in OPTIONS > Save Now.
 
 ## What's new in v19.7
 
