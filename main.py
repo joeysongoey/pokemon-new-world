@@ -23,7 +23,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v19.9")
+pygame.display.set_caption("Pokemon: The New World v20.0")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -3546,6 +3546,18 @@ NEW_SPECIES_DATA = [
       ('Umbra Step', 64, 'Dark'),
       ('Corona Shuriken', 68, 'Light'),
       ('Twilight Kunai', 70, 'Dark')]),
+    (633, 'Moltenion', 'Fire/Dragon', 'dragon', 430, 12, 'story',
+     'The fire legend sleeping deep in Ember Cave. Its wings are made of flowing lava, and its roar can melt stone.',
+     [('Magma Wing', 68, 'Fire'),
+      ('Molten Roar', 66, 'Dragon'),
+      ('Lava Crown', 72, 'Fire'),
+      ('Inferno Core', 76, 'Fire')]),
+    (634, 'Warternut', 'Water', 'orb', 340, 9, 'story',
+     "Eusine's loyal partner. Its round shell holds a whole lake of water, and it is never scared of fire.",
+     [('Shell Splash', 58, 'Water'),
+      ('Hydro Shell', 64, 'Water'),
+      ('Nutshell Wave', 62, 'Water'),
+      ('Torrent Spin', 68, 'Water')]),
 ]
 
 NEW_INFO = {}
@@ -3848,6 +3860,7 @@ class Creature:
         self.defeats = {}    # type -> Pokemon of that type defeated
         self.inn_boost = 0   # extra HP from the Harbour Inn (v19.5)
         self.path = ""       # "sun" or "moon" from pagoda training (v19.6)
+        self.borrowed = False  # lent by Eusine in Ember Cave (v20.0)
 
     @property
     def fainted(self):
@@ -4806,6 +4819,35 @@ WORLD = {
         ],
         "signs": {"17,6": "Coral Beach. North: Hometown. East: Ember Cave. West: Harbour Inn"},
     },
+    "lair": {
+        "name": "Moltenion's Lair",
+        "types": (),
+        "grid": [
+            "################################",
+            "################################",
+            "##...........######...........##",
+            "##.#######...######...#######.##",
+            "##.########..##MM##..########.##",
+            "##.#######............#######.##",
+            "##.#######............#######.##",
+            "##.#######............#######.##",
+            "##.#######.##......##.#######.##",
+            "##.#######.##......##.#######.##",
+            "##.........##......##.........##",
+            "##...#.....##......##.....#...##",
+            "##.........##......##.........##",
+            "##.#######.##......##.#######.##",
+            "##.#######.##......##.#######.##",
+            "##.#######............#######.##",
+            "##.#######............#######.##",
+            "##.########..........########.##",
+            "##.#######....#...#...#######.##",
+            "##.#######............#######.##",
+            "##............................##",
+            "###############vv###############",
+        ],
+        "signs": {},
+    },
     "cave": {
         "name": "Ember Cave",
         "types": ('Fire', 'Rock', 'Ground', 'Dragon'),
@@ -5212,6 +5254,23 @@ def has_sun_path(creature):
     return creature.name in SUN_TEAM or creature.path == "sun"
 
 
+# ==========================================
+# EMBER CAVE AFTER THE STORY (v20.0)
+# Eusine walks with you, lends you Warternut and the door opens to
+# Moltenion's Lair.
+# ==========================================
+
+EUSINE_AREAS = ("cave", "lair")
+MOLTENION_LEVEL = 75
+WARTERNUT_LEVEL = 65
+
+
+def eusine_frames():
+    if "eusine" not in _world_pictures:
+        _world_pictures["eusine"] = load_walk_sheet(os.path.join("sprites", "eusine.png"))
+    return _world_pictures["eusine"]
+
+
 # (area, exit square) -> (new area, x, y); None keeps the same x or y
 WORLD_EXITS = {
     ("town", ">"): ("temple", 1, None), ("temple", "<"): ("town", 30, None),
@@ -5219,6 +5278,7 @@ WORLD_EXITS = {
     ("town", "v"): ("beach", 15, 1), ("beach", "^"): ("town", 9, 20),
     ("beach", ">"): ("cave", 1, 10), ("cave", "<"): ("beach", 30, 4),
     ("inside", "v"): ("temple", 15, 6),
+    ("lair", "v"): ("cave", 25, 16),
 }
 WORLD_TILE = 32             # each map square on screen
 WORLD_STEP_FRAMES = 9       # frames to walk one square
@@ -5239,6 +5299,20 @@ def world_picture(name):
         _world_pictures[name] = pygame.transform.scale(
             picture, (picture.get_width() * 2, picture.get_height() * 2))
     return _world_pictures[name]
+
+
+def load_walk_sheet(path):
+    """Cuts a 3x4 walking sheet (down, up, left, right) into frames."""
+    sheet = pygame.image.load(path).convert_alpha()
+    frames = {}
+    cw, ch = sheet.get_width() // 3, sheet.get_height() // 4
+    scale = 2 if ch <= 20 else 1.5
+    size = (int(cw * scale), int(ch * scale))
+    for row, direction in enumerate(("down", "up", "left", "right")):
+        frames[direction] = [
+            pygame.transform.scale(sheet.subsurface((col * cw, row * ch, cw, ch)), size)
+            for col in range(3)]
+    return frames
 
 
 def trainer_frames():
@@ -5602,7 +5676,7 @@ def creature_to_dict(c):
         "types": c.types, "pokedex_number": c.pokedex_number,
         "shiny": c.shiny, "bond": c.bond, "titles": c.titles,
         "title": c.title, "mastery": c.mastery, "defeats": c.defeats,
-        "inn_boost": c.inn_boost, "path": c.path
+        "inn_boost": c.inn_boost, "path": c.path, "borrowed": c.borrowed
     }
 
 
@@ -5622,6 +5696,7 @@ def creature_from_dict(d):
     c.defeats = dict(d.get("defeats", {}))
     c.inn_boost = int(d.get("inn_boost", 0))
     c.path = str(d.get("path", ""))
+    c.borrowed = bool(d.get("borrowed", False))
     return c
 
 
@@ -6957,7 +7032,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v19.9!"
+        self.message = "Welcome to Pokemon: The New World v20.0!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -7011,6 +7086,8 @@ class Game:
         # Simple menu and auto-save (v19.8)
         self.menu_pop = None
         self.save_sig = None
+        self.f_pos = None       # Eusine's square while following you
+        self.f_from = None
         self.save_toast = 0
 
         # Music (v19.1)
@@ -7532,7 +7609,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 19.9 - NEW GRASS AND BUILDINGS", 165)
+        self.centred("VERSION 20.0 - MOLTENION", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
@@ -7757,6 +7834,28 @@ class Game:
         cam_y = max(0, min(picture.get_height() - HEIGHT, py + 16 - HEIGHT // 2))
         screen.fill(BLACK)
         screen.blit(picture, (-cam_x, -cam_y))
+
+        if self.world == "cave" and self.story_done():
+            # the sealed door stands open
+            gx, gy = 25 * WORLD_TILE + 4 - cam_x, 17 * WORLD_TILE + 4 - cam_y
+            pygame.draw.rect(screen, (24, 14, 14), (gx, gy, 56, 56))
+            pygame.draw.rect(screen, (255, 140, 60), (gx, gy, 56, 56), 3)
+        if self.f_pos and self.eusine_here():
+            fx, fy = self.f_pos
+            ox, oy = self.f_from or self.f_pos
+            ex, ey = fx * WORLD_TILE, fy * WORLD_TILE
+            if self.step:
+                done = self.step[2]
+                ex = ox * WORLD_TILE + (fx - ox) * WORLD_TILE * done // WORLD_STEP_FRAMES
+                ey = oy * WORLD_TILE + (fy - oy) * WORLD_TILE * done // WORLD_STEP_FRAMES
+            if (fx, fy) != (self.wx, self.wy) or self.step:
+                face = {(0, 1): "down", (0, -1): "up", (-1, 0): "left",
+                        (1, 0): "right"}.get((fx - ox, fy - oy), self.facing)
+                pic = eusine_frames()[face][frame]
+                ex, ey = ex - cam_x, ey - cam_y
+                pygame.draw.ellipse(screen, (30, 30, 30), (ex + 5, ey + 24, 22, 9))
+                screen.blit(pic, (ex + (32 - pic.get_width()) // 2,
+                                  ey + 30 - pic.get_height()))
 
         sx, sy = px - cam_x, py - cam_y
         pygame.draw.ellipse(screen, (30, 50, 30), (sx + 5, sy + 24, 22, 9))
@@ -8778,6 +8877,69 @@ class Game:
         self.button("BACK", (420, 630, 160, 45), "back_explore")
 
     # ======================================
+    # EUSINE, WARTERNUT AND MOLTENION (v20.0)
+    # ======================================
+
+    def story_done(self):
+        return "story_trophy" in self.events
+
+    def eusine_here(self):
+        return (self.exploring and self.world in EUSINE_AREAS
+                and self.story_done())
+
+    def eusine_check(self):
+        """Eusine joins you in Ember Cave and lends you Warternut;
+        when you leave, Warternut goes back to Eusine."""
+        if self.eusine_here():
+            if self.f_pos is None:
+                self.f_pos = self.f_from = (self.wx, self.wy)
+            if not any(m.borrowed for m in self.team):
+                buddy = make_grown("Warternut", WARTERNUT_LEVEL)
+                buddy.borrowed = True
+                self.seen.add(buddy.pokedex_number)
+                self.team.append(buddy)
+                first = "eusine_cave" not in self.events
+                self.events.add("eusine_cave")
+                self.world_msg = (
+                    "Eusine: You finished the story! The cave door has opened. "
+                    "Take my Warternut, it's great against fire!" if first else
+                    "Eusine: Here's Warternut again. Let's go!")
+            return
+        self.f_pos = self.f_from = None
+        lent = [m for m in self.team + self.pc if m.borrowed]
+        if lent:
+            self.team = [m for m in self.team if not m.borrowed]
+            self.pc = [m for m in self.pc if not m.borrowed]
+            self.active = min(self.active, max(0, len(self.team) - 1))
+            if self.mode == "explore":
+                self.world_msg = "Eusine takes Warternut back. See you, friend!"
+
+    def meet_moltenion(self):
+        number = NEW_INFO["Moltenion"]["number"]
+        if number in self.caught:
+            self.world_msg = ("Moltenion's flame burns calmly now. Eusine: "
+                              "You did it, champion!")
+            return
+        if all(p.fainted for p in self.team):
+            self.world_msg = "Your team needs to recover first!"
+            return
+        self.send_out_healthy()
+        mon = make_grown("Moltenion", MOLTENION_LEVEL)
+        mon.max_hp = int(mon.max_hp * 1.5)
+        mon.hp = mon.max_hp
+        self.seen.add(number)
+        self.enemy = mon
+        self.rematch = None
+        self.ninja_trial = False
+        self.duo_partner = None
+        self.avatar_turns = 0
+        self.avatar_used = False
+        self.animation = None
+        self.pending_enemy_turn = False
+        self.mode = "battle"
+        self.message = "MOLTENION rises from the lava! Eusine: Use Warternut!"
+
+    # ======================================
     # PAGODA TRAINING (v19.6)
     # ======================================
 
@@ -8950,6 +9112,7 @@ class Game:
             return
         self.exploring = True
         self.mode = "explore"
+        self.eusine_check()
         self.world_msg = "Walk with the arrows. Tall grass hides wild Pokemon!"
         area = REGION_AREAS.get(self.region)
         if area and self.world != area:
@@ -8963,6 +9126,7 @@ class Game:
 
     def stop_exploring(self):
         self.exploring = False
+        self.eusine_check()
         self.mode = "menu"
         self.message = "Tap EXPLORE to carry on where you left off."
 
@@ -9014,6 +9178,9 @@ class Game:
         if tile in WORLD_WALKABLE:
             self.step = (dx, dy, 0)
             self.world_msg = ""
+            if self.f_pos:
+                self.f_from = self.f_pos
+                self.f_pos = (self.wx, self.wy)
         elif tile and tile in "HShTAbFCn":
             self.use_door(tile)
 
@@ -9028,6 +9195,7 @@ class Game:
             if y is not None:
                 self.wy = y
             self.world_msg = WORLD[self.world]["name"]
+            self.eusine_check()
             return
         if tile == "," and random.random() < WORLD_ENCOUNTER:
             global EXPLORE_TYPES
@@ -9096,9 +9264,16 @@ class Game:
         elif door == "F":
             self.world_msg = ("An old forest shrine. A purple stone hums softly. "
                               "Something ancient sleeps here...")
+        elif door == "C" and self.story_done():
+            self.world, self.wx, self.wy, self.facing = "lair", 15, 20, "up"
+            self.f_pos = self.f_from = (15, 21)
+            self.world_msg = ("Eusine: The door opened! Moltenion sleeps at the "
+                              "end of this lair. Stay close!")
         elif door == "C":
             self.world_msg = ("A sealed door glowing with ember light. It is "
                               "far too hot to touch... for now.")
+        elif door == "M":
+            self.meet_moltenion()
 
     def world_press_a(self):
         """Talk to or use whatever is in front of the player."""
@@ -9109,7 +9284,7 @@ class Game:
         tile = world_tile(self.world, x, y)
         if tile == "i":
             self.world_msg = WORLD[self.world]["signs"].get(f"{x},{y}", "")
-        elif tile and tile in "HShTAbFCnLuf":
+        elif tile and tile in "HShTAbFCnLufM":
             self.use_door(tile)
 
     # ======================================
