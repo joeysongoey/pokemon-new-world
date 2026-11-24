@@ -23,7 +23,7 @@ FPS = 60
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 screen = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Pokemon: The New World v20.0")
+pygame.display.set_caption("Pokemon: The New World v20.1")
 clock = pygame.time.Clock()
 
 FONT = pygame.font.SysFont("arial", 22, bold=True)
@@ -7032,7 +7032,7 @@ class Game:
         self.mode = "menu"
         self.return_mode = "menu"
 
-        self.message = "Welcome to Pokemon: The New World v20.0!"
+        self.message = "Welcome to Pokemon: The New World v20.1!"
 
         self.balls = {
             "Poke Ball": 10,
@@ -7091,7 +7091,7 @@ class Game:
         self.save_toast = 0
 
         # Music (v19.1)
-        self.muted = False
+        self.muted = True     # music starts muted (v20.1); tap the speaker to turn it on
         self.track = "none"
 
         # Explore mode (v19.0)
@@ -7609,7 +7609,7 @@ class Game:
         self.background()
 
         self.centred("POKEMON: THE NEW WORLD", 118, BIG, GOLD)
-        self.centred("VERSION 20.0 - MOLTENION", 165)
+        self.centred("VERSION 20.1 - MOLTENION", 165)
         self.centred(self.message, 205, SMALL)
 
         # Coins and trophies
